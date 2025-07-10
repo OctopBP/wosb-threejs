@@ -7,7 +7,7 @@
         "description": "Initialize a new Vite project with TypeScript and Babylon.js, configure the development environment, establish project structure, and set up Git and documentation.",
         "details": "1. Create a new project directory and initialize a Vite project with the TypeScript template using `npm create vite@latest <project-name> -- --template vanilla-ts`.\n2. Install Babylon.js and related dependencies with `npm install @babylonjs/core @babylonjs/materials`.\n3. Set up the recommended folder structure: create directories such as `config/`, `localization/`, `entities/`, `systems/`, `src/`, `public/`, and `dist/` as per cursor rules and best practices[1][4].\n4. Configure TypeScript by editing or creating `tsconfig.json` to ensure compatibility with Babylon.js and Vite[3].\n5. Add a basic `index.html` in `public/` and an entry TypeScript file (e.g., `src/app.ts`).\n6. Configure the build system in `package.json` to use Vite for development and production builds, ensuring the correct base path for assets if deploying to static hosts[2].\n7. Initialize a Git repository, create a `.gitignore` file (excluding `node_modules`, `dist`, etc.), and set up an initial commit.\n8. Write a `README.md` with setup, build, and contribution instructions.\n9. Optionally, add basic localization and configuration files as placeholders in their respective directories.\n10. Establish a development workflow: document branch strategy, code review process, and commit conventions in the README or a `CONTRIBUTING.md` file.",
         "testStrategy": "- Run `npm install` and `npm run dev` to verify the development server starts and the Babylon.js canvas renders in the browser.\n- Confirm the project structure matches the specified directories and files.\n- Check that TypeScript compiles without errors and Vite builds successfully.\n- Verify that the Git repository is initialized, `.gitignore` is present, and the initial commit includes all starter files.\n- Ensure the README provides clear setup and workflow instructions.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "subtasks": [
@@ -17,7 +17,7 @@
             "description": "Create a new project directory and initialize a Vite project using the vanilla TypeScript template.",
             "dependencies": [],
             "details": "Run `npm create vite@latest <project-name> -- --template vanilla-ts` in your terminal. Navigate into the new project directory. This will scaffold the base Vite + TypeScript project structure.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify that the project directory contains Vite's default files, including `src/`, `public/`, `index.html`, `package.json`, and `tsconfig.json`."
           },
           {
@@ -26,7 +26,7 @@
             "description": "Add Babylon.js core and materials packages, and ensure all dependencies are installed.",
             "dependencies": [],
             "details": "Run `npm install @babylonjs/core @babylonjs/materials` inside the project directory. Also run `npm install` to ensure all dependencies from `package.json` are installed.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Check that `node_modules/` contains Babylon.js packages and that `package.json` lists them as dependencies."
           },
           {
@@ -35,7 +35,7 @@
             "description": "Set up the recommended folder structure and configure TypeScript for strict settings and Babylon.js compatibility.",
             "dependencies": [],
             "details": "Create directories: `config/`, `localization/`, `entities/`, `systems/`, `ui/`, `types/`, `utils/`, `assets/`, `public/`, and `src/`. Edit or create `tsconfig.json` to enable strict type checking and ensure compatibility with Babylon.js and Vite. Add a basic `index.html` in `public/` and an entry TypeScript file (e.g., `src/app.ts`).",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Confirm all directories exist. Validate TypeScript configuration by running `tsc --noEmit` and ensuring no errors. Ensure the entry files are present."
           },
           {
@@ -44,7 +44,7 @@
             "description": "Set up Vite build scripts, configure asset base paths, initialize Git, and create a `.gitignore`.",
             "dependencies": [],
             "details": "Edit `package.json` to include scripts for development and production builds using Vite. Adjust the base path for assets if needed. Run `git init` to initialize a repository, and create a `.gitignore` file to exclude `node_modules`, `dist`, and other appropriate files. Make an initial commit.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run `npm run dev` and `npm run build` to verify build scripts. Check Git status and ensure ignored files are not tracked."
           },
           {
@@ -53,7 +53,7 @@
             "description": "Write a `README.md` with setup, build, and contribution instructions, and optionally add a `CONTRIBUTING.md` for workflow conventions.",
             "dependencies": [],
             "details": "Document project setup steps, build commands, and folder structure in `README.md`. Outline branch strategy, code review process, and commit conventions in `README.md` or a separate `CONTRIBUTING.md`. Add placeholder configuration and localization files as needed.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Review documentation for completeness and clarity. Ask a team member to follow the setup instructions to ensure accuracy."
           }
         ]
@@ -585,7 +585,7 @@
     ],
     "metadata": {
       "created": "2025-07-10T07:37:31.612Z",
-      "updated": "2025-07-10T07:45:41.120Z",
+      "updated": "2025-07-10T08:11:05.502Z",
       "description": "Tasks for master context"
     }
   }
