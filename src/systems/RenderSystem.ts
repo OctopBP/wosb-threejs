@@ -4,7 +4,8 @@ import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
 import { System } from '../ecs/System'
 import '@babylonjs/loaders/glTF/2.0'
 
-import type { AbstractMesh, Scene } from '@babylonjs/core'
+import type { AbstractMesh, MeshAssetTask, Scene } from '@babylonjs/core'
+import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
 import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import type { World } from '../ecs/World'
 
@@ -68,7 +69,7 @@ export class RenderSystem extends System {
     }
 
     private createPrimitiveMesh(meshId: string, meshType: string): Mesh {
-        const config = getModelConfig(meshType as any)
+        const config = getModelConfig(meshType) as PrimitiveModelConfig
 
         let mesh: Mesh
 
@@ -113,7 +114,7 @@ export class RenderSystem extends System {
     private createModelMesh(meshId: string, meshType: string): Mesh {
         const parentMesh = new Mesh(meshId, this.scene)
 
-        const modelConfig = getModelConfig(meshType as any)
+        const modelConfig = getModelConfig(meshType) as ModelConfig
 
         const assetsManager = new AssetsManager(this.scene)
         const meshTask = assetsManager.addMeshTask(
@@ -123,9 +124,9 @@ export class RenderSystem extends System {
             modelConfig.fileName,
         )
 
-        meshTask.onSuccess = (task: any) => {
+        meshTask.onSuccess = (task: MeshAssetTask) => {
             if (task.loadedMeshes.length > 0) {
-                task.loadedMeshes.forEach((mesh: any) => {
+                task.loadedMeshes.forEach((mesh: AbstractMesh) => {
                     mesh.parent = parentMesh
                 })
                 parentMesh.scaling.setAll(modelConfig.scale)

@@ -13,7 +13,6 @@ import type {
     WeaponComponent,
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
-
 export function createPlayerShip(
     configOverrides: Partial<MovementConfigPreset> = {},
 ): Entity {
