@@ -1,0 +1,218 @@
+<context>
+# Overview
+World of Sea Battle is a 20-30 second HTML5 playable advertisement game designed to showcase the core naval combat mechanics of the main game. Players control a small sailboat that progressively upgrades through combat encounters, culminating in a boss battle that drives conversion to the full game. The game targets mobile web browsers with a <10MB bundle size and 60 FPS performance on mid-tier devices.
+
+# Core Features
+## Progressive Ship Combat System
+- Real-time naval combat with proximity-based automatic engagement
+- Visual attack range indicators and satisfying cannon fire animations
+- Automatic loot collection (barrels) on enemy defeat
+- Level-based damage calculation system
+
+## Ship Progression Mechanics
+- 6-level ship upgrade system with immediate visual transformations
+- Experience sources: enemy defeats, treasure chests, environmental pickups
+- Progressive visual upgrades: sails, cannons, hull colors, decorative elements
+- Real-time UI updates showing level and kill progress
+
+## Boss Encounter & Call-to-Action
+- Intimidating boss ship encounter that creates challenge and desire
+- Screen edge warning effects and dramatic camera work
+- Seamless transition to call-to-action screen with game branding
+- Compelling "Get Ship" button driving conversion to main game
+
+## Mobile-Optimized Controls
+- Touch/drag steering for mobile devices with mouse fallback for desktop
+- Intuitive control hints with minimal learning curve
+- Responsive design adapting to different screen orientations
+
+# User Experience
+## Target User Personas
+- Primary: Mobile game players aged 18-45 who enjoy strategy/combat games
+- Secondary: Casual gamers looking for quick entertainment during breaks
+- Tertiary: Players of similar naval/pirate-themed games
+
+## Key User Flows
+1. **Initial Engagement (0-5s)**: Player sees ocean environment with ships, understands basic concept
+2. **First Victory (5-15s)**: Player moves to enemy, automatic combat, immediate level-up satisfaction
+3. **Power Fantasy (15-25s)**: Multiple combat encounters, visible ship improvements, growing confidence
+4. **Boss Wall (25-30s)**: Challenging boss encounter reveals player's limitations
+5. **Conversion (30s)**: Call-to-action presenting solution (premium ship) with clear value proposition
+
+## UI/UX Considerations
+- Minimal, non-intrusive HUD showing level and kill count
+- Immediate visual feedback for all player actions
+- Smooth transitions between game phases
+- Mobile-first responsive design with touch-friendly elements
+</context>
+
+<PRD>
+# Technical Architecture
+## Core Systems
+- **Game Engine**: Babylon.js 3D rendering with TypeScript
+- **Build System**: Vite for fast development and optimized bundling
+- **Entity-Component Architecture**: Modular design with clear separation of concerns
+- **Configuration System**: JSON-based configs for all game values, no hardcoded constants
+- **Localization Framework**: Multi-language support with dynamic text interpolation
+
+## System Components
+- **Scene Management**: Loading, Game, and CTA scenes with transitions
+- **Entity System**: PlayerShip, EnemyShip, BossShip with component-based behaviors
+- **Combat System**: Collision detection, damage calculation, visual effects
+- **Progression System**: Experience tracking, level-up logic, visual upgrades
+- **VFX System**: Particle effects for combat, explosions, level-ups
+- **Audio System**: Background music, sound effects, dynamic mixing
+- **UI System**: HUD elements, responsive layouts, call-to-action screen
+
+## Data Models
+- Ship configurations with level-based stats and visual properties
+- Combat parameters for damage, range, and timing
+- Progression curves for experience requirements and rewards
+- Audio and visual effect definitions
+- Localization text keys and translations
+
+## Performance Requirements
+- 60 FPS on iPhone 8 / Android equivalent devices
+- <10MB total bundle size including all assets
+- <3 second load time on 3G connections
+- <100MB RAM consumption during gameplay
+
+# Development Roadmap
+## Phase 1: Core Framework (Foundation)
+- Project setup with Vite, TypeScript, and Babylon.js
+- Basic scene management and transitions
+- Configuration system architecture
+- Entity-component base classes
+- Simple ship movement and controls
+- Basic collision detection system
+
+## Phase 2: Combat Mechanics (Playable Core)
+- Combat system implementation with automatic engagement
+- Projectile system with visual trails and impacts
+- Damage calculation and health management
+- Basic enemy AI and spawning
+- Loot drop and collection mechanics
+- Core progression system (XP and leveling)
+
+## Phase 3: Visual Systems (Polish & Feel)
+- Ship upgrade visual system with progressive transformations
+- Particle effects for combat, explosions, and level-ups
+- Ocean environment with animated water
+- Basic UI/HUD with level and kill counter
+- Audio integration with combat sounds and background music
+- Mobile touch controls optimization
+
+## Phase 4: Content & Balance (Game Feel)
+- Multiple enemy ship types with different behaviors
+- Environmental elements (treasure chests, barrels)
+- Ship progression balancing (6 levels with meaningful upgrades)
+- Visual effects polish and screen shake
+- Boss ship implementation with intimidating presence
+- Game flow pacing and encounter design
+
+## Phase 5: Boss Encounter (Climax)
+- Boss ship with unique visual design and behaviors
+- Screen warning effects and dramatic camera transitions
+- Boss combat mechanics showing player limitations
+- Seamless transition from gameplay to CTA
+- Call-to-action screen with compelling presentation
+
+## Phase 6: Optimization & Polish (Release Ready)
+- Mobile performance optimization and testing
+- Bundle size optimization and asset compression
+- Cross-browser compatibility testing
+- Localization system implementation
+- Analytics integration for conversion tracking
+- A/B testing framework for CTA optimization
+
+# Logical Dependency Chain
+## Foundation First (Critical Path)
+1. **Project Infrastructure**: Build system, TypeScript config, basic scene management
+2. **Entity Framework**: Base entity classes, component system, basic rendering
+3. **Input System**: Touch/mouse controls, responsive handling
+
+## Core Gameplay (Visible Progress)
+4. **Movement System**: Ship steering, boundaries, smooth controls
+5. **Basic Combat**: Collision detection, simple projectiles, damage dealing
+6. **Enemy System**: Basic enemy ships, spawning, simple AI behaviors
+7. **Progression Core**: XP system, leveling logic, basic upgrades
+
+## Visual Polish (Game Feel)
+8. **Visual Upgrades**: Ship transformation system, progressive improvements
+9. **VFX Foundation**: Particle system, combat effects, explosions
+10. **Audio Integration**: Sound effects, background music, audio mixing
+11. **UI Implementation**: HUD elements, kill counter, level display
+
+## Content & Balance (Playable Game)
+12. **Enemy Variety**: Multiple ship types, different behaviors and strengths
+13. **Environmental Elements**: Treasure chests, collectible barrels
+14. **Progression Balance**: Meaningful upgrades, satisfying power curve
+15. **Game Flow**: Proper pacing, encounter design, difficulty progression
+
+## Climax & Conversion (Business Goals)
+16. **Boss Implementation**: Large boss ship, intimidating design
+17. **Boss Mechanics**: Limited player damage, dramatic presentation
+18. **Warning Systems**: Screen effects, camera work, audio cues
+19. **CTA Screen**: Game branding, compelling copy, conversion button
+20. **Analytics**: Conversion tracking, performance monitoring
+
+## Final Optimization (Production Ready)
+21. **Performance Tuning**: Mobile optimization, frame rate consistency
+22. **Bundle Optimization**: Asset compression, code splitting
+23. **Compatibility Testing**: Cross-browser, cross-device validation
+24. **Localization**: Multi-language support, text management
+
+# Risks and Mitigations
+## Technical Challenges
+- **Performance Risk**: Complex 3D rendering may impact mobile performance
+  - Mitigation: Implement LOD system, texture atlasing, efficient particle management
+- **Bundle Size Risk**: Assets and code may exceed 10MB limit
+  - Mitigation: Aggressive asset compression, code splitting, progressive loading
+- **Compatibility Risk**: Browser differences may cause rendering issues
+  - Mitigation: Extensive cross-platform testing, fallback mechanisms
+
+## Development Risks
+- **Scope Creep**: Feature additions may impact 20-30 second target duration
+  - Mitigation: Strict adherence to core game loop, regular playtesting
+- **Balance Risk**: Progression may be too fast/slow for engagement
+  - Mitigation: Configurable systems, rapid iteration, user testing
+- **Polish Risk**: Visual effects may be time-consuming to perfect
+  - Mitigation: Modular VFX system, placeholder assets, progressive enhancement
+
+## Business Risks
+- **Conversion Risk**: CTA effectiveness uncertain without testing
+  - Mitigation: A/B testing framework, multiple CTA variations, analytics
+- **Platform Risk**: Ad network policies may limit functionality
+  - Mitigation: Early platform compliance review, fallback implementations
+
+# MVP Definition
+## Minimum Viable Experience
+1. Player ship that moves with touch/mouse controls
+2. 3-4 enemy ships that can be defeated through proximity combat
+3. Basic ship progression (3 levels) with visual upgrades
+4. Simple boss encounter that shows player weakness
+5. Call-to-action screen with conversion button
+6. 30-second complete experience from start to CTA
+
+## Success Criteria
+- Loads and runs on iOS Safari and Android Chrome
+- Maintains 30+ FPS on mid-tier mobile devices
+- <15MB bundle size (allowing for compression)
+- >60% completion rate (players reach CTA screen)
+- Clear value proposition drives click-through intent
+
+# Appendix
+## Technical Specifications
+- **Target Devices**: iPhone 8+, Android 7+ with modern browsers
+- **Rendering**: WebGL 2.0 with fallback to WebGL 1.0
+- **Audio**: Web Audio API with compressed audio formats
+- **Input**: Touch Events API with mouse fallback
+- **Analytics**: Custom event tracking, performance monitoring
+
+## Asset Requirements
+- **3D Models**: Low-poly ship models with LOD versions
+- **Textures**: Compressed formats (WebP/ASTC) with fallbacks
+- **Audio**: Compressed music and SFX files <2MB total
+- **Fonts**: Web-safe fonts or compressed web fonts
+- **Particles**: Efficient sprite-based particle definitions
+</PRD>
