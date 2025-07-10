@@ -1,5 +1,6 @@
 import type { InputComponent, MovementConfigComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 
 export class InputSystem extends System {
@@ -61,7 +62,7 @@ export class InputSystem extends System {
         this.updatePointerPosition(event.clientX, event.clientY)
     }
 
-    private onMouseUp(event: MouseEvent): void {
+    private onMouseUp(_event: MouseEvent): void {
         this.isPointerDown = false
     }
 
@@ -69,7 +70,7 @@ export class InputSystem extends System {
         this.updatePointerPosition(event.clientX, event.clientY)
     }
 
-    private onMouseLeave(event: MouseEvent): void {
+    private onMouseLeave(_event: MouseEvent): void {
         this.isPointerDown = false
     }
 
@@ -107,7 +108,7 @@ export class InputSystem extends System {
         return this.keysPressed.has(keyCode.toLowerCase())
     }
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         const entities = this.getEntities()
 
         for (const entity of entities) {
@@ -146,7 +147,7 @@ export class InputSystem extends System {
         input.direction.y = 0
 
         // Process keyboard input to direction
-        this.processKeyboardDirection(input, config)
+        this.processKeyboardDirection(input)
 
         // Process pointer input to direction
         this.processPointerDirection(input, config)
@@ -165,10 +166,7 @@ export class InputSystem extends System {
             Math.abs(input.direction.y) > 0.01
     }
 
-    private processKeyboardDirection(
-        input: InputComponent,
-        config: MovementConfigComponent,
-    ): void {
+    private processKeyboardDirection(input: InputComponent): void {
         // Forward/Backward movement (Y direction)
         if (input.moveForward) {
             input.direction.y += 1

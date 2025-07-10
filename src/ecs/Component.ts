@@ -80,7 +80,7 @@ export interface MovementConfigComponent extends Component {
 export interface RenderableComponent extends Component {
     type: 'renderable'
     meshId: string
-    mesh?: any // BABYLON.Mesh
+    mesh?: BABYLON.Mesh
     meshType: 'placeholder' | 'ship' | 'enemy' | 'projectile'
     visible: boolean
 }

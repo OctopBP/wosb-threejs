@@ -5,6 +5,7 @@ import type {
     VelocityComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 
 export class RotationSystem extends System {
@@ -25,7 +26,7 @@ export class RotationSystem extends System {
             if (!position || !velocity || !input || !config) continue
 
             this.processRotation(position, velocity, input, config, deltaTime)
-            this.applyRotationDampening(velocity, config, deltaTime)
+            this.applyRotationDampening(velocity)
             this.updateRotation(position, velocity, deltaTime)
             this.normalizeRotation(position)
         }
@@ -70,11 +71,7 @@ export class RotationSystem extends System {
         }
     }
 
-    private applyRotationDampening(
-        velocity: VelocityComponent,
-        config: MovementConfigComponent,
-        deltaTime: number,
-    ): void {
+    private applyRotationDampening(velocity: VelocityComponent): void {
         // Since we're using immediate rotation, we don't need much dampening
         // Just ensure angular velocity stays at zero for X and Z axes
         velocity.angularVelocityX = 0

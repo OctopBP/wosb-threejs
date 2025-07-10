@@ -1,4 +1,3 @@
-import { Component } from './Component'
 import { Entity, type EntityId } from './Entity'
 import type { System } from './System'
 

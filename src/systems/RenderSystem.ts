@@ -11,7 +11,7 @@ export class RenderSystem extends System {
         this.scene = scene
     }
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         const entities = this.getEntities()
 
         for (const entity of entities) {
@@ -187,7 +187,7 @@ export class RenderSystem extends System {
         for (const entity of entities) {
             const renderable =
                 entity.getComponent<RenderableComponent>('renderable')
-            if (renderable && renderable.mesh) {
+            if (renderable?.mesh) {
                 renderable.mesh.dispose()
                 renderable.mesh = null
             }

@@ -1,7 +1,16 @@
 import type * as BABYLON from 'babylonjs'
+import type {
+    InputComponent,
+    MovementConfigComponent,
+    PositionComponent,
+    VelocityComponent,
+} from './ecs'
 import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
-import { PlayerFactory } from './entities/PlayerFactory'
+import {
+    createPlayerShip,
+    updateMovementConfig,
+} from './entities/PlayerFactory'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { InputSystem } from './systems/InputSystem'
 import { MovementSystem } from './systems/MovementSystem'
@@ -43,7 +52,7 @@ export class GameWorld {
         console.log('GameWorld: Initializing...')
 
         // Create player ship
-        this.playerEntity = PlayerFactory.createPlayerShip()
+        this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
             console.log(
@@ -81,9 +90,11 @@ export class GameWorld {
     }
 
     // Configuration methods for tuning movement
-    updatePlayerMovementConfig(overrides: any): void {
+    updatePlayerMovementConfig(
+        overrides: Partial<MovementConfigComponent>,
+    ): void {
         if (this.playerEntity) {
-            PlayerFactory.updateMovementConfig(this.playerEntity, overrides)
+            updateMovementConfig(this.playerEntity, overrides)
         }
     }
 
@@ -91,14 +102,16 @@ export class GameWorld {
     getPlayerPosition(): { x: number; y: number; z: number } | null {
         if (!this.playerEntity) return null
 
-        const position = this.playerEntity.getComponent('position') as any
+        const position =
+            this.playerEntity.getComponent<PositionComponent>('position')
         return position ? { x: position.x, y: position.y, z: position.z } : null
     }
 
     getPlayerVelocity(): { dx: number; dy: number; dz: number } | null {
         if (!this.playerEntity) return null
 
-        const velocity = this.playerEntity.getComponent('velocity') as any
+        const velocity =
+            this.playerEntity.getComponent<VelocityComponent>('velocity')
         return velocity
             ? { dx: velocity.dx, dy: velocity.dy, dz: velocity.dz }
             : null
@@ -110,7 +123,7 @@ export class GameWorld {
     } | null {
         if (!this.playerEntity) return null
 
-        const input = this.playerEntity.getComponent('input') as any
+        const input = this.playerEntity.getComponent<InputComponent>('input')
         return input
             ? {
                   direction: { x: input.direction.x, y: input.direction.y },

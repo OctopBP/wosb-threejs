@@ -43,7 +43,7 @@ export class AppOne {
 
     private createScene(
         engine: BABYLON.Engine,
-        canvas: HTMLCanvasElement,
+        _canvas: HTMLCanvasElement,
     ): BABYLON.Scene {
         // Create a basic Babylon Scene object
         const scene = new BABYLON.Scene(engine)

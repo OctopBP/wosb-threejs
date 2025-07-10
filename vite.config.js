@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite'
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
     return {
-        // Set base path for GitHub Pages deployment
         base: mode === 'production' ? '/wosb-babylon/' : '/',
         resolve: {
             alias: {
