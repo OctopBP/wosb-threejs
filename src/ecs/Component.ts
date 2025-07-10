@@ -92,3 +92,38 @@ export interface RenderableComponent extends Component {
 export interface PlayerComponent extends Component {
     type: 'player'
 }
+
+// Health component for entities that can take damage
+export interface HealthComponent extends Component {
+    type: 'health'
+    maxHealth: number
+    currentHealth: number
+    isDead: boolean
+}
+
+// Weapon component for entities that can shoot
+export interface WeaponComponent extends Component {
+    type: 'weapon'
+    damage: number
+    fireRate: number // shots per second
+    projectileSpeed: number
+    range: number
+    lastShotTime: number
+    projectileType: 'sphere' // for now, just sphere
+}
+
+// Projectile component for projectile entities
+export interface ProjectileComponent extends Component {
+    type: 'projectile'
+    damage: number
+    speed: number
+    ownerId: number // entity id that fired this projectile
+    maxLifetime: number
+    currentLifetime: number
+}
+
+// Damageable component for entities that can receive damage
+export interface DamageableComponent extends Component {
+    type: 'damageable'
+    // This is a marker component that works with HealthComponent
+}
