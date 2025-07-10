@@ -428,7 +428,7 @@
         "description": "Establish a robust CI/CD pipeline to automate building, testing, deployment to CDN/hosting, bundle size monitoring, and version management for the playable ad distribution.",
         "details": "1. Integrate a CI/CD platform (e.g., GitHub Actions, GitLab CI, or Azure DevOps) with the project repository.\n2. Use @smoud/playable-scripts as the primary build tool to automate network-specific builds, minification, tree-shaking, and asset optimization for all supported ad networks. Configure build scripts in package.json for both development and production builds[1][2].\n3. Set up automated unit and integration testing to run on each commit and pull request. Ensure tests cover core gameplay, UI, and audio systems.\n4. Implement bundle size monitoring using tools like 'size-limit' or built-in features of @smoud/playable-scripts, with CI checks to prevent regressions.\n5. Configure the pipeline to deploy successful builds to a CDN or static hosting provider (e.g., AWS S3, Netlify, Vercel) and generate shareable preview links for QA.\n6. Automate version management by incrementing version numbers on successful builds and tagging releases in source control.\n7. Document the pipeline setup, environment variables, and deployment process for team reference.\n8. Ensure the pipeline is extensible for future ad network requirements and supports custom build steps as needed[1][2].",
         "testStrategy": "- Push a commit to trigger the CI pipeline and verify that builds are generated for all target ad networks without errors.\n- Confirm that automated tests run and pass in the pipeline.\n- Check that bundle size reports are generated and that size thresholds are enforced.\n- Validate that successful builds are deployed to the CDN/hosting provider and preview links are accessible.\n- Ensure version numbers are incremented and release tags are created in the repository.\n- Simulate a failed test or oversized bundle to confirm the pipeline blocks deployment as expected.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           1
         ],
@@ -585,7 +585,7 @@
     ],
     "metadata": {
       "created": "2025-07-10T07:37:31.612Z",
-      "updated": "2025-07-10T08:11:05.502Z",
+      "updated": "2025-07-10T09:19:17.009Z",
       "description": "Tasks for master context"
     }
   }
