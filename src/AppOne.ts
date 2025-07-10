@@ -12,6 +12,7 @@ import {
 } from '@babylonjs/core'
 import { GameWorld } from './GameWorld'
 import '@babylonjs/inspector'
+import '@babylonjs/loaders/glTF'
 
 export class AppOne {
     engine: Engine

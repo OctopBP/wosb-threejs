@@ -1,10 +1,11 @@
 // Tree-shakeable ES6 imports - only import what we actually use
-import { AssetsManager, Mesh } from '@babylonjs/core'
-import { getModelConfig } from '../config/ModelConfig'
+import { AssetsManager, Mesh, MeshBuilder } from '@babylonjs/core'
+import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
 import { System } from '../ecs/System'
 import '@babylonjs/loaders/glTF/2.0'
 
-import type { AbstractMesh, Scene } from '@babylonjs/core'
+import type { AbstractMesh, MeshAssetTask, Scene } from '@babylonjs/core'
+import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
 import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import type { World } from '../ecs/World'
 
@@ -56,14 +57,64 @@ export class RenderSystem extends System {
     }
 
     private createMesh(renderable: RenderableComponent): AbstractMesh {
-        // For now, all mesh types use GLB models
-        return this.createModelMesh(renderable.meshId, renderable.meshType)
+        // Check if this is a primitive mesh or a model mesh
+        if (isPrimitiveModel(renderable.meshType)) {
+            return this.createPrimitiveMesh(
+                renderable.meshId,
+                renderable.meshType,
+            )
+        } else {
+            return this.createModelMesh(renderable.meshId, renderable.meshType)
+        }
+    }
+
+    private createPrimitiveMesh(meshId: string, meshType: string): Mesh {
+        const config = getModelConfig(meshType) as PrimitiveModelConfig
+
+        let mesh: Mesh
+
+        if ('primitive' in config) {
+            switch (config.primitive) {
+                case 'sphere':
+                    mesh = MeshBuilder.CreateSphere(
+                        meshId,
+                        config.options,
+                        this.scene,
+                    )
+                    break
+                case 'box':
+                    mesh = MeshBuilder.CreateBox(
+                        meshId,
+                        config.options,
+                        this.scene,
+                    )
+                    break
+                default:
+                    // Fallback to sphere
+                    mesh = MeshBuilder.CreateSphere(
+                        meshId,
+                        { diameter: 0.5 },
+                        this.scene,
+                    )
+            }
+
+            mesh.scaling.setAll(config.scale)
+        } else {
+            // Fallback
+            mesh = MeshBuilder.CreateSphere(
+                meshId,
+                { diameter: 0.5 },
+                this.scene,
+            )
+        }
+
+        return mesh
     }
 
     private createModelMesh(meshId: string, meshType: string): Mesh {
         const parentMesh = new Mesh(meshId, this.scene)
 
-        const modelConfig = getModelConfig(meshType)
+        const modelConfig = getModelConfig(meshType) as ModelConfig
 
         const assetsManager = new AssetsManager(this.scene)
         const meshTask = assetsManager.addMeshTask(
@@ -73,9 +124,9 @@ export class RenderSystem extends System {
             modelConfig.fileName,
         )
 
-        meshTask.onSuccess = (task) => {
+        meshTask.onSuccess = (task: MeshAssetTask) => {
             if (task.loadedMeshes.length > 0) {
-                task.loadedMeshes.forEach((mesh) => {
+                task.loadedMeshes.forEach((mesh: AbstractMesh) => {
                     mesh.parent = parentMesh
                 })
                 parentMesh.scaling.setAll(modelConfig.scale)

@@ -1,21 +1,29 @@
 import type { Scene } from '@babylonjs/core'
 import type {
+    HealthComponent,
     InputComponent,
     MovementConfigComponent,
     PositionComponent,
     VelocityComponent,
+    WeaponComponent,
 } from './ecs'
 import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
 import {
     createPlayerShip,
     updateMovementConfig,
+    updateWeaponConfig,
 } from './entities/PlayerFactory'
+import { createTestObstacle } from './entities/TestObstacleFactory'
 import { AccelerationSystem } from './systems/AccelerationSystem'
+import { CollisionSystem } from './systems/CollisionSystem'
 import { InputSystem } from './systems/InputSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
+import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
+import { WeaponSystem } from './systems/WeaponSystem'
 
 export class GameWorld {
     private world: World
@@ -23,8 +31,13 @@ export class GameWorld {
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
+    private weaponSystem: WeaponSystem
+    private projectileMovementSystem: ProjectileMovementSystem
+    private projectileSystem: ProjectileSystem
+    private collisionSystem: CollisionSystem
     private renderSystem: RenderSystem
     private playerEntity: Entity | null = null
+    private testObstacle: Entity | null = null
     private lastTime: number = 0
 
     constructor(
@@ -38,20 +51,34 @@ export class GameWorld {
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
+        this.weaponSystem = new WeaponSystem(this.world, scene)
+        this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
+        this.projectileSystem = new ProjectileSystem(this.world)
+        this.collisionSystem = new CollisionSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
 
         // Add systems to world in execution order
         this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
         this.world.addSystem(this.rotationSystem) // 2. Handle rotation
         this.world.addSystem(this.accelerationSystem) // 3. Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) // 4. Apply velocity to position
-        this.world.addSystem(this.renderSystem) // 5. Render the results
+        this.world.addSystem(this.movementSystem) // 4. Apply velocity to position (ships only)
+        this.world.addSystem(this.weaponSystem) // 5. Handle weapon firing
+        this.world.addSystem(this.projectileMovementSystem) // 6. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 7. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 8. Check collisions and apply damage
+        this.world.addSystem(this.renderSystem) // 9. Render the results
     }
 
     init(): void {
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
+        }
+
+        // Create a test obstacle for the player to shoot at
+        this.testObstacle = createTestObstacle(0, 0.1, 5) // 5 units in front of player
+        if (this.testObstacle) {
+            this.world.addEntity(this.testObstacle)
         }
     }
 
@@ -72,6 +99,10 @@ export class GameWorld {
         return this.playerEntity
     }
 
+    getTestObstacle(): Entity | null {
+        return this.testObstacle
+    }
+
     getEntityCount(): number {
         return this.world.getEntityCount()
     }
@@ -82,6 +113,15 @@ export class GameWorld {
     ): void {
         if (this.playerEntity) {
             updateMovementConfig(this.playerEntity, overrides)
+        }
+    }
+
+    // Configuration methods for tuning weapons
+    updatePlayerWeaponConfig(
+        overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>>,
+    ): void {
+        if (this.playerEntity) {
+            updateWeaponConfig(this.playerEntity, overrides)
         }
     }
 
@@ -119,8 +159,43 @@ export class GameWorld {
             : null
     }
 
+    getPlayerHealth(): {
+        current: number
+        max: number
+        isDead: boolean
+    } | null {
+        if (!this.playerEntity) return null
+
+        const health = this.playerEntity.getComponent<HealthComponent>('health')
+        return health
+            ? {
+                  current: health.currentHealth,
+                  max: health.maxHealth,
+                  isDead: health.isDead,
+              }
+            : null
+    }
+
+    getObstacleHealth(): {
+        current: number
+        max: number
+        isDead: boolean
+    } | null {
+        if (!this.testObstacle) return null
+
+        const health = this.testObstacle.getComponent<HealthComponent>('health')
+        return health
+            ? {
+                  current: health.currentHealth,
+                  max: health.maxHealth,
+                  isDead: health.isDead,
+              }
+            : null
+    }
+
     cleanup(): void {
         this.world.clear()
         this.playerEntity = null
+        this.testObstacle = null
     }
 }

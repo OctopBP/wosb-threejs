@@ -1,12 +1,16 @@
 import type { MovementConfigPreset } from '../config/MovementPresets'
 import { createMovementConfig } from '../config/MovementPresets'
+import { createWeaponConfig } from '../config/WeaponConfig'
 import type {
+    DamageableComponent,
+    HealthComponent,
     InputComponent,
     MovementConfigComponent,
     PlayerComponent,
     PositionComponent,
     RenderableComponent,
     VelocityComponent,
+    WeaponComponent,
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
 export function createPlayerShip(
@@ -63,6 +67,25 @@ export function createPlayerShip(
     const movementConfig = createMovementConfig(configOverrides)
     entity.addComponent(movementConfig)
 
+    // Health component - player starts with full health
+    const health: HealthComponent = {
+        type: 'health',
+        maxHealth: 100,
+        currentHealth: 100,
+        isDead: false,
+    }
+    entity.addComponent(health)
+
+    // Weapon component - player has a basic cannon
+    const weapon = createWeaponConfig()
+    entity.addComponent(weapon)
+
+    // Damageable component - player can take damage
+    const damageable: DamageableComponent = {
+        type: 'damageable',
+    }
+    entity.addComponent(damageable)
+
     // Renderable component - use ship GLTF model
     const renderable: RenderableComponent = {
         type: 'renderable',
@@ -90,5 +113,15 @@ export function updateMovementConfig(
         entity.getComponent<MovementConfigComponent>('movementConfig')
     if (config) {
         Object.assign(config, overrides)
+    }
+}
+
+export function updateWeaponConfig(
+    entity: Entity,
+    overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>>,
+): void {
+    const weapon = entity.getComponent<WeaponComponent>('weapon')
+    if (weapon) {
+        Object.assign(weapon, overrides)
     }
 }
