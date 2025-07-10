@@ -1,10 +1,13 @@
 import * as BABYLON from 'babylonjs'
-import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
+import 'babylonjs-loaders'
+
+import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import type { World } from '../ecs/World'
 
 export class RenderSystem extends System {
     private scene: BABYLON.Scene
+    private loadedModels = new Map<string, BABYLON.AbstractMesh>()
 
     constructor(world: World, scene: BABYLON.Scene) {
         super(world, ['position', 'renderable'])
@@ -51,8 +54,8 @@ export class RenderSystem extends System {
         }
     }
 
-    private createMesh(renderable: RenderableComponent): BABYLON.Mesh {
-        let mesh: BABYLON.Mesh
+    private createMesh(renderable: RenderableComponent): BABYLON.AbstractMesh {
+        let mesh: BABYLON.AbstractMesh
 
         switch (renderable.meshType) {
             case 'placeholder':
@@ -124,8 +127,52 @@ export class RenderSystem extends System {
     }
 
     private createShipMesh(meshId: string): BABYLON.Mesh {
-        // For now, use the same placeholder - can be replaced with actual ship model later
-        return this.createPlaceholderShip(meshId)
+        // Create a parent mesh first (will be returned immediately)
+        const parentMesh = new BABYLON.Mesh(meshId, this.scene)
+
+        // Load the GLTF model asynchronously
+        BABYLON.SceneLoader.ImportMesh(
+            '',
+            'assets/models/',
+            'ship.gltf',
+            this.scene,
+            (meshes) => {
+                if (meshes.length > 0) {
+                    // Parent all loaded meshes to our container
+                    meshes.forEach((mesh) => {
+                        mesh.parent = parentMesh
+                    })
+
+                    // Scale the model down as it might be too large
+                    parentMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1)
+
+                    // Rotate to face forward (adjust as needed based on model orientation)
+                    parentMesh.rotation.y = Math.PI
+
+                    console.log(`Ship model loaded for ${meshId}`)
+                } else {
+                    console.warn(
+                        `Failed to load ship model for ${meshId}, falling back to placeholder`,
+                    )
+                    // If loading fails, create placeholder as fallback
+                    const fallback = this.createPlaceholderShip(
+                        `${meshId}_fallback`,
+                    )
+                    fallback.parent = parentMesh
+                }
+            },
+            undefined,
+            (error) => {
+                console.error(`Error loading ship model for ${meshId}:`, error)
+                // If loading fails, create placeholder as fallback
+                const fallback = this.createPlaceholderShip(
+                    `${meshId}_fallback`,
+                )
+                fallback.parent = parentMesh
+            },
+        )
+
+        return parentMesh
     }
 
     private createEnemyMesh(meshId: string): BABYLON.Mesh {
@@ -189,7 +236,7 @@ export class RenderSystem extends System {
                 entity.getComponent<RenderableComponent>('renderable')
             if (renderable?.mesh) {
                 renderable.mesh.dispose()
-                renderable.mesh = null
+                renderable.mesh = undefined
             }
         }
     }

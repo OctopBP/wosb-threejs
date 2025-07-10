@@ -63,12 +63,12 @@ export function createPlayerShip(
     const movementConfig = createMovementConfig(configOverrides)
     entity.addComponent(movementConfig)
 
-    // Renderable component - use placeholder ship for now
+    // Renderable component - use ship GLTF model
     const renderable: RenderableComponent = {
         type: 'renderable',
         meshId: `player_ship_${entity.id}`,
         mesh: undefined, // Will be created by RenderSystem
-        meshType: 'placeholder',
+        meshType: 'ship',
         visible: true,
     }
     entity.addComponent(renderable)
