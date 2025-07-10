@@ -11,6 +11,7 @@ import {
     Vector3,
 } from '@babylonjs/core'
 import { GameWorld } from './GameWorld'
+import '@babylonjs/inspector'
 
 export class AppOne {
     engine: Engine
