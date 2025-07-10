@@ -27,16 +27,10 @@ export class AppOne {
     run() {
         this.debug(true)
 
-        // Initialize the game world
         this.gameWorld.init()
 
-        console.log('Starting game loop...')
-
         this.engine.runRenderLoop(() => {
-            // Update game world with current time
             this.gameWorld.update(performance.now())
-
-            // Render the scene
             this.scene.render()
         })
     }

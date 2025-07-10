@@ -49,23 +49,10 @@ export class GameWorld {
     }
 
     init(): void {
-        console.log('GameWorld: Initializing...')
-
-        // Create player ship
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
-            console.log(
-                `GameWorld: Created player ship with entity ID ${this.playerEntity.id}`,
-            )
         }
-
-        console.log(
-            'GameWorld: Controls - WASD/Arrow keys for direction, ship auto-rotates towards movement',
-        )
-        console.log(
-            'GameWorld: Using unified input system with direction output',
-        )
     }
 
     update(time: number): void {
@@ -133,7 +120,6 @@ export class GameWorld {
     }
 
     cleanup(): void {
-        console.log('GameWorld: Cleaning up...')
         this.world.clear()
         this.playerEntity = null
     }

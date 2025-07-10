@@ -1,3 +1,5 @@
+import type { MODEL_CONFIGS } from '../config/ModelConfig'
+
 // Base Component interface for ECS system
 export interface Component {
     readonly type: string
@@ -81,7 +83,7 @@ export interface RenderableComponent extends Component {
     type: 'renderable'
     meshId: string
     mesh?: BABYLON.AbstractMesh
-    meshType: 'placeholder' | 'ship' | 'enemy' | 'projectile'
+    meshType: keyof typeof MODEL_CONFIGS
     visible: boolean
 }
 
