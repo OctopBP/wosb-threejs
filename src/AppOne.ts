@@ -1,15 +1,19 @@
-import * as BABYLON from 'babylonjs'
+import * as BABYLON from 'babylonjs';
+import { GameWorld } from './GameWorld';
+
 export class AppOne {
     engine: BABYLON.Engine;
     scene: BABYLON.Scene;
+    gameWorld: GameWorld;
 
     constructor(readonly canvas: HTMLCanvasElement) {
-        this.engine = new BABYLON.Engine(canvas)
+        this.engine = new BABYLON.Engine(canvas);
         window.addEventListener('resize', () => {
             this.engine.resize();
         });
-        this.scene = createScene(this.engine, this.canvas)
-
+        
+        this.scene = this.createScene(this.engine, this.canvas);
+        this.gameWorld = new GameWorld(this.scene, this.canvas);
     }
 
     debug(debugOn: boolean = true) {
@@ -22,73 +26,68 @@ export class AppOne {
 
     run() {
         this.debug(true);
+        
+        // Initialize the game world
+        this.gameWorld.init();
+        
+        console.log('Starting game loop...');
+        
         this.engine.runRenderLoop(() => {
+            // Update game world with current time
+            this.gameWorld.update(performance.now());
+            
+            // Render the scene
             this.scene.render();
         });
     }
 
+    private createScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
+        // Create a basic Babylon Scene object
+        const scene = new BABYLON.Scene(engine);
 
+        // Create and position a free camera
+        const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 8, -15), scene);
+        
+        // Point camera at the origin where the player ship will be
+        camera.setTarget(new BABYLON.Vector3(0, 0, 0));
+        
+        // Disable default camera controls since we're implementing our own
+        // camera.attachControl(canvas, true);
 
+        // Create hemisphere light for general illumination
+        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+        light.intensity = 0.8;
+
+        // Create directional light for better depth perception
+        const directionalLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -1, -1), scene);
+        directionalLight.position = new BABYLON.Vector3(10, 10, 10);
+        directionalLight.intensity = 0.4;
+
+        // Create ocean/ground plane
+        const ground = BABYLON.MeshBuilder.CreateGround("ocean", { width: 50, height: 50 }, scene);
+        const groundMaterial = new BABYLON.StandardMaterial("oceanMaterial", scene);
+        groundMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.4, 0.8); // Blue ocean
+        groundMaterial.specularColor = new BABYLON.Color3(0.1, 0.2, 0.4);
+        ground.material = groundMaterial;
+
+        // Add some atmosphere with fog
+        scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+        scene.fogColor = new BABYLON.Color3(0.7, 0.8, 0.9);
+        scene.fogDensity = 0.01;
+
+        return scene;
+    }
+
+    // Cleanup method
+    dispose() {
+        if (this.gameWorld) {
+            this.gameWorld.cleanup();
+        }
+        if (this.scene) {
+            this.scene.dispose();
+        }
+        if (this.engine) {
+            this.engine.dispose();
+        }
+    }
 }
-
-
-var createScene = function (engine: BABYLON.Engine, canvas: HTMLCanvasElement) {
-    // this is the default code from the playground:
-
-    // This creates a basic Babylon Scene object (non-mesh)
-    var scene = new BABYLON.Scene(engine);
-
-    // This creates and positions a free camera (non-mesh)
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-
-    // This targets the camera to scene origin
-    camera.setTarget(BABYLON.Vector3.Zero());
-
-    // This attaches the camera to the canvas
-    camera.attachControl(canvas, true);
-
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
-    // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
-
-    // Our built-in 'sphere' shape.
-    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2, segments: 32 }, scene);
-    // Move the sphere upward 1/2 its height
-    let startPos = 2;
-    sphere.position.y = startPos;
-
-    // Our built-in 'ground' shape.
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, scene);
-    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.8, 0.5); // RGB for a greenish color
-    ground.material = groundMaterial;
-    groundMaterial.bumpTexture = new BABYLON.Texture("./normal.jpg", scene);
-    //groundMaterial.bumpTexture.level = 0.125;    
-
-
-    var redMaterial = new BABYLON.StandardMaterial("redMaterial", scene);
-    redMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // RGB for red
-    sphere.material = redMaterial;
-
-    var sphereVelocity = 0;
-    var gravity = 0.009;
-    var reboundLoss = 0.1;
-
-    scene.registerBeforeRender(() => {
-        sphereVelocity += gravity;
-        let newY = sphere.position.y - sphereVelocity;
-        sphere.position.y -= sphereVelocity
-        if (newY < 1) {
-            sphereVelocity = (reboundLoss - 1) * sphereVelocity;
-            newY = 1;
-        }
-        sphere.position.y = newY;
-        if (Math.abs(sphereVelocity) <= gravity && newY < 1 + gravity) {
-            sphere.position.y = startPos++;
-        }
-    });
-
-    return scene;
-};
