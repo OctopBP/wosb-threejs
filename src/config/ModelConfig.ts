@@ -5,8 +5,8 @@ export interface ModelConfig {
 
 export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     ship: {
-        fileName: 'Player_grade01.glb',
-        scale: 0.5,
+        fileName: 'pl_01.glb',
+        scale: 1,
     },
 }
 

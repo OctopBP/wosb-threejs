@@ -34,6 +34,10 @@ export class RenderSystem extends System {
                 continue
             }
 
+            if (!renderable.mesh) {
+                renderable.mesh = this.createMesh(renderable)
+            }
+
             // Update mesh position and rotation
             if (renderable.mesh) {
                 renderable.mesh.setEnabled(true)
