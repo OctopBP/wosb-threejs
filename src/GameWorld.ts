@@ -19,6 +19,7 @@ import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { InputSystem } from './systems/InputSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
@@ -31,6 +32,7 @@ export class GameWorld {
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
     private weaponSystem: WeaponSystem
+    private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
     private renderSystem: RenderSystem
@@ -50,6 +52,7 @@ export class GameWorld {
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
+        this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
@@ -58,11 +61,12 @@ export class GameWorld {
         this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
         this.world.addSystem(this.rotationSystem) // 2. Handle rotation
         this.world.addSystem(this.accelerationSystem) // 3. Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) // 4. Apply velocity to position
+        this.world.addSystem(this.movementSystem) // 4. Apply velocity to position (ships only)
         this.world.addSystem(this.weaponSystem) // 5. Handle weapon firing
-        this.world.addSystem(this.projectileSystem) // 6. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 7. Check collisions and apply damage
-        this.world.addSystem(this.renderSystem) // 8. Render the results
+        this.world.addSystem(this.projectileMovementSystem) // 6. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 7. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 8. Check collisions and apply damage
+        this.world.addSystem(this.renderSystem) // 9. Render the results
     }
 
     init(): void {

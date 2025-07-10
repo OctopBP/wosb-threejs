@@ -9,7 +9,7 @@ import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
 export class CollisionSystem extends System {
-    private readonly collisionRadius = 0.5 // Basic collision radius for projectiles
+    private readonly collisionRadius = 0.8 // Adjusted for sphere projectiles hitting box obstacles
 
     constructor(world: World) {
         super(world, []) // We'll manually query for different component combinations

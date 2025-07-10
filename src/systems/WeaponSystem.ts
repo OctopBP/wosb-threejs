@@ -1,5 +1,5 @@
 import type { Scene } from '@babylonjs/core'
-import { Mesh, MeshBuilder } from '@babylonjs/core'
+import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
     PositionComponent,
     ProjectileComponent,
@@ -52,23 +52,27 @@ export class WeaponSystem extends System {
         const forwardX = Math.sin(shooterPosition.rotationY)
         const forwardZ = Math.cos(shooterPosition.rotationY)
 
-        // Position component - start slightly in front of shooter
+        // Position component - start slightly in front of and above shooter
         const projectilePosition: PositionComponent = {
             type: 'position',
-            x: shooterPosition.x + forwardX * 0.5, // Offset forward
-            y: shooterPosition.y,
-            z: shooterPosition.z + forwardZ * 0.5,
+            x:
+                shooterPosition.x +
+                forwardX * projectilePhysicsConfig.forwardOffset,
+            y: shooterPosition.y + projectilePhysicsConfig.heightOffset,
+            z:
+                shooterPosition.z +
+                forwardZ * projectilePhysicsConfig.forwardOffset,
             rotationX: 0,
             rotationY: shooterPosition.rotationY,
             rotationZ: 0,
         }
         projectile.addComponent(projectilePosition)
 
-        // Velocity component - projectile moves forward
+        // Velocity component - projectile moves forward and slightly upward for arc
         const projectileVelocity: VelocityComponent = {
             type: 'velocity',
             dx: forwardX * weapon.projectileSpeed,
-            dy: 0,
+            dy: projectilePhysicsConfig.upwardVelocity, // Use configurable upward velocity
             dz: forwardZ * weapon.projectileSpeed,
             angularVelocityX: 0,
             angularVelocityY: 0,
@@ -82,7 +86,7 @@ export class WeaponSystem extends System {
             damage: weapon.damage,
             speed: weapon.projectileSpeed,
             ownerId: shooterId,
-            maxLifetime: weapon.range / weapon.projectileSpeed, // Calculate lifetime based on range
+            maxLifetime: weapon.range / weapon.projectileSpeed + 2.0, // Add extra time for arc trajectory
             currentLifetime: 0,
         }
         projectile.addComponent(projectileComp)

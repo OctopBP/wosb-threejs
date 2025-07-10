@@ -29,6 +29,14 @@ export const heavyCannonPreset: WeaponConfigPreset = {
     projectileType: 'sphere',
 }
 
+// Projectile physics configuration
+export const projectilePhysicsConfig = {
+    gravity: -9.8, // Gravity acceleration (m/s²)
+    upwardVelocity: 2.0, // Initial upward velocity for arc trajectory
+    heightOffset: 0.2, // How high above shooter to spawn projectile
+    forwardOffset: 0.5, // How far in front of shooter to spawn projectile
+}
+
 // Helper function to create a weapon configuration
 export function createWeaponConfig(
     overrides: Partial<WeaponConfigPreset> = {},
