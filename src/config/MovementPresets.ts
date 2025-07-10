@@ -1,6 +1,6 @@
-import { MovementConfigComponent } from '../ecs/Component'
+import type { MovementConfigComponent } from '../ecs/Component'
 
-export type MovementConfigPreset = Omit<MovementConfigComponent, "type">;
+export type MovementConfigPreset = Omit<MovementConfigComponent, 'type'>
 
 // Balanced movement configuration for general gameplay
 export const balancedPreset: MovementConfigPreset = {
@@ -20,15 +20,15 @@ export const balancedPreset: MovementConfigPreset = {
         minZ: -10,
         maxZ: 10,
     },
-};
+}
 
 // Helper function to create a movement configuration
 export function createMovementConfig(
-    overrides: Partial<MovementConfigPreset> = {}
+    overrides: Partial<MovementConfigPreset> = {},
 ): MovementConfigComponent {
     return {
-        type: "movementConfig",
+        type: 'movementConfig',
         ...balancedPreset,
         ...overrides,
-    };
+    }
 }

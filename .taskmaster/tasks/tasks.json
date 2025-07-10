@@ -1,592 +1,483 @@
 {
-  "master": {
-    "tasks": [
-      {
-        "id": 1,
-        "title": "Project Initialization and Development Environment Setup",
-        "description": "Initialize a new Vite project with TypeScript and Babylon.js, configure the development environment, establish project structure, and set up Git and documentation.",
-        "details": "1. Create a new project directory and initialize a Vite project with the TypeScript template using `npm create vite@latest <project-name> -- --template vanilla-ts`.\n2. Install Babylon.js and related dependencies with `npm install @babylonjs/core @babylonjs/materials`.\n3. Set up the recommended folder structure: create directories such as `config/`, `localization/`, `entities/`, `systems/`, `src/`, `public/`, and `dist/` as per cursor rules and best practices[1][4].\n4. Configure TypeScript by editing or creating `tsconfig.json` to ensure compatibility with Babylon.js and Vite[3].\n5. Add a basic `index.html` in `public/` and an entry TypeScript file (e.g., `src/app.ts`).\n6. Configure the build system in `package.json` to use Vite for development and production builds, ensuring the correct base path for assets if deploying to static hosts[2].\n7. Initialize a Git repository, create a `.gitignore` file (excluding `node_modules`, `dist`, etc.), and set up an initial commit.\n8. Write a `README.md` with setup, build, and contribution instructions.\n9. Optionally, add basic localization and configuration files as placeholders in their respective directories.\n10. Establish a development workflow: document branch strategy, code review process, and commit conventions in the README or a `CONTRIBUTING.md` file.",
-        "testStrategy": "- Run `npm install` and `npm run dev` to verify the development server starts and the Babylon.js canvas renders in the browser.\n- Confirm the project structure matches the specified directories and files.\n- Check that TypeScript compiles without errors and Vite builds successfully.\n- Verify that the Git repository is initialized, `.gitignore` is present, and the initial commit includes all starter files.\n- Ensure the README provides clear setup and workflow instructions.",
-        "status": "done",
-        "dependencies": [],
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "Initialize Vite Project with TypeScript Template",
-            "description": "Create a new project directory and initialize a Vite project using the vanilla TypeScript template.",
-            "dependencies": [],
-            "details": "Run `npm create vite@latest <project-name> -- --template vanilla-ts` in your terminal. Navigate into the new project directory. This will scaffold the base Vite + TypeScript project structure.",
-            "status": "done",
-            "testStrategy": "Verify that the project directory contains Vite's default files, including `src/`, `public/`, `index.html`, `package.json`, and `tsconfig.json`."
-          },
-          {
-            "id": 2,
-            "title": "Install Babylon.js and Essential Dependencies",
-            "description": "Add Babylon.js core and materials packages, and ensure all dependencies are installed.",
-            "dependencies": [],
-            "details": "Run `npm install @babylonjs/core @babylonjs/materials` inside the project directory. Also run `npm install` to ensure all dependencies from `package.json` are installed.",
-            "status": "done",
-            "testStrategy": "Check that `node_modules/` contains Babylon.js packages and that `package.json` lists them as dependencies."
-          },
-          {
-            "id": 3,
-            "title": "Establish Project Structure and Configuration",
-            "description": "Set up the recommended folder structure and configure TypeScript for strict settings and Babylon.js compatibility.",
-            "dependencies": [],
-            "details": "Create directories: `config/`, `localization/`, `entities/`, `systems/`, `ui/`, `types/`, `utils/`, `assets/`, `public/`, and `src/`. Edit or create `tsconfig.json` to enable strict type checking and ensure compatibility with Babylon.js and Vite. Add a basic `index.html` in `public/` and an entry TypeScript file (e.g., `src/app.ts`).",
-            "status": "done",
-            "testStrategy": "Confirm all directories exist. Validate TypeScript configuration by running `tsc --noEmit` and ensuring no errors. Ensure the entry files are present."
-          },
-          {
-            "id": 4,
-            "title": "Configure Build System and Git Repository",
-            "description": "Set up Vite build scripts, configure asset base paths, initialize Git, and create a `.gitignore`.",
-            "dependencies": [],
-            "details": "Edit `package.json` to include scripts for development and production builds using Vite. Adjust the base path for assets if needed. Run `git init` to initialize a repository, and create a `.gitignore` file to exclude `node_modules`, `dist`, and other appropriate files. Make an initial commit.",
-            "status": "done",
-            "testStrategy": "Run `npm run dev` and `npm run build` to verify build scripts. Check Git status and ensure ignored files are not tracked."
-          },
-          {
-            "id": 5,
-            "title": "Add Documentation and Development Workflow Guidelines",
-            "description": "Write a `README.md` with setup, build, and contribution instructions, and optionally add a `CONTRIBUTING.md` for workflow conventions.",
-            "dependencies": [],
-            "details": "Document project setup steps, build commands, and folder structure in `README.md`. Outline branch strategy, code review process, and commit conventions in `README.md` or a separate `CONTRIBUTING.md`. Add placeholder configuration and localization files as needed.",
-            "status": "done",
-            "testStrategy": "Review documentation for completeness and clarity. Ask a team member to follow the setup instructions to ensure accuracy."
-          }
-        ]
-      },
-      {
-        "id": 2,
-        "title": "Implement Player Ship Movement System with Touch/Mouse Controls",
-        "description": "Develop a player ship movement system using an entity-component architecture, supporting touch and mouse controls, steering mechanics, movement boundaries, and smooth responsiveness for both mobile and desktop platforms.",
-        "details": "1. Design and implement an entity-component system (ECS) for the player ship, creating components for position, velocity, input, and movement configuration (speed, responsiveness).\n2. Integrate Babylon.js to render the ship entity and update its position and rotation based on ECS state.\n3. Implement input handlers for both touch (mobile) and mouse (desktop) events, translating user gestures or pointer movements into ship steering and thrust commands.\n4. Apply smooth interpolation or easing functions to ship movement and rotation for responsive, natural-feeling controls.\n5. Enforce movement boundaries within the game world, preventing the ship from moving outside the designated play area.\n6. Expose configuration options for speed and responsiveness, allowing tuning for different devices.\n7. Ensure the system is modular and extensible for future enhancements (e.g., power-ups, different ship types).",
-        "testStrategy": "- Verify that the ship responds smoothly and accurately to both touch and mouse input on supported devices.\n- Confirm that the ship's movement and steering are constrained within the defined boundaries.\n- Test configuration options for speed and responsiveness to ensure they affect movement as expected.\n- Check that the ECS cleanly separates concerns and allows for future extension.\n- Perform cross-platform testing on desktop and mobile browsers to ensure consistent behavior.",
-        "status": "pending",
-        "dependencies": [
-          1
+    "master": {
+        "tasks": [
+            {
+                "id": 1,
+                "title": "Project Initialization and Development Environment Setup",
+                "description": "Initialize a new Vite project with TypeScript and Babylon.js, configure the development environment, establish project structure, and set up Git and documentation.",
+                "details": "1. Create a new project directory and initialize a Vite project with the TypeScript template using `npm create vite@latest <project-name> -- --template vanilla-ts`.\n2. Install Babylon.js and related dependencies with `npm install @babylonjs/core @babylonjs/materials`.\n3. Set up the recommended folder structure: create directories such as `config/`, `localization/`, `entities/`, `systems/`, `src/`, `public/`, and `dist/` as per cursor rules and best practices[1][4].\n4. Configure TypeScript by editing or creating `tsconfig.json` to ensure compatibility with Babylon.js and Vite[3].\n5. Add a basic `index.html` in `public/` and an entry TypeScript file (e.g., `src/app.ts`).\n6. Configure the build system in `package.json` to use Vite for development and production builds, ensuring the correct base path for assets if deploying to static hosts[2].\n7. Initialize a Git repository, create a `.gitignore` file (excluding `node_modules`, `dist`, etc.), and set up an initial commit.\n8. Write a `README.md` with setup, build, and contribution instructions.\n9. Optionally, add basic localization and configuration files as placeholders in their respective directories.\n10. Establish a development workflow: document branch strategy, code review process, and commit conventions in the README or a `CONTRIBUTING.md` file.",
+                "testStrategy": "- Run `npm install` and `npm run dev` to verify the development server starts and the Babylon.js canvas renders in the browser.\n- Confirm the project structure matches the specified directories and files.\n- Check that TypeScript compiles without errors and Vite builds successfully.\n- Verify that the Git repository is initialized, `.gitignore` is present, and the initial commit includes all starter files.\n- Ensure the README provides clear setup and workflow instructions.",
+                "status": "done",
+                "dependencies": [],
+                "priority": "high",
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Initialize Vite Project with TypeScript Template",
+                        "description": "Create a new project directory and initialize a Vite project using the vanilla TypeScript template.",
+                        "dependencies": [],
+                        "details": "Run `npm create vite@latest <project-name> -- --template vanilla-ts` in your terminal. Navigate into the new project directory. This will scaffold the base Vite + TypeScript project structure.",
+                        "status": "done",
+                        "testStrategy": "Verify that the project directory contains Vite's default files, including `src/`, `public/`, `index.html`, `package.json`, and `tsconfig.json`."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Install Babylon.js and Essential Dependencies",
+                        "description": "Add Babylon.js core and materials packages, and ensure all dependencies are installed.",
+                        "dependencies": [],
+                        "details": "Run `npm install @babylonjs/core @babylonjs/materials` inside the project directory. Also run `npm install` to ensure all dependencies from `package.json` are installed.",
+                        "status": "done",
+                        "testStrategy": "Check that `node_modules/` contains Babylon.js packages and that `package.json` lists them as dependencies."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Establish Project Structure and Configuration",
+                        "description": "Set up the recommended folder structure and configure TypeScript for strict settings and Babylon.js compatibility.",
+                        "dependencies": [],
+                        "details": "Create directories: `config/`, `localization/`, `entities/`, `systems/`, `ui/`, `types/`, `utils/`, `assets/`, `public/`, and `src/`. Edit or create `tsconfig.json` to enable strict type checking and ensure compatibility with Babylon.js and Vite. Add a basic `index.html` in `public/` and an entry TypeScript file (e.g., `src/app.ts`).",
+                        "status": "done",
+                        "testStrategy": "Confirm all directories exist. Validate TypeScript configuration by running `tsc --noEmit` and ensuring no errors. Ensure the entry files are present."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Configure Build System and Git Repository",
+                        "description": "Set up Vite build scripts, configure asset base paths, initialize Git, and create a `.gitignore`.",
+                        "dependencies": [],
+                        "details": "Edit `package.json` to include scripts for development and production builds using Vite. Adjust the base path for assets if needed. Run `git init` to initialize a repository, and create a `.gitignore` file to exclude `node_modules`, `dist`, and other appropriate files. Make an initial commit.",
+                        "status": "done",
+                        "testStrategy": "Run `npm run dev` and `npm run build` to verify build scripts. Check Git status and ensure ignored files are not tracked."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Add Documentation and Development Workflow Guidelines",
+                        "description": "Write a `README.md` with setup, build, and contribution instructions, and optionally add a `CONTRIBUTING.md` for workflow conventions.",
+                        "dependencies": [],
+                        "details": "Document project setup steps, build commands, and folder structure in `README.md`. Outline branch strategy, code review process, and commit conventions in `README.md` or a separate `CONTRIBUTING.md`. Add placeholder configuration and localization files as needed.",
+                        "status": "done",
+                        "testStrategy": "Review documentation for completeness and clarity. Ask a team member to follow the setup instructions to ensure accuracy."
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "title": "Implement Player Ship Movement System with Touch/Mouse Controls",
+                "description": "Develop a player ship movement system using an entity-component architecture, supporting touch and mouse controls, steering mechanics, movement boundaries, and smooth responsiveness for both mobile and desktop platforms.",
+                "details": "1. Design and implement an entity-component system (ECS) for the player ship, creating components for position, velocity, input, and movement configuration (speed, responsiveness).\n2. Integrate Babylon.js to render the ship entity and update its position and rotation based on ECS state.\n3. Implement input handlers for both touch (mobile) and mouse (desktop) events, translating user gestures or pointer movements into ship steering and thrust commands.\n4. Apply smooth interpolation or easing functions to ship movement and rotation for responsive, natural-feeling controls.\n5. Enforce movement boundaries within the game world, preventing the ship from moving outside the designated play area.\n6. Expose configuration options for speed and responsiveness, allowing tuning for different devices.\n7. Ensure the system is modular and extensible for future enhancements (e.g., power-ups, different ship types).",
+                "testStrategy": "- Verify that the ship responds smoothly and accurately to both touch and mouse input on supported devices.\n- Confirm that the ship's movement and steering are constrained within the defined boundaries.\n- Test configuration options for speed and responsiveness to ensure they affect movement as expected.\n- Check that the ECS cleanly separates concerns and allows for future extension.\n- Perform cross-platform testing on desktop and mobile browsers to ensure consistent behavior.",
+                "status": "pending",
+                "dependencies": [1],
+                "priority": "high",
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Design and Implement ECS for Player Ship Movement",
+                        "description": "Establish the entity-component-system (ECS) structure for the player ship, defining components for position, velocity, input, and movement configuration (speed, responsiveness). Implement the core movement system that updates ship state based on these components.",
+                        "dependencies": [],
+                        "details": "Create an entity representing the player ship. Define and implement components: Position (x, y, rotation), Velocity (dx, dy, angular velocity), Input (current input state), and MovementConfig (speed, responsiveness). Implement a movement system that processes these components each frame to update the ship's position and rotation.",
+                        "status": "pending",
+                        "testStrategy": "Unit test ECS component creation and system updates. Verify that updating input and velocity components results in correct position changes."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Integrate Babylon.js Rendering with ECS State",
+                        "description": "Connect the ECS state to Babylon.js rendering, ensuring the ship entity's position and rotation are visually updated in the scene based on ECS data.",
+                        "dependencies": [],
+                        "details": "Create a Babylon.js mesh for the player ship. On each frame, read the ship's Position component from the ECS and update the Babylon.js mesh's position and rotation accordingly. Ensure the rendering loop is synchronized with ECS updates.",
+                        "status": "pending",
+                        "testStrategy": "Visually confirm that changes to the ECS Position component are reflected in the rendered ship's position and orientation."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Implement Touch and Mouse Input Handlers",
+                        "description": "Develop input handlers for both touch (mobile) and mouse (desktop) controls, translating user gestures or pointer movements into ECS Input component updates for steering and thrust.",
+                        "dependencies": [],
+                        "details": "Set up event listeners for touch and mouse events. For touch, interpret gestures (e.g., drag, tap) to determine steering direction and thrust. For mouse, map pointer movement and clicks to similar controls. Update the Input component of the player ship entity in the ECS with the interpreted commands.",
+                        "status": "pending",
+                        "testStrategy": "Simulate touch and mouse events and verify that the Input component receives correct updates. Confirm that the ship responds to both input types."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Apply Smooth Steering and Movement Boundaries",
+                        "description": "Implement smooth interpolation or easing for ship movement and rotation, and enforce movement boundaries to keep the ship within the playable area.",
+                        "dependencies": [],
+                        "details": "In the movement system, apply interpolation (e.g., lerp or easing functions) to position and rotation updates for smooth, responsive controls. Define the game world's boundaries and clamp the ship's position within these limits after each update.",
+                        "status": "pending",
+                        "testStrategy": "Test with rapid and slow input changes to ensure smooth movement. Attempt to move the ship beyond boundaries and verify it remains within the allowed area."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Expose and Tune Movement Configuration for Responsiveness",
+                        "description": "Provide configuration options for speed and responsiveness, allowing tuning for different devices and player preferences. Ensure the system is modular for future enhancements.",
+                        "dependencies": [],
+                        "details": "Expose MovementConfig parameters (speed, responsiveness) via a configuration interface or settings file. Allow runtime adjustment and ensure changes are reflected immediately in ship behavior. Structure the system so new movement features (e.g., power-ups, ship types) can be added by extending components or systems.",
+                        "status": "pending",
+                        "testStrategy": "Adjust configuration values and verify changes in ship responsiveness and speed. Confirm that the system remains stable and extensible after modifications."
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "title": "Implement Combat System: Proximity-Based Shooting, Projectiles, and Damage Mechanics",
+                "description": "Develop a combat system featuring proximity-based automatic shooting, projectile entities with visual trails, configurable weapon systems, and robust damage and collision mechanics.",
+                "details": "1. Design ECS components for weapons (range, fire rate, damage, projectile type), health, and damageable entities. 2. Implement a proximity detection system that triggers automatic shooting when enemy entities enter weapon range. 3. Create a projectile system: spawn projectile entities with configurable speed, direction, and visual trails using Babylon.js particle or mesh effects. 4. Integrate hit detection and collision response: detect projectile impacts with targets, apply damage, and handle projectile destruction. 5. Develop damage calculation logic supporting configurable weapon stats and potential modifiers. 6. Ensure weapon systems and damage mechanics are easily configurable for different weapon types. 7. Update health components and trigger appropriate responses (e.g., HP reduction, entity removal or reset) upon damage. 8. Structure all systems and components to fit within the existing ECS architecture and ensure smooth integration with player and enemy movement.",
+                "testStrategy": "- Place player and enemy entities in the scene and verify that automatic shooting triggers when enemies enter weapon range.\n- Confirm that projectiles are spawned, follow correct trajectories, and display visual trails.\n- Test hit detection by observing that projectiles collide with targets and apply correct damage values.\n- Validate that health updates and entity responses (e.g., removal, reset) occur as expected upon taking damage.\n- Check that weapon and damage parameters are configurable and changes are reflected in gameplay.\n- Ensure the system performs reliably with multiple entities and projectiles active simultaneously.",
+                "status": "pending",
+                "dependencies": [1, 2],
+                "priority": "high",
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Design and Implement ECS Components for Combat",
+                        "description": "Define and implement ECS components for weapons (including range, fire rate, damage, projectile type), health, and damageable entities to support proximity-based shooting and damage mechanics.",
+                        "dependencies": [],
+                        "details": "Create ECS components such as WeaponComponent, HealthComponent, DamageableComponent, and any necessary marker or configuration components. Ensure these components are data-only and fit cleanly into the existing ECS architecture. Include fields for weapon configuration (range, fire rate, damage, projectile type) and health tracking.",
+                        "status": "pending",
+                        "testStrategy": "Unit test component creation and data assignment. Verify entities can be assigned and queried for these components."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Implement Proximity Detection and Automatic Shooting System",
+                        "description": "Develop a system that detects when enemy entities enter weapon range and triggers automatic shooting actions based on weapon fire rate and targeting logic.",
+                        "dependencies": [1],
+                        "details": "Implement a ProximityDetectionSystem that iterates over entities with weapon and targeting components, checks for nearby enemies within range, and schedules or triggers shooting actions according to fire rate. Ensure the system is efficient and supports multiple weapon types and targets.",
+                        "status": "pending",
+                        "testStrategy": "Simulate entities moving into and out of range; verify shooting triggers only when appropriate and respects fire rate."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Create Projectile Entity System with Visual and Physics Integration",
+                        "description": "Develop a system to spawn projectile entities with configurable speed, direction, and visual trails using Babylon.js particle or mesh effects, and integrate basic projectile movement physics.",
+                        "dependencies": [2],
+                        "details": "Implement a ProjectileSystem that spawns projectile entities when shooting is triggered. Configure each projectile with speed, direction, and visual effects. Use Babylon.js for rendering trails or meshes. Update projectile positions each frame based on velocity and direction.",
+                        "status": "pending",
+                        "testStrategy": "Fire projectiles in various directions and speeds; visually confirm correct spawning, movement, and trail rendering."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Integrate Collision Detection and Damage Application",
+                        "description": "Implement collision detection between projectiles and damageable entities, apply damage based on weapon and projectile stats, and handle projectile destruction upon impact.",
+                        "dependencies": [3],
+                        "details": "Develop a CollisionSystem that checks for intersections between projectiles and entities with DamageableComponent. On collision, apply damage to the target entity, trigger visual or audio feedback, and destroy or deactivate the projectile entity. Ensure the system supports multiple simultaneous collisions and is optimized for performance.",
+                        "status": "pending",
+                        "testStrategy": "Test with multiple projectiles and targets; verify collisions are detected, damage is applied, and projectiles are destroyed as expected."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Implement Configurable Damage Calculation and Health Response",
+                        "description": "Develop a robust damage calculation system supporting configurable weapon stats and modifiers, update health components, and trigger appropriate responses such as HP reduction, entity removal, or reset.",
+                        "dependencies": [4],
+                        "details": "Create a DamageSystem that processes pending damage events, calculates final damage using weapon stats and any modifiers (e.g., shields, resistances), updates HealthComponent values, and handles entity state changes (e.g., death, removal, or reset). Ensure all calculations are easily configurable for different weapon and entity types.",
+                        "status": "pending",
+                        "testStrategy": "Apply various damage scenarios, including modifiers; verify health updates, entity removal, and correct handling of edge cases (e.g., overkill, shield absorption)."
+                    }
+                ]
+            },
+            {
+                "id": 4,
+                "title": "Implement Enemy Ship Spawning, AI, Health, Types, Visual Indicators, and Death Mechanics",
+                "description": "Develop a comprehensive enemy system including spawning, AI behaviors, health management, multiple enemy types with unique stats, visual indicators for multiplayer immersion, and robust death/destruction mechanics.",
+                "details": "1. Design ECS components for enemy attributes: position, velocity, health, AI state, type, and visual indicators (name, flag).\n2. Implement an enemy spawning system that periodically or conditionally creates enemy entities with randomized or patterned positions and types.\n3. Define multiple enemy types with configurable stats (speed, health, damage, behavior patterns) and ensure these are assigned during spawning.\n4. Develop AI behavior systems for enemies, including movement logic (e.g., patrol, chase, evade), attack triggers, and state transitions.\n5. Integrate health management: enemies take damage from projectiles, update health, and trigger death when health reaches zero.\n6. Implement visual indicators: assign unique names and flags to each enemy, render these above ships using Babylon.js GUI or mesh overlays to simulate multiplayer opponents.\n7. Create destruction mechanics: play visual effects, remove enemy entities, and trigger score or loot drops upon death.\n8. Ensure all systems interact cleanly within the ECS architecture, leveraging existing combat and movement systems for integration.",
+                "testStrategy": "- Spawn multiple enemy ships and verify correct assignment of types, stats, names, and flags.\n- Observe enemy AI behaviors in various scenarios (patrol, chase, evade) and confirm state transitions.\n- Test health management by inflicting damage and ensuring health updates and death triggers occur as expected.\n- Confirm visual indicators (names, flags) are displayed above each enemy and update appropriately.\n- Destroy enemies and verify visual effects, entity removal, and any post-death logic (score, loot) function correctly.\n- Perform integration tests with the combat system to ensure projectiles interact with enemies as intended.",
+                "status": "pending",
+                "dependencies": [1, 3],
+                "priority": "high",
+                "subtasks": []
+            },
+            {
+                "id": 5,
+                "title": "Implement Leveling System: XP, Progression, Visual Upgrades, and Stat Improvements",
+                "description": "Develop a comprehensive leveling system with XP tracking, level progression, ship visual upgrades, stat improvements, level-up effects, and configurable progression curves for a 6-level structure.",
+                "details": "Design and implement an XP tracking component for player entities, supporting XP gain from combat and other sources. Create a progression system that calculates level thresholds using configurable curves (e.g., linear, polynomial, or custom-defined arrays), allowing designers to adjust XP requirements per level. Implement logic to handle level-ups: when XP exceeds the current threshold, increment the level, reset or carry over excess XP, and trigger level-up effects (visual/audio feedback). Define and apply stat improvements (e.g., increased speed, health, firepower) and ship visual upgrades (sails, cannons, hull colors) for each level, using a data-driven approach for easy balancing and modification. Ensure upgrade definitions and progression curves are externalized in configuration files or scriptable objects for rapid iteration. Integrate with the combat and movement systems so that stat changes and visual upgrades are reflected in gameplay and rendering. Provide hooks for UI updates to display current XP, level, and next threshold.",
+                "testStrategy": "- Award XP through combat and verify correct accumulation and level progression, including edge cases where multiple levels are gained at once.\n- Confirm that stat improvements and ship visual upgrades are applied immediately upon leveling up and persist across sessions.\n- Test that progression curves and upgrade definitions can be modified via configuration and changes are reflected in-game.\n- Trigger level-up effects and verify visual/audio feedback is played.\n- Validate that UI components accurately display XP, level, and progression toward the next level.\n- Perform balancing checks to ensure progression feels appropriate for a 6-level system.",
+                "status": "pending",
+                "dependencies": [1, 2, 3],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 6,
+                "title": "Create Ocean Environment with Animated Water, Islands, Atmosphere, Weather, and Debris",
+                "description": "Develop a visually immersive and optimized ocean environment featuring animated water, background islands or coastline, atmospheric and weather effects, and floating debris, with a focus on mobile performance.",
+                "details": "1. Implement a dynamic ocean surface using Babylon.js water materials or custom shaders, ensuring real-time wave animation and reflection/refraction effects while maintaining mobile performance. 2. Design and place background islands or coastline meshes with optimized LODs and low-poly assets to minimize draw calls. 3. Add atmospheric effects such as fog, sky gradients, and sun shafts to enhance depth and realism. 4. Integrate weather systems (e.g., clouds, rain, lightning) using particle systems or lightweight shaders, allowing for dynamic transitions and performance scaling. 5. Populate the ocean with floating debris and environmental props (e.g., driftwood, barrels, seaweed) using instancing or pooling to reduce overhead. 6. Ensure all visual elements are configurable for quality/performance trade-offs on various mobile devices. 7. Structure environment systems to allow for future expansion (e.g., dynamic day/night cycles or additional weather types).",
+                "testStrategy": "- Verify that the animated water renders smoothly on a range of target mobile devices, maintaining acceptable frame rates. - Confirm that islands/coastline are visible in the background, with correct LOD transitions and minimal pop-in. - Test atmospheric and weather effects for visual quality and performance impact, including transitions between weather states. - Ensure floating debris appears at varying positions and moves realistically with the water surface. - Profile the scene to identify and address any performance bottlenecks related to environment rendering. - Adjust quality settings and confirm that visual fidelity and performance scale appropriately.",
+                "status": "pending",
+                "dependencies": [1, 2],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 7,
+                "title": "Implement Collectible Barrel and Loot System",
+                "description": "Develop a system for collectible barrels, treasure chests, and environmental pickups that spawn from defeated enemies, are scattered in the ocean, and provide XP or loot when collected, including collection mechanics and visual feedback.",
+                "details": "Design a base Collectible class/component using the ECS architecture, supporting inheritance for different collectible types (barrels, chests, pickups). Implement logic for spawning collectibles: (1) on enemy death (integrate with enemy death mechanics), (2) as static environmental objects in the ocean, and (3) as rewards from treasure chests. Use OnTriggerEnter or equivalent collision detection to trigger collection when the player ship is in range. Each collectible type should execute its own reward logic (e.g., grant XP, currency, power-ups) via a strategy pattern or similar approach. Add visual feedback for pickups (e.g., particle effects, floating text, sound cues) and ensure collectibles are destroyed or hidden after collection. Implement a loot spawning system that randomizes drops based on enemy type or chest rarity. Ensure all systems are optimized for mobile and desktop performance.",
+                "testStrategy": "Spawn enemies and verify that barrels and loot drop upon defeat. Place environmental pickups and treasure chests in the ocean and confirm they are collectible by the player ship. Test that collecting each type triggers the correct reward (XP, currency, power-up) and that visual/audio feedback plays. Ensure collectibles are removed from the scene after collection. Validate that loot drop rates and types match configuration. Test on both mobile and desktop for performance and input responsiveness.",
+                "status": "pending",
+                "dependencies": [2, 3, 4, 5, 6],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 8,
+                "title": "Implement Visual Guidance and Contextual UI System",
+                "description": "Develop a comprehensive visual guidance system including attack range indicators, control hints, target highlighting, progress indicators, and contextual UI elements to guide the player through the core gameplay experience.",
+                "details": "Design and implement a modular UI system that overlays visual guidance elements on the game screen. Key features should include: (1) dynamic attack range indicators around the player ship and enemies, updating in real-time based on weapon stats; (2) contextual control hints that adapt to input method (touch/mouse) and gameplay context, positioned for maximum visibility without clutter; (3) target highlighting using outlines or glows for interactable or priority targets; (4) progress indicators for objectives, XP, or timed events, using clear visual hierarchy and color contrast; (5) contextual UI elements such as popups, alerts, or toasts for feedback on actions (e.g., loot collected, level up, or warnings). Ensure all UI elements follow principles of clarity, consistency, and minimalism, using recognizable icons, readable typography, and responsive layouts for different screen sizes. Integrate with existing ECS architecture to update UI based on game state and player actions. Prioritize non-intrusive placement (HUD, overlays) and provide smooth transitions/animations for feedback. Reference best practices for visual hierarchy, color usage, and input guidance to maximize intuitiveness and reduce cognitive load.",
+                "testStrategy": "Play through a 20-30 second core gameplay loop and verify: (1) attack range indicators appear and update correctly for both player and enemies; (2) control hints display appropriately for the current input method and disappear when no longer needed; (3) target highlighting activates for interactable or priority targets and deactivates when not relevant; (4) progress indicators accurately reflect objectives, XP, or timers; (5) contextual UI elements (popups, alerts, toasts) trigger in response to relevant events (e.g., loot collection, level up, warnings) and are visually clear without obstructing gameplay. Test on multiple screen sizes and input methods to ensure responsive layout and readability. Solicit feedback from testers to confirm that the UI effectively guides new players without overwhelming or distracting them.",
+                "status": "pending",
+                "dependencies": [2, 3, 4, 5],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 9,
+                "title": "Implement Advanced Camera System with Cinematic Features",
+                "description": "Develop a robust camera management system featuring smooth following, dramatic boss reveal sequences, screen shake, zoom transitions, mobile-optimized viewing angles, and cinematic camera movements for key moments.",
+                "details": "Design a modular camera system using a data-driven approach, allowing camera parameters (position, orientation, FOV, transition types) to be configured via external files or editor tools for rapid iteration. Implement smooth camera following using interpolation (e.g., lerp or spline-based) to track the player ship, ensuring the camera adapts to movement and maintains optimal framing on both mobile and desktop. Integrate activation rules for switching between camera modes (e.g., gameplay, boss reveal, cutscene) based on game state, supporting seamless transitions with configurable blend times. Develop screen shake and zoom effects triggered by combat events or environmental cues, with tunable intensity and duration. Add support for cinematic camera paths and dramatic reveals, using predefined splines or keyframes for boss encounters and key moments. Optimize camera angles and FOV for mobile devices, ensuring clear visibility and minimal motion sickness. Expose debug tools for testing and tuning camera behaviors in real time. Ensure the system is extensible for future gameplay scenarios.",
+                "testStrategy": "1. Play through core gameplay and verify the camera smoothly follows the player ship, maintaining optimal framing on both mobile and desktop. 2. Trigger boss encounters and confirm cinematic camera sequences activate with correct timing, transitions, and dramatic effect. 3. Test screen shake and zoom effects by simulating combat and environmental events, ensuring they are visually impactful but not disorienting. 4. Switch between camera modes (gameplay, cutscene, boss reveal) and verify seamless, configurable transitions. 5. Adjust camera parameters via configuration files or editor and confirm changes are reflected in real time. 6. Evaluate camera performance and visual clarity on a range of mobile devices, ensuring no clipping or excessive motion. 7. Use debug tools to visualize camera paths and activation states during development.",
+                "status": "pending",
+                "dependencies": [1, 2],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 10,
+                "title": "Implement Seamless Tutorial and Onboarding System",
+                "description": "Design and implement a non-intrusive tutorial system that provides control hints, first-time user guidance, progressive disclosure of mechanics, and smooth onboarding tailored for a fast-paced playable ad experience.",
+                "details": "Develop a modular tutorial manager that tracks player progress and triggers context-sensitive hints and guidance overlays. Use progressive disclosure: introduce one mechanic at a time (e.g., movement, combat, collectibles), starting with safe, low-pressure scenarios before integrating mechanics into real gameplay situations[1][2]. Leverage visual cues, minimal text, and interactive prompts to teach through action rather than reading, ensuring the tutorial does not interrupt gameplay flow[3][4]. Integrate with the contextual UI system to display unobtrusive hints (e.g., swipe gestures, tap indicators) and highlight interactable elements. Implement logic to detect first-time actions and trigger relevant guidance only once, with the ability to skip or dismiss tips. Ensure onboarding is woven into the early game narrative or scenario, using character or environmental cues where appropriate to maintain immersion[2]. Design for mobile: overlays must not obscure critical UI or gameplay elements, and all tutorial steps should be touch/mouse friendly. Provide hooks for analytics to track tutorial completion and drop-off points for future optimization.",
+                "testStrategy": "1. Launch the game as a new user and verify that tutorial steps appear contextually, introducing mechanics one at a time without pausing gameplay. 2. Confirm that control hints and guidance overlays are visually clear, non-intrusive, and disappear after the mechanic is demonstrated. 3. Test that each mechanic (movement, combat, collectibles, camera) is introduced progressively and only once per user. 4. Ensure that players can skip or dismiss tutorial prompts at any time. 5. Play through the onboarding flow on both mobile and desktop, verifying that overlays do not interfere with controls or obscure important UI. 6. Check analytics/logs to confirm tutorial step completion and drop-off tracking.",
+                "status": "pending",
+                "dependencies": [2, 3, 8],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 11,
+                "title": "Implement Player Death, Game Over, and State Management Systems",
+                "description": "Develop robust player death mechanics, game over states, respawn logic (if applicable), failure handling, and comprehensive state management for all game phases within the playable ad experience.",
+                "details": "Design a modular game state manager to handle transitions between core phases: gameplay, player death, game over, respawn (if used), and victory. Implement player death detection by monitoring health or critical failure conditions, triggering immediate feedback (visual, audio, slow-motion, etc.) and disabling player input. For game over, display a clear overlay with options to restart or exit, ensuring minimal downtime and frustration. If respawn is supported, implement checkpoint or instant respawn logic, restoring the player to a safe state and resetting necessary systems. Integrate failure handling to gracefully manage edge cases (e.g., dying during tutorials or cutscenes). Ensure all state transitions are predictable and visually communicated. Coordinate with the tutorial/onboarding system to prevent conflicts during state changes. Use ECS patterns for state tracking and event-driven transitions. Consider analytics hooks for tracking deaths and restarts. Prioritize fast, fair, and satisfying feedback loops to maintain engagement in the ad context.",
+                "testStrategy": "1. Simulate player death during core gameplay and verify that the death sequence, feedback, and input disabling trigger instantly. 2. Confirm that the game over screen appears promptly, with restart/exit options functioning as intended. 3. If respawn is enabled, test that the player is restored to the correct state and gameplay resumes smoothly. 4. Trigger death during tutorial and special sequences to ensure state transitions do not break onboarding or cinematic flows. 5. Play through multiple death/restart cycles to verify minimal downtime and no progression blockers. 6. Review analytics/logs to confirm death and restart events are tracked.",
+                "status": "pending",
+                "dependencies": [2, 3, 10],
+                "priority": "low",
+                "subtasks": []
+            },
+            {
+                "id": 12,
+                "title": "Implement Boss Encounter: Visuals, Behaviors, Entrance, and Combat Mechanics",
+                "description": "Design and implement an intimidating boss ship featuring unique visuals, boss-specific behaviors, a dramatic entrance sequence with screen warning effects, and combat mechanics that highlight player limitations, culminating in a transition to a call-to-action.",
+                "details": "1. Create a distinctive boss ship model and visual effects to ensure immediate recognition and intimidation (e.g., size, color palette, unique silhouette).\n2. Develop a dramatic entrance sequence: trigger screen-wide warning effects (flashing borders, sirens, UI overlays) and use the advanced camera system for cinematic zooms and pans as the boss enters the scene.\n3. Implement boss-specific behaviors, including multi-phase attack patterns that evolve as the boss's health decreases (e.g., new projectile types, area denial attacks, temporary invulnerability, summoning minions). Ensure clear telegraphs for major attacks (visual/sound cues) and idle periods for player counterplay[2][3][4].\n4. Integrate a prominent boss health bar and unique UI elements to communicate the encounter state and player progress[3].\n5. Design combat mechanics that demonstrate player limitations (e.g., disabling certain player abilities, introducing environmental hazards, or restricting movement during key boss attacks).\n6. Ensure the encounter transitions smoothly to a call-to-action (e.g., cutscene, next phase, or victory screen) upon boss defeat or player failure.\n7. Coordinate with the camera, UI, and state management systems for seamless integration and transitions.",
+                "testStrategy": "1. Trigger the boss encounter and verify the entrance sequence: warning effects, camera transitions, and boss appearance are synchronized and dramatic.\n2. Play through the boss fight, confirming that attack patterns change with boss health, telegraphs are clear, and player limitations are enforced at appropriate moments.\n3. Ensure the boss health bar and unique UI elements display correctly and update in real time.\n4. Test defeat and victory conditions: verify that transitions to call-to-action or game over are smooth and all relevant systems (camera, UI, state management) respond appropriately.\n5. Playtest for balance, ensuring the encounter is challenging but fair, and that all visual, audio, and gameplay cues are clear to the player.",
+                "status": "pending",
+                "dependencies": [2, 3, 4, 8, 9, 11],
+                "priority": "high",
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Design and Implement Distinctive Boss Ship Visuals",
+                        "description": "Create a unique and intimidating boss ship model with standout visual effects to ensure immediate recognition and a sense of threat.",
+                        "dependencies": [],
+                        "details": "Develop a large, visually striking boss ship using a unique silhouette, bold color palette, and intimidating visual effects (e.g., glowing elements, animated parts). Ensure the design is distinct from other ships and conveys the boss's theme and power. Integrate these assets into the game engine, ready for use in the encounter.",
+                        "status": "pending",
+                        "testStrategy": "Load the boss ship in a test scene and verify its visual impact, recognizability, and correct rendering from all camera angles."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Develop Dramatic Boss Entrance Sequence with Cinematic Effects",
+                        "description": "Implement a dramatic entrance for the boss, including screen-wide warning effects, sirens, UI overlays, and advanced camera work for cinematic impact.",
+                        "dependencies": [1],
+                        "details": "Script the boss's entrance to trigger warning effects (e.g., flashing borders, siren sounds, animated UI overlays) as the boss approaches. Use the camera system to perform cinematic zooms, pans, and shakes, emphasizing the boss's arrival. Ensure all effects are synchronized and can be triggered programmatically.",
+                        "status": "pending",
+                        "testStrategy": "Trigger the entrance sequence in isolation and during gameplay, verifying timing, visual/audio synchronization, and overall dramatic effect."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Implement Boss Behaviors and Multi-Phase Combat Patterns",
+                        "description": "Develop boss-specific behaviors, including multi-phase attack patterns, evolving tactics, and clear telegraphs for major attacks and idle periods.",
+                        "dependencies": [2],
+                        "details": "Define and implement multiple attack phases that evolve as the boss's health decreases (e.g., new projectile types, area denial, temporary invulnerability, summoning minions). Ensure each attack is clearly telegraphed with visual and audio cues, and include idle periods for player counterplay. Integrate state management for phase transitions and attack selection.",
+                        "status": "pending",
+                        "testStrategy": "Playtest each phase, verifying attack variety, telegraph clarity, phase transitions, and opportunities for player counterplay."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Integrate Boss Health Bar and Unique Encounter UI Elements",
+                        "description": "Add a prominent boss health bar and unique UI elements to communicate encounter state and player progress.",
+                        "dependencies": [3],
+                        "details": "Design and implement a boss health bar that is visually distinct and clearly communicates the boss's remaining health. Add encounter-specific UI elements (e.g., phase indicators, warning icons) to inform the player of the current state. Ensure UI updates in real time and integrates with the game's existing UI framework.",
+                        "status": "pending",
+                        "testStrategy": "Test the UI during boss encounters, verifying accurate health updates, visibility, and responsiveness to phase changes."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Implement Player Limitation Mechanics and Seamless Encounter Transition",
+                        "description": "Design combat mechanics that highlight player limitations during the boss fight and ensure a smooth transition to a call-to-action upon encounter completion.",
+                        "dependencies": [4],
+                        "details": "Introduce mechanics that restrict player abilities or movement during key boss attacks (e.g., disabling dashes, adding environmental hazards). Ensure these limitations are clearly communicated and feel fair. Upon boss defeat or player failure, trigger a seamless transition to the next phase, cutscene, or victory screen, coordinating with camera, UI, and state management systems.",
+                        "status": "pending",
+                        "testStrategy": "Playtest the full encounter, verifying that player limitations are enforced and communicated, and that the transition to the call-to-action is smooth and bug-free."
+                    }
+                ]
+            },
+            {
+                "id": 13,
+                "title": "Create and Optimize 3D Ship Models, Materials, and LOD Systems for Mobile/Web",
+                "description": "Design or source 3D models for player, enemy, and boss ships, develop mobile-optimized materials and textures, and implement LOD and efficient loading systems for web deployment.",
+                "details": "1. Gather visual references and create concept sketches for player, enemy, and boss ships to ensure consistent style and silhouette across all assets[2][4]. 2. Model ships in a 3D application (e.g., Blender), starting with high-poly versions for detail, then retopologize to create low-poly, mobile-friendly meshes with minimal polygon counts[1][2][5]. 3. Unwrap UVs and bake normal, ambient occlusion, and other relevant maps from high-poly to low-poly models. 4. Design and apply optimized materials and textures: use compressed texture formats (e.g., WebP, ETC2), limit texture resolution, and minimize shader complexity to ensure high performance on mobile devices[1]. 5. Implement Level of Detail (LOD) meshes for each ship, creating at least three LOD stages (high, medium, low) and configure automatic LOD switching in Babylon.js based on camera distance. 6. Integrate models into the Babylon.js asset pipeline, ensuring correct file formats (e.g., glTF, .babylon), and set up efficient asynchronous loading for web deployment. 7. Test and adjust materials for visual clarity and performance under various lighting conditions. 8. Document asset pipeline and provide guidelines for future model integration and optimization.",
+                "testStrategy": "- Load all ship models in a test scene and verify correct appearance, scale, and orientation. - Profile performance on target mobile devices and web browsers, ensuring models render smoothly and maintain target frame rates. - Confirm LOD transitions occur seamlessly at appropriate distances without visual popping. - Check that texture compression and material optimizations do not introduce significant visual artifacts. - Test asynchronous model loading to ensure no blocking or stuttering during gameplay. - Validate that all assets are documented and reusable for future content updates.",
+                "status": "pending",
+                "dependencies": [1, 6],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 14,
+                "title": "Implement Ship Animation System with Blending and Performance Optimization",
+                "description": "Develop a comprehensive animation system for ships, supporting sailing motion, cannon recoil, destruction sequences, water bobbing, flag movement, and upgrade transitions, with smooth blending and optimized loops for mobile/web.",
+                "details": "Design an animation system using the ECS architecture, introducing an AnimationComponent to store animation state (current animation, blend weights, timers) and an AnimationSystem to update and blend animations each frame. Integrate with the existing ship entity structure and ensure compatibility with the 3D ship models and LODs. Implement the following animation types: (1) sailing motion (subtle hull/rigging movement), (2) water bobbing synced with ocean waves, (3) cannon recoil and muzzle flash, (4) destruction sequences (explosions, debris, sinking), (5) dynamic flag movement (wind-driven), and (6) ship upgrade transitions (visual morphs or effects). Use animation blending techniques to allow smooth transitions between states (e.g., idle to sailing, sailing to destruction). Optimize animation loops for mobile/web by minimizing bone count, using GPU skinning where possible, and culling off-screen animations. Consider a hybrid workflow where ECS manages animation state and triggers, while Babylon.js or the rendering engine handles the actual mesh animation and blending. Expose animation parameters for tuning and support event hooks for gameplay integration (e.g., triggering loot drops on destruction animation end).",
+                "testStrategy": "1. Place ships in a test scene and verify that all animation types (sailing, bobbing, cannon recoil, destruction, flag, upgrade) play correctly and blend smoothly during state transitions. 2. Trigger rapid state changes (e.g., firing, destruction, upgrades) and confirm there are no visual glitches or abrupt transitions. 3. Profile animation performance on target mobile and web devices, ensuring frame rates remain stable and animation culling works for off-screen ships. 4. Test integration with the ship models and LOD system to ensure animations remain consistent across LODs. 5. Simulate gameplay events (combat, upgrades, destruction) and verify that animation events trigger corresponding gameplay logic (e.g., loot drops, state changes).",
+                "status": "pending",
+                "dependencies": [1, 13],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 15,
+                "title": "Implement Dynamic Background Music and Audio System for Mobile Web",
+                "description": "Develop a comprehensive audio system featuring background nautical orchestral music, combat sound effects, UI feedback, level-up cues, boss encounter tracks, and dynamic audio mixing optimized for mobile web browsers.",
+                "details": "Utilize the Web Audio API to implement a modular audio manager capable of loading, playing, and mixing multiple audio tracks and sound effects. Structure the system to support:\n- Background music playlists with seamless transitions between exploration, combat, and boss encounter tracks. Use buffer nodes for short effects (e.g., cannon fire, explosions, UI cues) and media elements for longer music tracks, ensuring efficient memory usage and low latency[1][3].\n- Dynamic mixing: adjust music and effect volumes in real time based on game state (e.g., duck music during combat, emphasize boss music during encounters). Implement fade-in/out and crossfade transitions for smooth audio changes.\n- Mobile optimization: ensure all audio playback is triggered by user interaction to comply with mobile browser autoplay restrictions[2][3]. Use compressed audio formats (e.g., OGG, MP3) and preload only essential assets to minimize bandwidth and memory usage[2].\n- Integrate audio cues for UI interactions (button presses, notifications), level-up events, and contextual feedback. Provide hooks for gameplay systems (combat, leveling, boss encounters) to trigger appropriate sounds.\n- Expose volume controls and mute toggles for music and effects, persisting user preferences in local storage.\n- Ensure accessibility by allowing users to mute all sounds and providing visual feedback for key audio events.\n- Test across major mobile browsers (iOS Safari, Chrome, Android WebView) for compatibility and performance[5].",
+                "testStrategy": "1. Launch the game on multiple mobile browsers and verify that background music, combat effects, UI sounds, level-up cues, and boss music all play at appropriate times and mix smoothly.\n2. Confirm that audio playback only begins after user interaction and that volume/mute controls function as expected, persisting preferences across sessions.\n3. Trigger combat, level-up, and boss events to ensure correct sound effects and music transitions occur with no noticeable latency or glitches.\n4. Test dynamic mixing by rapidly switching between gameplay states (exploration, combat, boss) and verify smooth crossfades and volume adjustments.\n5. Check that all audio assets load efficiently and do not cause excessive memory or bandwidth usage on mobile devices.\n6. Validate that accessibility features (mute all, visual feedback) are present and functional.",
+                "status": "pending",
+                "dependencies": [1, 3, 5, 8, 12],
+                "priority": "low",
+                "subtasks": []
+            },
+            {
+                "id": 16,
+                "title": "Set Up CI/CD Pipeline, Automated Build, Deployment, and Monitoring for Playable Ad",
+                "description": "Establish a robust CI/CD pipeline to automate building, testing, deployment to CDN/hosting, bundle size monitoring, and version management for the playable ad distribution.",
+                "details": "1. Integrate a CI/CD platform (e.g., GitHub Actions, GitLab CI, or Azure DevOps) with the project repository.\n2. Use @smoud/playable-scripts as the primary build tool to automate network-specific builds, minification, tree-shaking, and asset optimization for all supported ad networks. Configure build scripts in package.json for both development and production builds[1][2].\n3. Set up automated unit and integration testing to run on each commit and pull request. Ensure tests cover core gameplay, UI, and audio systems.\n4. Implement bundle size monitoring using tools like 'size-limit' or built-in features of @smoud/playable-scripts, with CI checks to prevent regressions.\n5. Configure the pipeline to deploy successful builds to a CDN or static hosting provider (e.g., AWS S3, Netlify, Vercel) and generate shareable preview links for QA.\n6. Automate version management by incrementing version numbers on successful builds and tagging releases in source control.\n7. Document the pipeline setup, environment variables, and deployment process for team reference.\n8. Ensure the pipeline is extensible for future ad network requirements and supports custom build steps as needed[1][2].",
+                "testStrategy": "- Push a commit to trigger the CI pipeline and verify that builds are generated for all target ad networks without errors.\n- Confirm that automated tests run and pass in the pipeline.\n- Check that bundle size reports are generated and that size thresholds are enforced.\n- Validate that successful builds are deployed to the CDN/hosting provider and preview links are accessible.\n- Ensure version numbers are incremented and release tags are created in the repository.\n- Simulate a failed test or oversized bundle to confirm the pipeline blocks deployment as expected.",
+                "status": "done",
+                "dependencies": [1],
+                "priority": "low",
+                "subtasks": []
+            },
+            {
+                "id": 17,
+                "title": "Implement Analytics and Tracking System for Playable Ad Campaigns",
+                "description": "Develop and integrate a comprehensive analytics system to track player behavior, conversion metrics, session duration, completion rates, click-through rates, and performance monitoring for campaign optimization.",
+                "details": "Integrate a robust analytics SDK or build a custom event tracking system tailored for playable ads. Instrument key gameplay events such as session start/end, tutorial completion, level progression, collectible pickups, boss encounters, player death, and call-to-action clicks. Track conversion metrics including install-to-impression ratio, cost per install, time to first click, and completion rates. Ensure the system captures session duration, click-through rates, and user engagement at each step. Implement A/B testing hooks to support variant analysis and optimization. Store analytics data securely and ensure compliance with privacy regulations. Provide a dashboard or export functionality for campaign performance review and actionable insights. Consider using third-party analytics tools (e.g., Playable Factory Insight) or integrating with ad network analytics APIs for cross-platform reporting.",
+                "testStrategy": "1. Simulate user sessions and verify that all key events (session start/end, tutorial steps, level completions, conversions, CTA clicks) are logged accurately. 2. Run A/B test variants and confirm that analytics differentiate between groups and capture variant-specific metrics. 3. Validate that session duration, completion rates, and click-through rates are calculated correctly in the analytics dashboard or exported reports. 4. Test integration with ad network analytics to ensure conversion and engagement data is synchronized. 5. Review data privacy compliance and confirm that no personally identifiable information is collected without consent.",
+                "status": "pending",
+                "dependencies": [1, 3, 10],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 18,
+                "title": "Implement Optimized VFX and Particle Systems for Combat, Level-Up, Boss, and Environment",
+                "description": "Design and implement GPU-optimized particle systems for combat effects, level-up celebrations, boss encounter dramatics, water splashes, and environmental ambiance, ensuring high performance on mobile devices.",
+                "details": "Develop a modular particle system manager supporting multiple effect types: (1) combat (cannon muzzle flashes, cannonball trails, explosions), (2) level-up celebrations, (3) boss encounter dramatics, (4) water splashes, and (5) environmental particles (e.g., mist, embers). Use GPU-based particle systems where possible for efficiency[1]. For each effect, define emitter parameters (spawn rate, lifetime, velocity, color, blend mode, texture) and use effect-specific affectors (e.g., gravity, wind, fade-out) to enhance realism[1][2]. Integrate with combat, leveling, boss, and environmental systems by exposing trigger APIs (e.g., OnCannonFire, OnLevelUp, OnBossEntrance, OnWaterImpact). Implement pooling to minimize allocation overhead. Profile and optimize for mobile: limit max particles per effect, use LOD (level of detail) scaling, and batch draw calls. Ensure all effects are visually distinct yet performant, and provide fallback settings for low-end devices. Document effect parameters for easy tuning by designers.",
+                "testStrategy": "1. Trigger each particle effect in isolation and verify correct appearance, timing, and animation (e.g., muzzle flash on fire, trail on cannonball, explosion on impact, celebratory burst on level-up, dramatic effects on boss entrance, water splash on collision, ambient particles in scene). 2. Profile performance on target mobile devices, ensuring stable frame rates and low memory usage even with multiple effects active. 3. Test effect triggers from combat, leveling, boss, and environmental systems to confirm correct integration. 4. Adjust LOD and fallback settings, verifying visual quality and performance trade-offs. 5. Review with designers for visual clarity and distinctiveness of each effect type.",
+                "status": "pending",
+                "dependencies": [1, 3, 4, 5, 8, 12],
+                "priority": "medium",
+                "subtasks": []
+            },
+            {
+                "id": 19,
+                "title": "Implement Responsive and Adaptive HUD/UI System",
+                "description": "Develop a responsive HUD and UI system featuring level display, kill counter, progress indicators, mobile-optimized touch-friendly controls, smooth transitions, and adaptive layouts for various screen sizes and orientations.",
+                "details": "Design the HUD using a modular UI framework that supports dynamic layout adjustments based on device type, screen size, and orientation. Implement core HUD elements: (1) level display, (2) real-time kill counter, (3) progress indicators (e.g., XP bar, mission progress), and (4) essential controls. Ensure all elements are touch-friendly for mobile, with large tap targets and spacing to prevent accidental input[1][3]. Use CSS media queries or a responsive UI toolkit to adapt layouts for portrait/landscape and different resolutions. Integrate smooth transitions and subtle animations for HUD updates (e.g., fade-in/out, sliding counters) to enhance feedback and immersion[2]. Prioritize essential information to avoid clutter, and implement contextual display logic so only relevant elements are shown during gameplay. Optimize for performance by minimizing draw calls and using efficient rendering techniques. Provide customization options for players to adjust HUD element size and position if feasible[1][2]. Ensure the HUD visually aligns with the game's art direction and remains legible in all lighting conditions.",
+                "testStrategy": "1. Test the HUD on a range of devices (mobile, tablet, desktop) and orientations to verify correct scaling, positioning, and touch responsiveness. 2. Simulate gameplay events (level up, kills, progress milestones) and confirm that HUD elements update in real time with smooth transitions. 3. Validate that all controls are easily accessible and functional on touchscreens. 4. Check that the HUD adapts dynamically when the device orientation changes or the window is resized. 5. Review for visual clarity, absence of clutter, and consistent performance across devices. 6. Solicit user feedback on usability and iterate as needed.",
+                "status": "pending",
+                "dependencies": [1, 2, 5, 8],
+                "priority": "high",
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Establish Modular UI Framework and Adaptive Layouts",
+                        "description": "Set up a modular UI framework that supports dynamic layout adjustments based on device type, screen size, and orientation. Implement responsive design principles to ensure the HUD adapts seamlessly to various resolutions and both portrait and landscape modes.",
+                        "dependencies": [],
+                        "details": "Select a UI toolkit or framework that supports responsive layouts (e.g., Unity UI, Unreal UMG, or a web-based framework with CSS media queries). Define layout containers and grid systems that can rearrange HUD elements based on screen characteristics. Implement logic to detect device type and orientation changes, triggering layout updates as needed.",
+                        "status": "pending",
+                        "testStrategy": "Test on a range of devices and emulators with different screen sizes and orientations. Verify that all HUD elements remain visible, properly aligned, and functional after resizing or rotating the device."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Implement Core HUD Elements (Level Display, Kill Counter, Progress Indicators)",
+                        "description": "Develop the main HUD components: level display, real-time kill counter, and progress indicators such as XP bars or mission progress. Ensure each element is modular and can be shown or hidden contextually.",
+                        "dependencies": [1],
+                        "details": "Create reusable UI components for each HUD element. Integrate data bindings or event listeners to update values in real time. Implement logic to prioritize and display only relevant elements during gameplay to avoid clutter.",
+                        "status": "pending",
+                        "testStrategy": "Simulate gameplay events to verify that each HUD element updates correctly and only appears when appropriate."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Design and Integrate Mobile-Optimized, Touch-Friendly Controls",
+                        "description": "Develop essential HUD controls optimized for mobile devices, ensuring large tap targets, adequate spacing, and intuitive touch interactions.",
+                        "dependencies": [1],
+                        "details": "Design control buttons and interactive elements with minimum recommended sizes for touch (e.g., 48x48dp). Space controls to prevent accidental input. Implement touch event handling and feedback (e.g., highlighting on press).",
+                        "status": "pending",
+                        "testStrategy": "Conduct usability tests on mobile devices to confirm controls are easy to interact with and do not overlap or interfere with other HUD elements."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Add Smooth Transitions and Contextual Display Logic",
+                        "description": "Integrate smooth transitions and subtle animations for HUD updates, such as fade-in/out and sliding counters. Implement contextual display logic so only relevant HUD elements are shown during gameplay.",
+                        "dependencies": [2, 3],
+                        "details": "Use animation libraries or built-in UI animation tools to add transitions to HUD elements. Define rules for when elements should appear, disappear, or update based on game state. Ensure transitions do not impact performance.",
+                        "status": "pending",
+                        "testStrategy": "Trigger HUD updates and state changes during gameplay to verify that transitions are smooth and elements appear/disappear as intended."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Implement Customization, Performance Optimization, and Visual Consistency",
+                        "description": "Allow players to adjust HUD element size and position if feasible. Optimize rendering for performance and ensure the HUD remains legible and visually aligned with the game's art direction in all lighting conditions.",
+                        "dependencies": [4],
+                        "details": "Provide a settings menu for HUD customization (drag-and-drop, scaling sliders). Minimize draw calls and use efficient rendering techniques. Test HUD visibility against various backgrounds and lighting scenarios, adjusting colors and contrast as needed.",
+                        "status": "pending",
+                        "testStrategy": "Profile performance on target devices, test customization features, and review HUD legibility in different in-game environments."
+                    }
+                ]
+            },
+            {
+                "id": 20,
+                "title": "Implement Conversion Call-to-Action Screen with Branding, Hero Art, Persuasive Copy, and A/B Testing",
+                "description": "Develop a conversion-focused call-to-action (CTA) screen featuring compelling game branding, a hero ship illustration, persuasive copy, a prominent 'Get Ship' button, smooth transition from gameplay, and built-in A/B testing capabilities for optimization.",
+                "details": "Design the CTA screen to visually align with the game's branding, using consistent color palettes, fonts, and thematic elements to ensure cohesion with the rest of the UI[2][3]. Integrate a high-quality hero ship illustration as the focal point, ensuring it draws attention without overwhelming other elements. Craft concise, persuasive copy that clearly communicates the value proposition and motivates action. The 'Get Ship' button should be visually dominant, using size, color contrast, and animation to establish clear visual hierarchy and affordance[4]. Ensure the button meets accessibility standards (large touch target, high contrast)[1][3]. Implement smooth animated transitions from gameplay to the CTA screen to maintain immersion and reduce cognitive load[2]. Build in A/B testing infrastructure: allow for dynamic swapping of copy, button styles, and hero art variants, and log user interactions for analytics. Ensure the layout is responsive and adapts to various screen sizes and orientations, with safe zones for critical elements[1].",
+                "testStrategy": "1. Play through the game and verify that the CTA screen appears at the correct transition point with a seamless animation. 2. Confirm that the hero ship illustration, branding, and copy are visually prominent, cohesive, and adapt to different devices and orientations. 3. Test the 'Get Ship' button for prominence, accessibility (size, contrast), and immediate feedback on tap/click. 4. Validate that A/B testing variants can be deployed and tracked, and that analytics are correctly logged for each variant. 5. Conduct usability tests to ensure the CTA is clear, persuasive, and not visually cluttered. 6. Test on a range of devices to confirm responsive layout and safe zone adherence.",
+                "status": "pending",
+                "dependencies": [12, 19],
+                "priority": "high",
+                "subtasks": []
+            },
+            {
+                "id": 21,
+                "title": "Optimize Game for Mobile Performance and Loading Times",
+                "description": "Optimize the game for mobile performance by reducing bundle size, compressing assets, optimizing textures, improving rendering efficiency, managing memory, ensuring frame rate consistency, and minimizing loading times for 3G connections.",
+                "details": "1. Profile the game using tools such as Unity Profiler or Android GPU Inspector to identify bottlenecks in frame rate, memory usage, and loading times across a range of mobile devices, including low-end hardware[1][4].\n2. Reduce bundle size by removing unused assets, enabling code and asset stripping, and leveraging tree-shaking in the build pipeline[1][4].\n3. Compress textures using platform-appropriate formats (e.g., ASTC for Android/iOS), and optimize texture resolutions to balance quality and memory usage[1][5].\n4. Implement asset compression for audio, models, and UI elements; use efficient formats (e.g., Ogg Vorbis for audio, Draco for meshes) and minimize file sizes without sacrificing essential quality[1][5].\n5. Optimize rendering by reducing draw calls (e.g., batching static meshes, combining materials), using LODs, and culling off-screen objects[3][5].\n6. Apply memory management best practices such as object pooling for frequently spawned/despawned entities (e.g., projectiles, VFX), and avoid unnecessary allocations to prevent spikes and crashes[2][3].\n7. Ensure frame rate consistency by profiling and optimizing scripts, minimizing per-frame computations, and using efficient update loops[1][2].\n8. Improve loading times for 3G connections by implementing asynchronous asset loading, lazy loading for non-critical assets, and displaying loading feedback to users[1].\n9. Test and validate performance on a variety of real devices and network conditions, using cloud-based device farms if available[1].\n10. Document all optimization steps and update the CI/CD pipeline to include bundle size and performance checks.",
+                "testStrategy": "1. Profile the game on a range of target mobile devices (including low-end) and measure frame rate, memory usage, and loading times before and after optimization.\n2. Verify that the final bundle size meets target thresholds and that all assets are properly compressed.\n3. Test gameplay for smooth frame rates (targeting 60 FPS or stable minimum), consistent memory usage, and absence of crashes or stutters during intensive scenes.\n4. Simulate 3G network conditions and confirm that loading times are minimized and loading feedback is displayed.\n5. Use automated CI/CD checks to ensure bundle size and performance regressions are caught in future builds.\n6. Confirm that visual and audio quality remain acceptable after compression and optimization steps.",
+                "status": "pending",
+                "dependencies": [1, 13, 16],
+                "priority": "high",
+                "subtasks": []
+            },
+            {
+                "id": 22,
+                "title": "Implement JSON-Based Multi-Language Localization System",
+                "description": "Develop a robust localization system supporting multiple languages using JSON files, dynamic text interpolation, fallback language support, and configurable text keys for all UI and game messages.",
+                "details": "Design a localization manager that loads language-specific JSON files containing all user-facing strings, organized by text keys (e.g., 'menu.start', 'hud.score'). Implement a mechanism to select the active language at runtime, defaulting to the user's browser or system language when possible, and falling back to a default language (e.g., English) if a string is missing in the selected language[1][2][3]. Support dynamic text interpolation (e.g., replacing placeholders like {playerName} or {score} within strings) and pluralization rules where needed[3]. Ensure all UI elements and game messages reference text keys instead of hardcoded strings, and provide a utility function (e.g., t('key', params)) for retrieving and formatting localized text. Store localization files in a dedicated directory (e.g., /localization/) and structure them for easy addition of new languages. Consider font and layout adjustments for languages with different scripts or text directions[4].",
+                "testStrategy": "1. Switch between multiple languages in the game and verify that all UI elements and messages update accordingly, including dynamic text interpolation. 2. Remove or comment out specific keys in a non-default language file and confirm that the system falls back to the default language for missing strings. 3. Add a new language JSON file and verify it can be selected and displays correctly. 4. Test pluralization and parameterized strings for correct substitution. 5. Check that all text keys are referenced via the localization system and that no hardcoded user-facing strings remain. 6. Validate font rendering and layout for languages with special characters or right-to-left scripts.",
+                "status": "pending",
+                "dependencies": [1, 19],
+                "priority": "low",
+                "subtasks": []
+            }
         ],
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "Design and Implement ECS for Player Ship Movement",
-            "description": "Establish the entity-component-system (ECS) structure for the player ship, defining components for position, velocity, input, and movement configuration (speed, responsiveness). Implement the core movement system that updates ship state based on these components.",
-            "dependencies": [],
-            "details": "Create an entity representing the player ship. Define and implement components: Position (x, y, rotation), Velocity (dx, dy, angular velocity), Input (current input state), and MovementConfig (speed, responsiveness). Implement a movement system that processes these components each frame to update the ship's position and rotation.",
-            "status": "pending",
-            "testStrategy": "Unit test ECS component creation and system updates. Verify that updating input and velocity components results in correct position changes."
-          },
-          {
-            "id": 2,
-            "title": "Integrate Babylon.js Rendering with ECS State",
-            "description": "Connect the ECS state to Babylon.js rendering, ensuring the ship entity's position and rotation are visually updated in the scene based on ECS data.",
-            "dependencies": [],
-            "details": "Create a Babylon.js mesh for the player ship. On each frame, read the ship's Position component from the ECS and update the Babylon.js mesh's position and rotation accordingly. Ensure the rendering loop is synchronized with ECS updates.",
-            "status": "pending",
-            "testStrategy": "Visually confirm that changes to the ECS Position component are reflected in the rendered ship's position and orientation."
-          },
-          {
-            "id": 3,
-            "title": "Implement Touch and Mouse Input Handlers",
-            "description": "Develop input handlers for both touch (mobile) and mouse (desktop) controls, translating user gestures or pointer movements into ECS Input component updates for steering and thrust.",
-            "dependencies": [],
-            "details": "Set up event listeners for touch and mouse events. For touch, interpret gestures (e.g., drag, tap) to determine steering direction and thrust. For mouse, map pointer movement and clicks to similar controls. Update the Input component of the player ship entity in the ECS with the interpreted commands.",
-            "status": "pending",
-            "testStrategy": "Simulate touch and mouse events and verify that the Input component receives correct updates. Confirm that the ship responds to both input types."
-          },
-          {
-            "id": 4,
-            "title": "Apply Smooth Steering and Movement Boundaries",
-            "description": "Implement smooth interpolation or easing for ship movement and rotation, and enforce movement boundaries to keep the ship within the playable area.",
-            "dependencies": [],
-            "details": "In the movement system, apply interpolation (e.g., lerp or easing functions) to position and rotation updates for smooth, responsive controls. Define the game world's boundaries and clamp the ship's position within these limits after each update.",
-            "status": "pending",
-            "testStrategy": "Test with rapid and slow input changes to ensure smooth movement. Attempt to move the ship beyond boundaries and verify it remains within the allowed area."
-          },
-          {
-            "id": 5,
-            "title": "Expose and Tune Movement Configuration for Responsiveness",
-            "description": "Provide configuration options for speed and responsiveness, allowing tuning for different devices and player preferences. Ensure the system is modular for future enhancements.",
-            "dependencies": [],
-            "details": "Expose MovementConfig parameters (speed, responsiveness) via a configuration interface or settings file. Allow runtime adjustment and ensure changes are reflected immediately in ship behavior. Structure the system so new movement features (e.g., power-ups, ship types) can be added by extending components or systems.",
-            "status": "pending",
-            "testStrategy": "Adjust configuration values and verify changes in ship responsiveness and speed. Confirm that the system remains stable and extensible after modifications."
-          }
-        ]
-      },
-      {
-        "id": 3,
-        "title": "Implement Combat System: Proximity-Based Shooting, Projectiles, and Damage Mechanics",
-        "description": "Develop a combat system featuring proximity-based automatic shooting, projectile entities with visual trails, configurable weapon systems, and robust damage and collision mechanics.",
-        "details": "1. Design ECS components for weapons (range, fire rate, damage, projectile type), health, and damageable entities. 2. Implement a proximity detection system that triggers automatic shooting when enemy entities enter weapon range. 3. Create a projectile system: spawn projectile entities with configurable speed, direction, and visual trails using Babylon.js particle or mesh effects. 4. Integrate hit detection and collision response: detect projectile impacts with targets, apply damage, and handle projectile destruction. 5. Develop damage calculation logic supporting configurable weapon stats and potential modifiers. 6. Ensure weapon systems and damage mechanics are easily configurable for different weapon types. 7. Update health components and trigger appropriate responses (e.g., HP reduction, entity removal or reset) upon damage. 8. Structure all systems and components to fit within the existing ECS architecture and ensure smooth integration with player and enemy movement.",
-        "testStrategy": "- Place player and enemy entities in the scene and verify that automatic shooting triggers when enemies enter weapon range.\n- Confirm that projectiles are spawned, follow correct trajectories, and display visual trails.\n- Test hit detection by observing that projectiles collide with targets and apply correct damage values.\n- Validate that health updates and entity responses (e.g., removal, reset) occur as expected upon taking damage.\n- Check that weapon and damage parameters are configurable and changes are reflected in gameplay.\n- Ensure the system performs reliably with multiple entities and projectiles active simultaneously.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          2
-        ],
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "Design and Implement ECS Components for Combat",
-            "description": "Define and implement ECS components for weapons (including range, fire rate, damage, projectile type), health, and damageable entities to support proximity-based shooting and damage mechanics.",
-            "dependencies": [],
-            "details": "Create ECS components such as WeaponComponent, HealthComponent, DamageableComponent, and any necessary marker or configuration components. Ensure these components are data-only and fit cleanly into the existing ECS architecture. Include fields for weapon configuration (range, fire rate, damage, projectile type) and health tracking.",
-            "status": "pending",
-            "testStrategy": "Unit test component creation and data assignment. Verify entities can be assigned and queried for these components."
-          },
-          {
-            "id": 2,
-            "title": "Implement Proximity Detection and Automatic Shooting System",
-            "description": "Develop a system that detects when enemy entities enter weapon range and triggers automatic shooting actions based on weapon fire rate and targeting logic.",
-            "dependencies": [
-              1
-            ],
-            "details": "Implement a ProximityDetectionSystem that iterates over entities with weapon and targeting components, checks for nearby enemies within range, and schedules or triggers shooting actions according to fire rate. Ensure the system is efficient and supports multiple weapon types and targets.",
-            "status": "pending",
-            "testStrategy": "Simulate entities moving into and out of range; verify shooting triggers only when appropriate and respects fire rate."
-          },
-          {
-            "id": 3,
-            "title": "Create Projectile Entity System with Visual and Physics Integration",
-            "description": "Develop a system to spawn projectile entities with configurable speed, direction, and visual trails using Babylon.js particle or mesh effects, and integrate basic projectile movement physics.",
-            "dependencies": [
-              2
-            ],
-            "details": "Implement a ProjectileSystem that spawns projectile entities when shooting is triggered. Configure each projectile with speed, direction, and visual effects. Use Babylon.js for rendering trails or meshes. Update projectile positions each frame based on velocity and direction.",
-            "status": "pending",
-            "testStrategy": "Fire projectiles in various directions and speeds; visually confirm correct spawning, movement, and trail rendering."
-          },
-          {
-            "id": 4,
-            "title": "Integrate Collision Detection and Damage Application",
-            "description": "Implement collision detection between projectiles and damageable entities, apply damage based on weapon and projectile stats, and handle projectile destruction upon impact.",
-            "dependencies": [
-              3
-            ],
-            "details": "Develop a CollisionSystem that checks for intersections between projectiles and entities with DamageableComponent. On collision, apply damage to the target entity, trigger visual or audio feedback, and destroy or deactivate the projectile entity. Ensure the system supports multiple simultaneous collisions and is optimized for performance.",
-            "status": "pending",
-            "testStrategy": "Test with multiple projectiles and targets; verify collisions are detected, damage is applied, and projectiles are destroyed as expected."
-          },
-          {
-            "id": 5,
-            "title": "Implement Configurable Damage Calculation and Health Response",
-            "description": "Develop a robust damage calculation system supporting configurable weapon stats and modifiers, update health components, and trigger appropriate responses such as HP reduction, entity removal, or reset.",
-            "dependencies": [
-              4
-            ],
-            "details": "Create a DamageSystem that processes pending damage events, calculates final damage using weapon stats and any modifiers (e.g., shields, resistances), updates HealthComponent values, and handles entity state changes (e.g., death, removal, or reset). Ensure all calculations are easily configurable for different weapon and entity types.",
-            "status": "pending",
-            "testStrategy": "Apply various damage scenarios, including modifiers; verify health updates, entity removal, and correct handling of edge cases (e.g., overkill, shield absorption)."
-          }
-        ]
-      },
-      {
-        "id": 4,
-        "title": "Implement Enemy Ship Spawning, AI, Health, Types, Visual Indicators, and Death Mechanics",
-        "description": "Develop a comprehensive enemy system including spawning, AI behaviors, health management, multiple enemy types with unique stats, visual indicators for multiplayer immersion, and robust death/destruction mechanics.",
-        "details": "1. Design ECS components for enemy attributes: position, velocity, health, AI state, type, and visual indicators (name, flag).\n2. Implement an enemy spawning system that periodically or conditionally creates enemy entities with randomized or patterned positions and types.\n3. Define multiple enemy types with configurable stats (speed, health, damage, behavior patterns) and ensure these are assigned during spawning.\n4. Develop AI behavior systems for enemies, including movement logic (e.g., patrol, chase, evade), attack triggers, and state transitions.\n5. Integrate health management: enemies take damage from projectiles, update health, and trigger death when health reaches zero.\n6. Implement visual indicators: assign unique names and flags to each enemy, render these above ships using Babylon.js GUI or mesh overlays to simulate multiplayer opponents.\n7. Create destruction mechanics: play visual effects, remove enemy entities, and trigger score or loot drops upon death.\n8. Ensure all systems interact cleanly within the ECS architecture, leveraging existing combat and movement systems for integration.",
-        "testStrategy": "- Spawn multiple enemy ships and verify correct assignment of types, stats, names, and flags.\n- Observe enemy AI behaviors in various scenarios (patrol, chase, evade) and confirm state transitions.\n- Test health management by inflicting damage and ensuring health updates and death triggers occur as expected.\n- Confirm visual indicators (names, flags) are displayed above each enemy and update appropriately.\n- Destroy enemies and verify visual effects, entity removal, and any post-death logic (score, loot) function correctly.\n- Perform integration tests with the combat system to ensure projectiles interact with enemies as intended.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          3
-        ],
-        "priority": "high",
-        "subtasks": []
-      },
-      {
-        "id": 5,
-        "title": "Implement Leveling System: XP, Progression, Visual Upgrades, and Stat Improvements",
-        "description": "Develop a comprehensive leveling system with XP tracking, level progression, ship visual upgrades, stat improvements, level-up effects, and configurable progression curves for a 6-level structure.",
-        "details": "Design and implement an XP tracking component for player entities, supporting XP gain from combat and other sources. Create a progression system that calculates level thresholds using configurable curves (e.g., linear, polynomial, or custom-defined arrays), allowing designers to adjust XP requirements per level. Implement logic to handle level-ups: when XP exceeds the current threshold, increment the level, reset or carry over excess XP, and trigger level-up effects (visual/audio feedback). Define and apply stat improvements (e.g., increased speed, health, firepower) and ship visual upgrades (sails, cannons, hull colors) for each level, using a data-driven approach for easy balancing and modification. Ensure upgrade definitions and progression curves are externalized in configuration files or scriptable objects for rapid iteration. Integrate with the combat and movement systems so that stat changes and visual upgrades are reflected in gameplay and rendering. Provide hooks for UI updates to display current XP, level, and next threshold.",
-        "testStrategy": "- Award XP through combat and verify correct accumulation and level progression, including edge cases where multiple levels are gained at once.\n- Confirm that stat improvements and ship visual upgrades are applied immediately upon leveling up and persist across sessions.\n- Test that progression curves and upgrade definitions can be modified via configuration and changes are reflected in-game.\n- Trigger level-up effects and verify visual/audio feedback is played.\n- Validate that UI components accurately display XP, level, and progression toward the next level.\n- Perform balancing checks to ensure progression feels appropriate for a 6-level system.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          2,
-          3
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 6,
-        "title": "Create Ocean Environment with Animated Water, Islands, Atmosphere, Weather, and Debris",
-        "description": "Develop a visually immersive and optimized ocean environment featuring animated water, background islands or coastline, atmospheric and weather effects, and floating debris, with a focus on mobile performance.",
-        "details": "1. Implement a dynamic ocean surface using Babylon.js water materials or custom shaders, ensuring real-time wave animation and reflection/refraction effects while maintaining mobile performance. 2. Design and place background islands or coastline meshes with optimized LODs and low-poly assets to minimize draw calls. 3. Add atmospheric effects such as fog, sky gradients, and sun shafts to enhance depth and realism. 4. Integrate weather systems (e.g., clouds, rain, lightning) using particle systems or lightweight shaders, allowing for dynamic transitions and performance scaling. 5. Populate the ocean with floating debris and environmental props (e.g., driftwood, barrels, seaweed) using instancing or pooling to reduce overhead. 6. Ensure all visual elements are configurable for quality/performance trade-offs on various mobile devices. 7. Structure environment systems to allow for future expansion (e.g., dynamic day/night cycles or additional weather types).",
-        "testStrategy": "- Verify that the animated water renders smoothly on a range of target mobile devices, maintaining acceptable frame rates. - Confirm that islands/coastline are visible in the background, with correct LOD transitions and minimal pop-in. - Test atmospheric and weather effects for visual quality and performance impact, including transitions between weather states. - Ensure floating debris appears at varying positions and moves realistically with the water surface. - Profile the scene to identify and address any performance bottlenecks related to environment rendering. - Adjust quality settings and confirm that visual fidelity and performance scale appropriately.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          2
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 7,
-        "title": "Implement Collectible Barrel and Loot System",
-        "description": "Develop a system for collectible barrels, treasure chests, and environmental pickups that spawn from defeated enemies, are scattered in the ocean, and provide XP or loot when collected, including collection mechanics and visual feedback.",
-        "details": "Design a base Collectible class/component using the ECS architecture, supporting inheritance for different collectible types (barrels, chests, pickups). Implement logic for spawning collectibles: (1) on enemy death (integrate with enemy death mechanics), (2) as static environmental objects in the ocean, and (3) as rewards from treasure chests. Use OnTriggerEnter or equivalent collision detection to trigger collection when the player ship is in range. Each collectible type should execute its own reward logic (e.g., grant XP, currency, power-ups) via a strategy pattern or similar approach. Add visual feedback for pickups (e.g., particle effects, floating text, sound cues) and ensure collectibles are destroyed or hidden after collection. Implement a loot spawning system that randomizes drops based on enemy type or chest rarity. Ensure all systems are optimized for mobile and desktop performance.",
-        "testStrategy": "Spawn enemies and verify that barrels and loot drop upon defeat. Place environmental pickups and treasure chests in the ocean and confirm they are collectible by the player ship. Test that collecting each type triggers the correct reward (XP, currency, power-up) and that visual/audio feedback plays. Ensure collectibles are removed from the scene after collection. Validate that loot drop rates and types match configuration. Test on both mobile and desktop for performance and input responsiveness.",
-        "status": "pending",
-        "dependencies": [
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 8,
-        "title": "Implement Visual Guidance and Contextual UI System",
-        "description": "Develop a comprehensive visual guidance system including attack range indicators, control hints, target highlighting, progress indicators, and contextual UI elements to guide the player through the core gameplay experience.",
-        "details": "Design and implement a modular UI system that overlays visual guidance elements on the game screen. Key features should include: (1) dynamic attack range indicators around the player ship and enemies, updating in real-time based on weapon stats; (2) contextual control hints that adapt to input method (touch/mouse) and gameplay context, positioned for maximum visibility without clutter; (3) target highlighting using outlines or glows for interactable or priority targets; (4) progress indicators for objectives, XP, or timed events, using clear visual hierarchy and color contrast; (5) contextual UI elements such as popups, alerts, or toasts for feedback on actions (e.g., loot collected, level up, or warnings). Ensure all UI elements follow principles of clarity, consistency, and minimalism, using recognizable icons, readable typography, and responsive layouts for different screen sizes. Integrate with existing ECS architecture to update UI based on game state and player actions. Prioritize non-intrusive placement (HUD, overlays) and provide smooth transitions/animations for feedback. Reference best practices for visual hierarchy, color usage, and input guidance to maximize intuitiveness and reduce cognitive load.",
-        "testStrategy": "Play through a 20-30 second core gameplay loop and verify: (1) attack range indicators appear and update correctly for both player and enemies; (2) control hints display appropriately for the current input method and disappear when no longer needed; (3) target highlighting activates for interactable or priority targets and deactivates when not relevant; (4) progress indicators accurately reflect objectives, XP, or timers; (5) contextual UI elements (popups, alerts, toasts) trigger in response to relevant events (e.g., loot collection, level up, warnings) and are visually clear without obstructing gameplay. Test on multiple screen sizes and input methods to ensure responsive layout and readability. Solicit feedback from testers to confirm that the UI effectively guides new players without overwhelming or distracting them.",
-        "status": "pending",
-        "dependencies": [
-          2,
-          3,
-          4,
-          5
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 9,
-        "title": "Implement Advanced Camera System with Cinematic Features",
-        "description": "Develop a robust camera management system featuring smooth following, dramatic boss reveal sequences, screen shake, zoom transitions, mobile-optimized viewing angles, and cinematic camera movements for key moments.",
-        "details": "Design a modular camera system using a data-driven approach, allowing camera parameters (position, orientation, FOV, transition types) to be configured via external files or editor tools for rapid iteration. Implement smooth camera following using interpolation (e.g., lerp or spline-based) to track the player ship, ensuring the camera adapts to movement and maintains optimal framing on both mobile and desktop. Integrate activation rules for switching between camera modes (e.g., gameplay, boss reveal, cutscene) based on game state, supporting seamless transitions with configurable blend times. Develop screen shake and zoom effects triggered by combat events or environmental cues, with tunable intensity and duration. Add support for cinematic camera paths and dramatic reveals, using predefined splines or keyframes for boss encounters and key moments. Optimize camera angles and FOV for mobile devices, ensuring clear visibility and minimal motion sickness. Expose debug tools for testing and tuning camera behaviors in real time. Ensure the system is extensible for future gameplay scenarios.",
-        "testStrategy": "1. Play through core gameplay and verify the camera smoothly follows the player ship, maintaining optimal framing on both mobile and desktop. 2. Trigger boss encounters and confirm cinematic camera sequences activate with correct timing, transitions, and dramatic effect. 3. Test screen shake and zoom effects by simulating combat and environmental events, ensuring they are visually impactful but not disorienting. 4. Switch between camera modes (gameplay, cutscene, boss reveal) and verify seamless, configurable transitions. 5. Adjust camera parameters via configuration files or editor and confirm changes are reflected in real time. 6. Evaluate camera performance and visual clarity on a range of mobile devices, ensuring no clipping or excessive motion. 7. Use debug tools to visualize camera paths and activation states during development.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          2
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 10,
-        "title": "Implement Seamless Tutorial and Onboarding System",
-        "description": "Design and implement a non-intrusive tutorial system that provides control hints, first-time user guidance, progressive disclosure of mechanics, and smooth onboarding tailored for a fast-paced playable ad experience.",
-        "details": "Develop a modular tutorial manager that tracks player progress and triggers context-sensitive hints and guidance overlays. Use progressive disclosure: introduce one mechanic at a time (e.g., movement, combat, collectibles), starting with safe, low-pressure scenarios before integrating mechanics into real gameplay situations[1][2]. Leverage visual cues, minimal text, and interactive prompts to teach through action rather than reading, ensuring the tutorial does not interrupt gameplay flow[3][4]. Integrate with the contextual UI system to display unobtrusive hints (e.g., swipe gestures, tap indicators) and highlight interactable elements. Implement logic to detect first-time actions and trigger relevant guidance only once, with the ability to skip or dismiss tips. Ensure onboarding is woven into the early game narrative or scenario, using character or environmental cues where appropriate to maintain immersion[2]. Design for mobile: overlays must not obscure critical UI or gameplay elements, and all tutorial steps should be touch/mouse friendly. Provide hooks for analytics to track tutorial completion and drop-off points for future optimization.",
-        "testStrategy": "1. Launch the game as a new user and verify that tutorial steps appear contextually, introducing mechanics one at a time without pausing gameplay. 2. Confirm that control hints and guidance overlays are visually clear, non-intrusive, and disappear after the mechanic is demonstrated. 3. Test that each mechanic (movement, combat, collectibles, camera) is introduced progressively and only once per user. 4. Ensure that players can skip or dismiss tutorial prompts at any time. 5. Play through the onboarding flow on both mobile and desktop, verifying that overlays do not interfere with controls or obscure important UI. 6. Check analytics/logs to confirm tutorial step completion and drop-off tracking.",
-        "status": "pending",
-        "dependencies": [
-          2,
-          3,
-          8
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 11,
-        "title": "Implement Player Death, Game Over, and State Management Systems",
-        "description": "Develop robust player death mechanics, game over states, respawn logic (if applicable), failure handling, and comprehensive state management for all game phases within the playable ad experience.",
-        "details": "Design a modular game state manager to handle transitions between core phases: gameplay, player death, game over, respawn (if used), and victory. Implement player death detection by monitoring health or critical failure conditions, triggering immediate feedback (visual, audio, slow-motion, etc.) and disabling player input. For game over, display a clear overlay with options to restart or exit, ensuring minimal downtime and frustration. If respawn is supported, implement checkpoint or instant respawn logic, restoring the player to a safe state and resetting necessary systems. Integrate failure handling to gracefully manage edge cases (e.g., dying during tutorials or cutscenes). Ensure all state transitions are predictable and visually communicated. Coordinate with the tutorial/onboarding system to prevent conflicts during state changes. Use ECS patterns for state tracking and event-driven transitions. Consider analytics hooks for tracking deaths and restarts. Prioritize fast, fair, and satisfying feedback loops to maintain engagement in the ad context.",
-        "testStrategy": "1. Simulate player death during core gameplay and verify that the death sequence, feedback, and input disabling trigger instantly. 2. Confirm that the game over screen appears promptly, with restart/exit options functioning as intended. 3. If respawn is enabled, test that the player is restored to the correct state and gameplay resumes smoothly. 4. Trigger death during tutorial and special sequences to ensure state transitions do not break onboarding or cinematic flows. 5. Play through multiple death/restart cycles to verify minimal downtime and no progression blockers. 6. Review analytics/logs to confirm death and restart events are tracked.",
-        "status": "pending",
-        "dependencies": [
-          2,
-          3,
-          10
-        ],
-        "priority": "low",
-        "subtasks": []
-      },
-      {
-        "id": 12,
-        "title": "Implement Boss Encounter: Visuals, Behaviors, Entrance, and Combat Mechanics",
-        "description": "Design and implement an intimidating boss ship featuring unique visuals, boss-specific behaviors, a dramatic entrance sequence with screen warning effects, and combat mechanics that highlight player limitations, culminating in a transition to a call-to-action.",
-        "details": "1. Create a distinctive boss ship model and visual effects to ensure immediate recognition and intimidation (e.g., size, color palette, unique silhouette).\n2. Develop a dramatic entrance sequence: trigger screen-wide warning effects (flashing borders, sirens, UI overlays) and use the advanced camera system for cinematic zooms and pans as the boss enters the scene.\n3. Implement boss-specific behaviors, including multi-phase attack patterns that evolve as the boss's health decreases (e.g., new projectile types, area denial attacks, temporary invulnerability, summoning minions). Ensure clear telegraphs for major attacks (visual/sound cues) and idle periods for player counterplay[2][3][4].\n4. Integrate a prominent boss health bar and unique UI elements to communicate the encounter state and player progress[3].\n5. Design combat mechanics that demonstrate player limitations (e.g., disabling certain player abilities, introducing environmental hazards, or restricting movement during key boss attacks).\n6. Ensure the encounter transitions smoothly to a call-to-action (e.g., cutscene, next phase, or victory screen) upon boss defeat or player failure.\n7. Coordinate with the camera, UI, and state management systems for seamless integration and transitions.",
-        "testStrategy": "1. Trigger the boss encounter and verify the entrance sequence: warning effects, camera transitions, and boss appearance are synchronized and dramatic.\n2. Play through the boss fight, confirming that attack patterns change with boss health, telegraphs are clear, and player limitations are enforced at appropriate moments.\n3. Ensure the boss health bar and unique UI elements display correctly and update in real time.\n4. Test defeat and victory conditions: verify that transitions to call-to-action or game over are smooth and all relevant systems (camera, UI, state management) respond appropriately.\n5. Playtest for balance, ensuring the encounter is challenging but fair, and that all visual, audio, and gameplay cues are clear to the player.",
-        "status": "pending",
-        "dependencies": [
-          2,
-          3,
-          4,
-          8,
-          9,
-          11
-        ],
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "Design and Implement Distinctive Boss Ship Visuals",
-            "description": "Create a unique and intimidating boss ship model with standout visual effects to ensure immediate recognition and a sense of threat.",
-            "dependencies": [],
-            "details": "Develop a large, visually striking boss ship using a unique silhouette, bold color palette, and intimidating visual effects (e.g., glowing elements, animated parts). Ensure the design is distinct from other ships and conveys the boss's theme and power. Integrate these assets into the game engine, ready for use in the encounter.",
-            "status": "pending",
-            "testStrategy": "Load the boss ship in a test scene and verify its visual impact, recognizability, and correct rendering from all camera angles."
-          },
-          {
-            "id": 2,
-            "title": "Develop Dramatic Boss Entrance Sequence with Cinematic Effects",
-            "description": "Implement a dramatic entrance for the boss, including screen-wide warning effects, sirens, UI overlays, and advanced camera work for cinematic impact.",
-            "dependencies": [
-              1
-            ],
-            "details": "Script the boss's entrance to trigger warning effects (e.g., flashing borders, siren sounds, animated UI overlays) as the boss approaches. Use the camera system to perform cinematic zooms, pans, and shakes, emphasizing the boss's arrival. Ensure all effects are synchronized and can be triggered programmatically.",
-            "status": "pending",
-            "testStrategy": "Trigger the entrance sequence in isolation and during gameplay, verifying timing, visual/audio synchronization, and overall dramatic effect."
-          },
-          {
-            "id": 3,
-            "title": "Implement Boss Behaviors and Multi-Phase Combat Patterns",
-            "description": "Develop boss-specific behaviors, including multi-phase attack patterns, evolving tactics, and clear telegraphs for major attacks and idle periods.",
-            "dependencies": [
-              2
-            ],
-            "details": "Define and implement multiple attack phases that evolve as the boss's health decreases (e.g., new projectile types, area denial, temporary invulnerability, summoning minions). Ensure each attack is clearly telegraphed with visual and audio cues, and include idle periods for player counterplay. Integrate state management for phase transitions and attack selection.",
-            "status": "pending",
-            "testStrategy": "Playtest each phase, verifying attack variety, telegraph clarity, phase transitions, and opportunities for player counterplay."
-          },
-          {
-            "id": 4,
-            "title": "Integrate Boss Health Bar and Unique Encounter UI Elements",
-            "description": "Add a prominent boss health bar and unique UI elements to communicate encounter state and player progress.",
-            "dependencies": [
-              3
-            ],
-            "details": "Design and implement a boss health bar that is visually distinct and clearly communicates the boss's remaining health. Add encounter-specific UI elements (e.g., phase indicators, warning icons) to inform the player of the current state. Ensure UI updates in real time and integrates with the game's existing UI framework.",
-            "status": "pending",
-            "testStrategy": "Test the UI during boss encounters, verifying accurate health updates, visibility, and responsiveness to phase changes."
-          },
-          {
-            "id": 5,
-            "title": "Implement Player Limitation Mechanics and Seamless Encounter Transition",
-            "description": "Design combat mechanics that highlight player limitations during the boss fight and ensure a smooth transition to a call-to-action upon encounter completion.",
-            "dependencies": [
-              4
-            ],
-            "details": "Introduce mechanics that restrict player abilities or movement during key boss attacks (e.g., disabling dashes, adding environmental hazards). Ensure these limitations are clearly communicated and feel fair. Upon boss defeat or player failure, trigger a seamless transition to the next phase, cutscene, or victory screen, coordinating with camera, UI, and state management systems.",
-            "status": "pending",
-            "testStrategy": "Playtest the full encounter, verifying that player limitations are enforced and communicated, and that the transition to the call-to-action is smooth and bug-free."
-          }
-        ]
-      },
-      {
-        "id": 13,
-        "title": "Create and Optimize 3D Ship Models, Materials, and LOD Systems for Mobile/Web",
-        "description": "Design or source 3D models for player, enemy, and boss ships, develop mobile-optimized materials and textures, and implement LOD and efficient loading systems for web deployment.",
-        "details": "1. Gather visual references and create concept sketches for player, enemy, and boss ships to ensure consistent style and silhouette across all assets[2][4]. 2. Model ships in a 3D application (e.g., Blender), starting with high-poly versions for detail, then retopologize to create low-poly, mobile-friendly meshes with minimal polygon counts[1][2][5]. 3. Unwrap UVs and bake normal, ambient occlusion, and other relevant maps from high-poly to low-poly models. 4. Design and apply optimized materials and textures: use compressed texture formats (e.g., WebP, ETC2), limit texture resolution, and minimize shader complexity to ensure high performance on mobile devices[1]. 5. Implement Level of Detail (LOD) meshes for each ship, creating at least three LOD stages (high, medium, low) and configure automatic LOD switching in Babylon.js based on camera distance. 6. Integrate models into the Babylon.js asset pipeline, ensuring correct file formats (e.g., glTF, .babylon), and set up efficient asynchronous loading for web deployment. 7. Test and adjust materials for visual clarity and performance under various lighting conditions. 8. Document asset pipeline and provide guidelines for future model integration and optimization.",
-        "testStrategy": "- Load all ship models in a test scene and verify correct appearance, scale, and orientation. - Profile performance on target mobile devices and web browsers, ensuring models render smoothly and maintain target frame rates. - Confirm LOD transitions occur seamlessly at appropriate distances without visual popping. - Check that texture compression and material optimizations do not introduce significant visual artifacts. - Test asynchronous model loading to ensure no blocking or stuttering during gameplay. - Validate that all assets are documented and reusable for future content updates.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          6
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 14,
-        "title": "Implement Ship Animation System with Blending and Performance Optimization",
-        "description": "Develop a comprehensive animation system for ships, supporting sailing motion, cannon recoil, destruction sequences, water bobbing, flag movement, and upgrade transitions, with smooth blending and optimized loops for mobile/web.",
-        "details": "Design an animation system using the ECS architecture, introducing an AnimationComponent to store animation state (current animation, blend weights, timers) and an AnimationSystem to update and blend animations each frame. Integrate with the existing ship entity structure and ensure compatibility with the 3D ship models and LODs. Implement the following animation types: (1) sailing motion (subtle hull/rigging movement), (2) water bobbing synced with ocean waves, (3) cannon recoil and muzzle flash, (4) destruction sequences (explosions, debris, sinking), (5) dynamic flag movement (wind-driven), and (6) ship upgrade transitions (visual morphs or effects). Use animation blending techniques to allow smooth transitions between states (e.g., idle to sailing, sailing to destruction). Optimize animation loops for mobile/web by minimizing bone count, using GPU skinning where possible, and culling off-screen animations. Consider a hybrid workflow where ECS manages animation state and triggers, while Babylon.js or the rendering engine handles the actual mesh animation and blending. Expose animation parameters for tuning and support event hooks for gameplay integration (e.g., triggering loot drops on destruction animation end).",
-        "testStrategy": "1. Place ships in a test scene and verify that all animation types (sailing, bobbing, cannon recoil, destruction, flag, upgrade) play correctly and blend smoothly during state transitions. 2. Trigger rapid state changes (e.g., firing, destruction, upgrades) and confirm there are no visual glitches or abrupt transitions. 3. Profile animation performance on target mobile and web devices, ensuring frame rates remain stable and animation culling works for off-screen ships. 4. Test integration with the ship models and LOD system to ensure animations remain consistent across LODs. 5. Simulate gameplay events (combat, upgrades, destruction) and verify that animation events trigger corresponding gameplay logic (e.g., loot drops, state changes).",
-        "status": "pending",
-        "dependencies": [
-          1,
-          13
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 15,
-        "title": "Implement Dynamic Background Music and Audio System for Mobile Web",
-        "description": "Develop a comprehensive audio system featuring background nautical orchestral music, combat sound effects, UI feedback, level-up cues, boss encounter tracks, and dynamic audio mixing optimized for mobile web browsers.",
-        "details": "Utilize the Web Audio API to implement a modular audio manager capable of loading, playing, and mixing multiple audio tracks and sound effects. Structure the system to support:\n- Background music playlists with seamless transitions between exploration, combat, and boss encounter tracks. Use buffer nodes for short effects (e.g., cannon fire, explosions, UI cues) and media elements for longer music tracks, ensuring efficient memory usage and low latency[1][3].\n- Dynamic mixing: adjust music and effect volumes in real time based on game state (e.g., duck music during combat, emphasize boss music during encounters). Implement fade-in/out and crossfade transitions for smooth audio changes.\n- Mobile optimization: ensure all audio playback is triggered by user interaction to comply with mobile browser autoplay restrictions[2][3]. Use compressed audio formats (e.g., OGG, MP3) and preload only essential assets to minimize bandwidth and memory usage[2].\n- Integrate audio cues for UI interactions (button presses, notifications), level-up events, and contextual feedback. Provide hooks for gameplay systems (combat, leveling, boss encounters) to trigger appropriate sounds.\n- Expose volume controls and mute toggles for music and effects, persisting user preferences in local storage.\n- Ensure accessibility by allowing users to mute all sounds and providing visual feedback for key audio events.\n- Test across major mobile browsers (iOS Safari, Chrome, Android WebView) for compatibility and performance[5].",
-        "testStrategy": "1. Launch the game on multiple mobile browsers and verify that background music, combat effects, UI sounds, level-up cues, and boss music all play at appropriate times and mix smoothly.\n2. Confirm that audio playback only begins after user interaction and that volume/mute controls function as expected, persisting preferences across sessions.\n3. Trigger combat, level-up, and boss events to ensure correct sound effects and music transitions occur with no noticeable latency or glitches.\n4. Test dynamic mixing by rapidly switching between gameplay states (exploration, combat, boss) and verify smooth crossfades and volume adjustments.\n5. Check that all audio assets load efficiently and do not cause excessive memory or bandwidth usage on mobile devices.\n6. Validate that accessibility features (mute all, visual feedback) are present and functional.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          3,
-          5,
-          8,
-          12
-        ],
-        "priority": "low",
-        "subtasks": []
-      },
-      {
-        "id": 16,
-        "title": "Set Up CI/CD Pipeline, Automated Build, Deployment, and Monitoring for Playable Ad",
-        "description": "Establish a robust CI/CD pipeline to automate building, testing, deployment to CDN/hosting, bundle size monitoring, and version management for the playable ad distribution.",
-        "details": "1. Integrate a CI/CD platform (e.g., GitHub Actions, GitLab CI, or Azure DevOps) with the project repository.\n2. Use @smoud/playable-scripts as the primary build tool to automate network-specific builds, minification, tree-shaking, and asset optimization for all supported ad networks. Configure build scripts in package.json for both development and production builds[1][2].\n3. Set up automated unit and integration testing to run on each commit and pull request. Ensure tests cover core gameplay, UI, and audio systems.\n4. Implement bundle size monitoring using tools like 'size-limit' or built-in features of @smoud/playable-scripts, with CI checks to prevent regressions.\n5. Configure the pipeline to deploy successful builds to a CDN or static hosting provider (e.g., AWS S3, Netlify, Vercel) and generate shareable preview links for QA.\n6. Automate version management by incrementing version numbers on successful builds and tagging releases in source control.\n7. Document the pipeline setup, environment variables, and deployment process for team reference.\n8. Ensure the pipeline is extensible for future ad network requirements and supports custom build steps as needed[1][2].",
-        "testStrategy": "- Push a commit to trigger the CI pipeline and verify that builds are generated for all target ad networks without errors.\n- Confirm that automated tests run and pass in the pipeline.\n- Check that bundle size reports are generated and that size thresholds are enforced.\n- Validate that successful builds are deployed to the CDN/hosting provider and preview links are accessible.\n- Ensure version numbers are incremented and release tags are created in the repository.\n- Simulate a failed test or oversized bundle to confirm the pipeline blocks deployment as expected.",
-        "status": "done",
-        "dependencies": [
-          1
-        ],
-        "priority": "low",
-        "subtasks": []
-      },
-      {
-        "id": 17,
-        "title": "Implement Analytics and Tracking System for Playable Ad Campaigns",
-        "description": "Develop and integrate a comprehensive analytics system to track player behavior, conversion metrics, session duration, completion rates, click-through rates, and performance monitoring for campaign optimization.",
-        "details": "Integrate a robust analytics SDK or build a custom event tracking system tailored for playable ads. Instrument key gameplay events such as session start/end, tutorial completion, level progression, collectible pickups, boss encounters, player death, and call-to-action clicks. Track conversion metrics including install-to-impression ratio, cost per install, time to first click, and completion rates. Ensure the system captures session duration, click-through rates, and user engagement at each step. Implement A/B testing hooks to support variant analysis and optimization. Store analytics data securely and ensure compliance with privacy regulations. Provide a dashboard or export functionality for campaign performance review and actionable insights. Consider using third-party analytics tools (e.g., Playable Factory Insight) or integrating with ad network analytics APIs for cross-platform reporting.",
-        "testStrategy": "1. Simulate user sessions and verify that all key events (session start/end, tutorial steps, level completions, conversions, CTA clicks) are logged accurately. 2. Run A/B test variants and confirm that analytics differentiate between groups and capture variant-specific metrics. 3. Validate that session duration, completion rates, and click-through rates are calculated correctly in the analytics dashboard or exported reports. 4. Test integration with ad network analytics to ensure conversion and engagement data is synchronized. 5. Review data privacy compliance and confirm that no personally identifiable information is collected without consent.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          3,
-          10
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 18,
-        "title": "Implement Optimized VFX and Particle Systems for Combat, Level-Up, Boss, and Environment",
-        "description": "Design and implement GPU-optimized particle systems for combat effects, level-up celebrations, boss encounter dramatics, water splashes, and environmental ambiance, ensuring high performance on mobile devices.",
-        "details": "Develop a modular particle system manager supporting multiple effect types: (1) combat (cannon muzzle flashes, cannonball trails, explosions), (2) level-up celebrations, (3) boss encounter dramatics, (4) water splashes, and (5) environmental particles (e.g., mist, embers). Use GPU-based particle systems where possible for efficiency[1]. For each effect, define emitter parameters (spawn rate, lifetime, velocity, color, blend mode, texture) and use effect-specific affectors (e.g., gravity, wind, fade-out) to enhance realism[1][2]. Integrate with combat, leveling, boss, and environmental systems by exposing trigger APIs (e.g., OnCannonFire, OnLevelUp, OnBossEntrance, OnWaterImpact). Implement pooling to minimize allocation overhead. Profile and optimize for mobile: limit max particles per effect, use LOD (level of detail) scaling, and batch draw calls. Ensure all effects are visually distinct yet performant, and provide fallback settings for low-end devices. Document effect parameters for easy tuning by designers.",
-        "testStrategy": "1. Trigger each particle effect in isolation and verify correct appearance, timing, and animation (e.g., muzzle flash on fire, trail on cannonball, explosion on impact, celebratory burst on level-up, dramatic effects on boss entrance, water splash on collision, ambient particles in scene). 2. Profile performance on target mobile devices, ensuring stable frame rates and low memory usage even with multiple effects active. 3. Test effect triggers from combat, leveling, boss, and environmental systems to confirm correct integration. 4. Adjust LOD and fallback settings, verifying visual quality and performance trade-offs. 5. Review with designers for visual clarity and distinctiveness of each effect type.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          3,
-          4,
-          5,
-          8,
-          12
-        ],
-        "priority": "medium",
-        "subtasks": []
-      },
-      {
-        "id": 19,
-        "title": "Implement Responsive and Adaptive HUD/UI System",
-        "description": "Develop a responsive HUD and UI system featuring level display, kill counter, progress indicators, mobile-optimized touch-friendly controls, smooth transitions, and adaptive layouts for various screen sizes and orientations.",
-        "details": "Design the HUD using a modular UI framework that supports dynamic layout adjustments based on device type, screen size, and orientation. Implement core HUD elements: (1) level display, (2) real-time kill counter, (3) progress indicators (e.g., XP bar, mission progress), and (4) essential controls. Ensure all elements are touch-friendly for mobile, with large tap targets and spacing to prevent accidental input[1][3]. Use CSS media queries or a responsive UI toolkit to adapt layouts for portrait/landscape and different resolutions. Integrate smooth transitions and subtle animations for HUD updates (e.g., fade-in/out, sliding counters) to enhance feedback and immersion[2]. Prioritize essential information to avoid clutter, and implement contextual display logic so only relevant elements are shown during gameplay. Optimize for performance by minimizing draw calls and using efficient rendering techniques. Provide customization options for players to adjust HUD element size and position if feasible[1][2]. Ensure the HUD visually aligns with the game's art direction and remains legible in all lighting conditions.",
-        "testStrategy": "1. Test the HUD on a range of devices (mobile, tablet, desktop) and orientations to verify correct scaling, positioning, and touch responsiveness. 2. Simulate gameplay events (level up, kills, progress milestones) and confirm that HUD elements update in real time with smooth transitions. 3. Validate that all controls are easily accessible and functional on touchscreens. 4. Check that the HUD adapts dynamically when the device orientation changes or the window is resized. 5. Review for visual clarity, absence of clutter, and consistent performance across devices. 6. Solicit user feedback on usability and iterate as needed.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          2,
-          5,
-          8
-        ],
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "Establish Modular UI Framework and Adaptive Layouts",
-            "description": "Set up a modular UI framework that supports dynamic layout adjustments based on device type, screen size, and orientation. Implement responsive design principles to ensure the HUD adapts seamlessly to various resolutions and both portrait and landscape modes.",
-            "dependencies": [],
-            "details": "Select a UI toolkit or framework that supports responsive layouts (e.g., Unity UI, Unreal UMG, or a web-based framework with CSS media queries). Define layout containers and grid systems that can rearrange HUD elements based on screen characteristics. Implement logic to detect device type and orientation changes, triggering layout updates as needed.",
-            "status": "pending",
-            "testStrategy": "Test on a range of devices and emulators with different screen sizes and orientations. Verify that all HUD elements remain visible, properly aligned, and functional after resizing or rotating the device."
-          },
-          {
-            "id": 2,
-            "title": "Implement Core HUD Elements (Level Display, Kill Counter, Progress Indicators)",
-            "description": "Develop the main HUD components: level display, real-time kill counter, and progress indicators such as XP bars or mission progress. Ensure each element is modular and can be shown or hidden contextually.",
-            "dependencies": [
-              1
-            ],
-            "details": "Create reusable UI components for each HUD element. Integrate data bindings or event listeners to update values in real time. Implement logic to prioritize and display only relevant elements during gameplay to avoid clutter.",
-            "status": "pending",
-            "testStrategy": "Simulate gameplay events to verify that each HUD element updates correctly and only appears when appropriate."
-          },
-          {
-            "id": 3,
-            "title": "Design and Integrate Mobile-Optimized, Touch-Friendly Controls",
-            "description": "Develop essential HUD controls optimized for mobile devices, ensuring large tap targets, adequate spacing, and intuitive touch interactions.",
-            "dependencies": [
-              1
-            ],
-            "details": "Design control buttons and interactive elements with minimum recommended sizes for touch (e.g., 48x48dp). Space controls to prevent accidental input. Implement touch event handling and feedback (e.g., highlighting on press).",
-            "status": "pending",
-            "testStrategy": "Conduct usability tests on mobile devices to confirm controls are easy to interact with and do not overlap or interfere with other HUD elements."
-          },
-          {
-            "id": 4,
-            "title": "Add Smooth Transitions and Contextual Display Logic",
-            "description": "Integrate smooth transitions and subtle animations for HUD updates, such as fade-in/out and sliding counters. Implement contextual display logic so only relevant HUD elements are shown during gameplay.",
-            "dependencies": [
-              2,
-              3
-            ],
-            "details": "Use animation libraries or built-in UI animation tools to add transitions to HUD elements. Define rules for when elements should appear, disappear, or update based on game state. Ensure transitions do not impact performance.",
-            "status": "pending",
-            "testStrategy": "Trigger HUD updates and state changes during gameplay to verify that transitions are smooth and elements appear/disappear as intended."
-          },
-          {
-            "id": 5,
-            "title": "Implement Customization, Performance Optimization, and Visual Consistency",
-            "description": "Allow players to adjust HUD element size and position if feasible. Optimize rendering for performance and ensure the HUD remains legible and visually aligned with the game's art direction in all lighting conditions.",
-            "dependencies": [
-              4
-            ],
-            "details": "Provide a settings menu for HUD customization (drag-and-drop, scaling sliders). Minimize draw calls and use efficient rendering techniques. Test HUD visibility against various backgrounds and lighting scenarios, adjusting colors and contrast as needed.",
-            "status": "pending",
-            "testStrategy": "Profile performance on target devices, test customization features, and review HUD legibility in different in-game environments."
-          }
-        ]
-      },
-      {
-        "id": 20,
-        "title": "Implement Conversion Call-to-Action Screen with Branding, Hero Art, Persuasive Copy, and A/B Testing",
-        "description": "Develop a conversion-focused call-to-action (CTA) screen featuring compelling game branding, a hero ship illustration, persuasive copy, a prominent 'Get Ship' button, smooth transition from gameplay, and built-in A/B testing capabilities for optimization.",
-        "details": "Design the CTA screen to visually align with the game's branding, using consistent color palettes, fonts, and thematic elements to ensure cohesion with the rest of the UI[2][3]. Integrate a high-quality hero ship illustration as the focal point, ensuring it draws attention without overwhelming other elements. Craft concise, persuasive copy that clearly communicates the value proposition and motivates action. The 'Get Ship' button should be visually dominant, using size, color contrast, and animation to establish clear visual hierarchy and affordance[4]. Ensure the button meets accessibility standards (large touch target, high contrast)[1][3]. Implement smooth animated transitions from gameplay to the CTA screen to maintain immersion and reduce cognitive load[2]. Build in A/B testing infrastructure: allow for dynamic swapping of copy, button styles, and hero art variants, and log user interactions for analytics. Ensure the layout is responsive and adapts to various screen sizes and orientations, with safe zones for critical elements[1].",
-        "testStrategy": "1. Play through the game and verify that the CTA screen appears at the correct transition point with a seamless animation. 2. Confirm that the hero ship illustration, branding, and copy are visually prominent, cohesive, and adapt to different devices and orientations. 3. Test the 'Get Ship' button for prominence, accessibility (size, contrast), and immediate feedback on tap/click. 4. Validate that A/B testing variants can be deployed and tracked, and that analytics are correctly logged for each variant. 5. Conduct usability tests to ensure the CTA is clear, persuasive, and not visually cluttered. 6. Test on a range of devices to confirm responsive layout and safe zone adherence.",
-        "status": "pending",
-        "dependencies": [
-          12,
-          19
-        ],
-        "priority": "high",
-        "subtasks": []
-      },
-      {
-        "id": 21,
-        "title": "Optimize Game for Mobile Performance and Loading Times",
-        "description": "Optimize the game for mobile performance by reducing bundle size, compressing assets, optimizing textures, improving rendering efficiency, managing memory, ensuring frame rate consistency, and minimizing loading times for 3G connections.",
-        "details": "1. Profile the game using tools such as Unity Profiler or Android GPU Inspector to identify bottlenecks in frame rate, memory usage, and loading times across a range of mobile devices, including low-end hardware[1][4].\n2. Reduce bundle size by removing unused assets, enabling code and asset stripping, and leveraging tree-shaking in the build pipeline[1][4].\n3. Compress textures using platform-appropriate formats (e.g., ASTC for Android/iOS), and optimize texture resolutions to balance quality and memory usage[1][5].\n4. Implement asset compression for audio, models, and UI elements; use efficient formats (e.g., Ogg Vorbis for audio, Draco for meshes) and minimize file sizes without sacrificing essential quality[1][5].\n5. Optimize rendering by reducing draw calls (e.g., batching static meshes, combining materials), using LODs, and culling off-screen objects[3][5].\n6. Apply memory management best practices such as object pooling for frequently spawned/despawned entities (e.g., projectiles, VFX), and avoid unnecessary allocations to prevent spikes and crashes[2][3].\n7. Ensure frame rate consistency by profiling and optimizing scripts, minimizing per-frame computations, and using efficient update loops[1][2].\n8. Improve loading times for 3G connections by implementing asynchronous asset loading, lazy loading for non-critical assets, and displaying loading feedback to users[1].\n9. Test and validate performance on a variety of real devices and network conditions, using cloud-based device farms if available[1].\n10. Document all optimization steps and update the CI/CD pipeline to include bundle size and performance checks.",
-        "testStrategy": "1. Profile the game on a range of target mobile devices (including low-end) and measure frame rate, memory usage, and loading times before and after optimization.\n2. Verify that the final bundle size meets target thresholds and that all assets are properly compressed.\n3. Test gameplay for smooth frame rates (targeting 60 FPS or stable minimum), consistent memory usage, and absence of crashes or stutters during intensive scenes.\n4. Simulate 3G network conditions and confirm that loading times are minimized and loading feedback is displayed.\n5. Use automated CI/CD checks to ensure bundle size and performance regressions are caught in future builds.\n6. Confirm that visual and audio quality remain acceptable after compression and optimization steps.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          13,
-          16
-        ],
-        "priority": "high",
-        "subtasks": []
-      },
-      {
-        "id": 22,
-        "title": "Implement JSON-Based Multi-Language Localization System",
-        "description": "Develop a robust localization system supporting multiple languages using JSON files, dynamic text interpolation, fallback language support, and configurable text keys for all UI and game messages.",
-        "details": "Design a localization manager that loads language-specific JSON files containing all user-facing strings, organized by text keys (e.g., 'menu.start', 'hud.score'). Implement a mechanism to select the active language at runtime, defaulting to the user's browser or system language when possible, and falling back to a default language (e.g., English) if a string is missing in the selected language[1][2][3]. Support dynamic text interpolation (e.g., replacing placeholders like {playerName} or {score} within strings) and pluralization rules where needed[3]. Ensure all UI elements and game messages reference text keys instead of hardcoded strings, and provide a utility function (e.g., t('key', params)) for retrieving and formatting localized text. Store localization files in a dedicated directory (e.g., /localization/) and structure them for easy addition of new languages. Consider font and layout adjustments for languages with different scripts or text directions[4].",
-        "testStrategy": "1. Switch between multiple languages in the game and verify that all UI elements and messages update accordingly, including dynamic text interpolation. 2. Remove or comment out specific keys in a non-default language file and confirm that the system falls back to the default language for missing strings. 3. Add a new language JSON file and verify it can be selected and displays correctly. 4. Test pluralization and parameterized strings for correct substitution. 5. Check that all text keys are referenced via the localization system and that no hardcoded user-facing strings remain. 6. Validate font rendering and layout for languages with special characters or right-to-left scripts.",
-        "status": "pending",
-        "dependencies": [
-          1,
-          19
-        ],
-        "priority": "low",
-        "subtasks": []
-      }
-    ],
-    "metadata": {
-      "created": "2025-07-10T07:37:31.612Z",
-      "updated": "2025-07-10T09:19:17.009Z",
-      "description": "Tasks for master context"
+        "metadata": {
+            "created": "2025-07-10T07:37:31.612Z",
+            "updated": "2025-07-10T09:19:17.009Z",
+            "description": "Tasks for master context"
+        }
     }
-  }
 }

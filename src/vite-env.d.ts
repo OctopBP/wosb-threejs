@@ -1,3 +1,3 @@
 /// <reference types="vite/client" />
 
-declare type MouseWheelEvent = WheelEvent;
+declare type MouseWheelEvent = WheelEvent
