@@ -5,7 +5,7 @@ export interface Component {
 
 // Position component for entity location and rotation
 export interface PositionComponent extends Component {
-    type: 'position';
+    type: "position";
     x: number;
     y: number;
     z: number;
@@ -16,7 +16,7 @@ export interface PositionComponent extends Component {
 
 // Velocity component for entity movement
 export interface VelocityComponent extends Component {
-    type: 'velocity';
+    type: "velocity";
     dx: number;
     dy: number;
     dz: number;
@@ -25,29 +25,47 @@ export interface VelocityComponent extends Component {
     angularVelocityZ: number;
 }
 
-// Input component for storing current input state
+// Input component for storing current input state and processed direction
 export interface InputComponent extends Component {
-    type: 'input';
+    type: "input";
+    // Raw input state
     moveForward: boolean;
     moveBackward: boolean;
     moveLeft: boolean;
     moveRight: boolean;
-    rotateLeft: boolean;
-    rotateRight: boolean;
     pointerX: number;
     pointerY: number;
     isTouching: boolean;
     isPointerDown: boolean;
+
+    // Processed output - direction vector
+    direction: {
+        x: number; // -1 to 1 (left/right)
+        y: number; // -1 to 1 (forward/backward)
+    };
+    hasInput: boolean;
 }
 
 // Movement configuration component
 export interface MovementConfigComponent extends Component {
-    type: 'movementConfig';
-    speed: number;
-    rotationSpeed: number;
-    responsiveness: number;
-    dampening: number;
+    type: "movementConfig";
+    // Acceleration settings
+    accelerationForce: number;
+    decelerationForce: number;
     maxSpeed: number;
+
+    // Rotation settings
+    autoRotationStrength: number; // How much the ship auto-rotates towards movement direction
+
+    // Input processing settings
+    inputResponsiveness: number;
+    inputDeadZone: number;
+    pointerSensitivity: number;
+
+    // Movement dampening
+    linearDampening: number;
+
+    // Boundaries
     boundaries: {
         minX: number;
         maxX: number;
@@ -60,14 +78,14 @@ export interface MovementConfigComponent extends Component {
 
 // Renderable component for Babylon.js mesh
 export interface RenderableComponent extends Component {
-    type: 'renderable';
+    type: "renderable";
     meshId: string;
     mesh?: any; // BABYLON.Mesh
-    meshType: 'placeholder' | 'ship' | 'enemy' | 'projectile';
+    meshType: "placeholder" | "ship" | "enemy" | "projectile";
     visible: boolean;
 }
 
 // Player tag component
 export interface PlayerComponent extends Component {
-    type: 'player';
+    type: "player";
 }
