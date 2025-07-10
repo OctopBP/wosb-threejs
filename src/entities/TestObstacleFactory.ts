@@ -36,12 +36,12 @@ export function createTestObstacle(x: number, y: number, z: number): Entity {
     }
     entity.addComponent(damageable)
 
-    // Renderable component - use ship model for now (we can change this later)
+    // Renderable component - use box primitive for obstacle
     const renderable: RenderableComponent = {
         type: 'renderable',
         meshId: `test_obstacle_${entity.id}`,
         mesh: undefined, // Will be created by RenderSystem
-        meshType: 'ship', // Reusing ship model for simplicity
+        meshType: 'box', // Use box primitive instead of ship model
         visible: true,
     }
     entity.addComponent(renderable)

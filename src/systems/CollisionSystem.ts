@@ -37,7 +37,8 @@ export class CollisionSystem extends System {
             if (!projectileComp || !projectilePos) continue
 
             for (const target of damageableEntities) {
-                // Skip if target is the owner of the projectile
+                // IMPORTANT: Prevent self-damage - skip if target is the owner of the projectile
+                // This ensures ships don't damage themselves with their own projectiles
                 if (target.id === projectileComp.ownerId) continue
 
                 const targetPos =

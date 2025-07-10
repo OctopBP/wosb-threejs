@@ -1,5 +1,5 @@
 import type { Scene } from '@babylonjs/core'
-import { type Mesh, MeshBuilder } from '@babylonjs/core'
+import { Mesh, MeshBuilder } from '@babylonjs/core'
 import type {
     PositionComponent,
     ProjectileComponent,
@@ -87,31 +87,14 @@ export class WeaponSystem extends System {
         }
         projectile.addComponent(projectileComp)
 
-        // Renderable component - sphere mesh
+        // Renderable component - proper sphere mesh
         const renderable: RenderableComponent = {
             type: 'renderable',
             meshId: `projectile_${projectile.id}`,
-            mesh: this.createProjectileMesh(`projectile_${projectile.id}`),
-            meshType: 'sphere' as any, // Type assertion since this isn't in MODEL_CONFIGS
+            mesh: undefined, // Will be created by RenderSystem using primitive
+            meshType: 'sphere', // Now properly supported
             visible: true,
         }
         projectile.addComponent(renderable)
-    }
-
-    private createProjectileMesh(meshId: string): Mesh {
-        // Create a simple sphere for the projectile
-        const sphere = MeshBuilder.CreateSphere(
-            meshId,
-            {
-                diameter: 0.2,
-                segments: 8, // Low poly for performance
-            },
-            this.scene,
-        )
-
-        // Optional: Set material properties for visibility
-        // You could create a simple material here if needed
-
-        return sphere
     }
 }
