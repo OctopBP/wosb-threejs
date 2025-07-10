@@ -1,10 +1,12 @@
 {
-    "name": "friends",
+    "name": "wosb",
     "version": "0.0.0",
     "scripts": {
         "dev": "vite --open",
         "build": "tsc && vite build",
+        "build:analyze": "tsc && vite build --mode analyze",
         "preview": "tsc && vite build && vite preview --host --open",
+        "bundle-size": "npx vite-bundle-analyzer dist",
         "lint": "biome lint .",
         "lint:fix": "biome lint --write .",
         "format": "biome format .",
@@ -21,16 +23,18 @@
         "@biomejs/biome": "^2.1.1",
         "husky": "^9.1.7",
         "lint-staged": "^15.2.11",
+        "rollup-plugin-visualizer": "^5.14.0",
+        "terser": "^5.43.1",
         "typescript": "^5.3.3",
         "vite": "^5.0.11"
-    },
-    "dependencies": {
-        "babylonjs": "^8.16.0",
-        "babylonjs-loaders": "^8.16.0"
     },
     "lint-staged": {
         "*.{ts,js,json}": [
             "biome check --write"
         ]
+    },
+    "dependencies": {
+        "@babylonjs/core": "^8.16.0",
+        "@babylonjs/loaders": "^8.16.0"
     }
 }

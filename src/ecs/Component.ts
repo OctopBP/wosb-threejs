@@ -1,3 +1,4 @@
+import type { AbstractMesh } from '@babylonjs/core'
 import type { MODEL_CONFIGS } from '../config/ModelConfig'
 
 // Base Component interface for ECS system
@@ -82,7 +83,7 @@ export interface MovementConfigComponent extends Component {
 export interface RenderableComponent extends Component {
     type: 'renderable'
     meshId: string
-    mesh?: BABYLON.AbstractMesh
+    mesh?: AbstractMesh
     meshType: keyof typeof MODEL_CONFIGS
     visible: boolean
 }

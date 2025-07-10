@@ -1,4 +1,4 @@
-import type * as BABYLON from 'babylonjs'
+import type { Scene } from '@babylonjs/core'
 import type {
     InputComponent,
     MovementConfigComponent,
@@ -28,7 +28,7 @@ export class GameWorld {
     private lastTime: number = 0
 
     constructor(
-        private scene: BABYLON.Scene,
+        private scene: Scene,
         private canvas: HTMLCanvasElement,
     ) {
         this.world = new World()

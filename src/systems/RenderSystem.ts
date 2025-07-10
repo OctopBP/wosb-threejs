@@ -1,14 +1,17 @@
-import * as BABYLON from 'babylonjs'
+// Tree-shakeable ES6 imports - only import what we actually use
+import { AssetsManager, Mesh } from '@babylonjs/core'
 import { getModelConfig } from '../config/ModelConfig'
 import { System } from '../ecs/System'
-import 'babylonjs-loaders'
+import '@babylonjs/loaders/glTF/2.0'
 
+import type { AbstractMesh, Scene } from '@babylonjs/core'
 import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import type { World } from '../ecs/World'
-export class RenderSystem extends System {
-    private scene: BABYLON.Scene
 
-    constructor(world: World, scene: BABYLON.Scene) {
+export class RenderSystem extends System {
+    private scene: Scene
+
+    constructor(world: World, scene: Scene) {
         super(world, ['position', 'renderable'])
         this.scene = scene
     }
@@ -48,17 +51,17 @@ export class RenderSystem extends System {
         }
     }
 
-    private createMesh(renderable: RenderableComponent): BABYLON.AbstractMesh {
+    private createMesh(renderable: RenderableComponent): AbstractMesh {
         // For now, all mesh types use GLB models
         return this.createModelMesh(renderable.meshId, renderable.meshType)
     }
 
-    private createModelMesh(meshId: string, meshType: string): BABYLON.Mesh {
-        const parentMesh = new BABYLON.Mesh(meshId, this.scene)
+    private createModelMesh(meshId: string, meshType: string): Mesh {
+        const parentMesh = new Mesh(meshId, this.scene)
 
         const modelConfig = getModelConfig(meshType)
 
-        const assetsManager = new BABYLON.AssetsManager(this.scene)
+        const assetsManager = new AssetsManager(this.scene)
         const meshTask = assetsManager.addMeshTask(
             `${meshType}_task`,
             '',
