@@ -1,0 +1,139 @@
+# Biome.js Code Quality Standards
+
+This project uses [Biome.js](https://biomejs.dev/) for linting and formatting to ensure consistent code quality and style.
+
+## **Setup and Configuration**
+
+* **Configuration**: [biome.json](mdc:biome.json) contains project-specific settings
+* **Pre-commit Hook**: Biome runs automatically before each commit via husky
+* **IDE Integration**: Install the Biome extension for real-time feedback
+
+## **Key Standards Enforced**
+
+### **Import Management**
+
+* **Use `import type` for type-only imports** to optimize bundle size
+
+
+```typescript
+  // ✅ DO: Type-only import
+  import type { MovementConfigComponent } from '../ecs/Component';
+
+  // ❌ DON'T: Regular import for types only
+  import { MovementConfigComponent } from '../ecs/Component';
+  ```
+
+* **Organize imports automatically** via Biome's import sorting
+* **Remove unused imports** to keep files clean
+
+### **TypeScript Best Practices**
+
+* **Avoid explicit `any` types** - use specific types instead
+
+
+```typescript
+  // ✅ DO: Specific typing
+  updatePlayerMovementConfig(overrides: Partial<MovementConfigComponent>): void
+
+  // ❌ DON'T: Using any
+  updatePlayerMovementConfig(overrides: any): void
+  ```
+
+* **Handle unused parameters** properly
+
+
+```typescript
+  // ✅ DO: Prefix with underscore if intentionally unused
+  private createScene(engine: BABYLON.Engine, _canvas: HTMLCanvasElement): BABYLON.Scene
+
+  // ❌ DON'T: Leave unused parameters without indication
+  private createScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene
+  ```
+
+### **Code Style Standards**
+
+* **Indentation**: 4 spaces (configured in biome.json)
+* **Line Width**: 80 characters maximum
+* **Quotes**: Double quotes for strings
+* **Semicolons**: Always required
+* **Trailing Commas**: ES5 style (objects/arrays only)
+
+## **Available Scripts**
+
+```bash
+# Check formatting and linting
+npm run check
+
+# Auto-fix formatting and linting issues
+npm run check:fix
+
+# Lint only
+npm run lint
+npm run lint:fix
+
+# Format only
+npm run format
+npm run format:fix
+```
+
+## **Pre-commit Integration**
+
+Biome runs automatically before each commit through:
+* **Husky**: Git hook management ([.husky/pre-commit](mdc:.husky/pre-commit))
+* **lint-staged**: Runs only on staged files for performance
+* **Configuration**: See `lint-staged` section in [package.json](mdc:package.json)
+
+## **Best Practices**
+
+### **Before Committing**
+
+1. **Run `npm run check:fix`** to auto-fix most issues
+2. **Address remaining warnings manually** (like `any` types)
+3. **Ensure all TypeScript errors are resolved**
+
+### **Handling Babylon.js Types**
+
+* **Import types properly** for Babylon.js objects
+* **Use specific types** instead of `any` for meshes and components
+* **Consider creating type definitions** for complex Babylon objects
+
+### **Error Resolution Priority**
+
+1. **Errors** (red) - Must be fixed before commit
+2. **Warnings** (yellow) - Should be addressed when possible
+3. **Info** (blue) - Formatting suggestions, auto-fixable
+
+## **Configuration Notes**
+
+* **VCS Integration**: Enabled to respect .gitignore files
+* **File Filtering**: Focuses on TypeScript/JavaScript files in src/
+* **Git Integration**: Works with existing git workflow
+* **Performance**: lint-staged ensures only changed files are processed
+
+## **Troubleshooting**
+
+### **Common Issues**
+
+* **Import errors**: Use `import type` for type-only imports
+* **Unused parameters**: Prefix with `_` if intentionally unused
+* **Any types**: Replace with specific TypeScript types
+* **Formatting**: Run `npm run format:fix` for auto-formatting
+
+### **Bypassing Pre-commit** (Emergency Only)
+
+```bash
+git commit --no-verify -m "emergency fix"
+```
+
+**Note**: Only use `--no-verify` in true emergencies as it bypasses quality checks.
+
+## **Integration with Development Workflow**
+
+* **Real-time feedback** via IDE extension
+* **Automated fixes** on save (if configured in IDE)
+* **Consistent team standards** through shared configuration
+* **Fast pre-commit checks** on only modified files
+description:
+globs:
+alwaysApply: false
+---

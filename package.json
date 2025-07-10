@@ -1,20 +1,35 @@
 {
-  "name": "friends",
-  "version": "0.0.0",
-  "scripts": {
-    "dev": "vite --open",
-    "build": "tsc && vite build",
-    "preview": "tsc && vite build && vite preview --host --open"
-  },
-  "typeRoots": [
-    "node_modules/@types",
-    "src/@types"
-  ],
-  "devDependencies": {
-    "typescript": "^5.3.3",
-    "vite": "^5.0.11"
-  },
-  "dependencies": {
-    "babylonjs": "^6.38.0"
-  }
+    "name": "friends",
+    "version": "0.0.0",
+    "scripts": {
+        "dev": "vite --open",
+        "build": "tsc && vite build",
+        "preview": "tsc && vite build && vite preview --host --open",
+        "lint": "biome lint .",
+        "lint:fix": "biome lint --write .",
+        "format": "biome format .",
+        "format:fix": "biome format --write .",
+        "check": "biome check .",
+        "check:fix": "biome check --write .",
+        "prepare": "husky"
+    },
+    "typeRoots": [
+        "node_modules/@types",
+        "src/@types"
+    ],
+    "devDependencies": {
+        "@biomejs/biome": "^2.1.1",
+        "husky": "^9.1.7",
+        "lint-staged": "^15.2.11",
+        "typescript": "^5.3.3",
+        "vite": "^5.0.11"
+    },
+    "dependencies": {
+        "babylonjs": "^6.38.0"
+    },
+    "lint-staged": {
+        "*.{ts,js,json}": [
+            "biome check --write"
+        ]
+    }
 }
