@@ -20,10 +20,11 @@ import {
 import { EnemyAISystem, EnemySpawningSystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
+import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
-import { LevelingUISystem } from './systems/LevelingUISystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
@@ -44,7 +45,8 @@ export class GameWorld {
     private enemySpawningSystem: EnemySpawningSystem
     private enemyAISystem: EnemyAISystem
     private levelingSystem: LevelingSystem
-    private levelingUISystem: LevelingUISystem
+    private playerUISystem: PlayerUISystem
+    private enemyHealthUISystem: EnemyHealthUISystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -69,7 +71,8 @@ export class GameWorld {
         this.enemySpawningSystem = new EnemySpawningSystem(this.world)
         this.enemyAISystem = new EnemyAISystem(this.world)
         this.levelingSystem = new LevelingSystem(this.world)
-        this.levelingUISystem = new LevelingUISystem(
+        this.playerUISystem = new PlayerUISystem(this.world, camera, canvas)
+        this.enemyHealthUISystem = new EnemyHealthUISystem(
             this.world,
             scene,
             camera,
@@ -91,8 +94,9 @@ export class GameWorld {
         this.world.addSystem(this.projectileSystem) // 9. Update projectile lifetimes
         this.world.addSystem(this.collisionSystem) // 10. Check collisions and apply damage
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
-        this.world.addSystem(this.levelingUISystem) // 12. Update leveling UI
-        this.world.addSystem(this.renderSystem) // 13. Render the results
+        this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
+        this.world.addSystem(this.renderSystem) // 14. Render the results
     }
 
     init(): void {
