@@ -1,7 +1,6 @@
 import type { Camera, Scene } from 'three'
 import { Vector3 } from 'three'
 import type {
-    EnemyComponent,
     HealthComponent,
     PositionComponent,
     RenderableComponent,
@@ -77,7 +76,7 @@ export class EnemyHealthUISystem extends System {
         }
 
         // Remove UI for enemies that no longer exist
-        for (const [entityId, enemyUI] of this.enemyUIMap.entries()) {
+        for (const [entityId, _] of this.enemyUIMap.entries()) {
             if (!activeEnemyIds.has(entityId)) {
                 this.removeEnemyUI(entityId)
             }
