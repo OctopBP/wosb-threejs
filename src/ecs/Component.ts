@@ -1,4 +1,4 @@
-import type { AbstractMesh } from '@babylonjs/core'
+import type { Object3D } from 'three'
 import type { ModelType } from '../config/ModelConfig'
 
 // Base Component interface for ECS system
@@ -79,11 +79,11 @@ export interface MovementConfigComponent extends Component {
     }
 }
 
-// Renderable component for Babylon.js mesh
+// Renderable component for Three.js mesh
 export interface RenderableComponent extends Component {
     type: 'renderable'
     meshId: string
-    mesh?: AbstractMesh
+    mesh?: Object3D
     meshType: ModelType // Now properly typed with ModelType
     visible: boolean
 }

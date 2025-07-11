@@ -1,20 +1,32 @@
 // Tree-shakeable ES6 imports - only import what we actually use
-import { AssetsManager, Mesh, MeshBuilder } from '@babylonjs/core'
-import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
-import { System } from '../ecs/System'
-import '@babylonjs/loaders/glTF/2.0'
 
-import type { AbstractMesh, MeshAssetTask, Scene } from '@babylonjs/core'
+import type { Object3D, Scene } from 'three'
+import {
+    BoxGeometry,
+    Group,
+    LoadingManager,
+    Mesh,
+    MeshLambertMaterial,
+    SphereGeometry,
+} from 'three'
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
+import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
 import type { PositionComponent, RenderableComponent } from '../ecs/Component'
+import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
 export class RenderSystem extends System {
     private scene: Scene
+    private gltfLoader: GLTFLoader
+    private loadingManager: LoadingManager
 
     constructor(world: World, scene: Scene) {
         super(world, ['position', 'renderable'])
         this.scene = scene
+        this.loadingManager = new LoadingManager()
+        this.gltfLoader = new GLTFLoader(this.loadingManager)
     }
 
     update(_deltaTime: number): void {
@@ -30,18 +42,22 @@ export class RenderSystem extends System {
             // Skip if not visible
             if (!renderable.visible) {
                 if (renderable.mesh) {
-                    renderable.mesh.setEnabled(false)
+                    renderable.mesh.visible = false
                 }
                 continue
             }
 
             if (!renderable.mesh) {
-                renderable.mesh = this.createMesh(renderable)
+                const mesh = this.createMesh(renderable)
+                if (mesh) {
+                    renderable.mesh = mesh
+                    this.scene.add(mesh)
+                }
             }
 
             // Update mesh position and rotation
             if (renderable.mesh) {
-                renderable.mesh.setEnabled(true)
+                renderable.mesh.visible = true
 
                 // Update position
                 renderable.mesh.position.x = position.x
@@ -56,7 +72,7 @@ export class RenderSystem extends System {
         }
     }
 
-    private createMesh(renderable: RenderableComponent): AbstractMesh {
+    private createMesh(renderable: RenderableComponent): Object3D | null {
         // Check if this is a primitive mesh or a model mesh
         if (isPrimitiveModel(renderable.meshType)) {
             return this.createPrimitiveMesh(
@@ -71,74 +87,105 @@ export class RenderSystem extends System {
     private createPrimitiveMesh(meshId: string, meshType: string): Mesh {
         const config = getModelConfig(meshType) as PrimitiveModelConfig
 
-        let mesh: Mesh
+        let geometry: SphereGeometry | BoxGeometry
+        let material: MeshLambertMaterial
 
         if ('primitive' in config) {
             switch (config.primitive) {
                 case 'sphere':
-                    mesh = MeshBuilder.CreateSphere(
-                        meshId,
-                        config.options,
-                        this.scene,
+                    geometry = new SphereGeometry(
+                        config.options.diameter / 2 || 0.25,
+                        config.options.segments || 8,
+                        config.options.segments || 8,
                     )
                     break
                 case 'box':
-                    mesh = MeshBuilder.CreateBox(
-                        meshId,
-                        config.options,
-                        this.scene,
+                    geometry = new BoxGeometry(
+                        config.options.width || 1,
+                        config.options.height || 1,
+                        config.options.depth || 1,
                     )
                     break
                 default:
                     // Fallback to sphere
-                    mesh = MeshBuilder.CreateSphere(
-                        meshId,
-                        { diameter: 0.5 },
-                        this.scene,
-                    )
+                    geometry = new SphereGeometry(0.25, 8, 8)
             }
 
-            mesh.scaling.setAll(config.scale)
+            // Create material
+            material = new MeshLambertMaterial({
+                color: 0xffffff,
+                transparent: false,
+            })
+
+            const mesh = new Mesh(geometry, material)
+            mesh.name = meshId
+            mesh.scale.setScalar(config.scale)
+            mesh.castShadow = true
+            mesh.receiveShadow = true
+
+            return mesh
         } else {
             // Fallback
-            mesh = MeshBuilder.CreateSphere(
-                meshId,
-                { diameter: 0.5 },
-                this.scene,
-            )
+            geometry = new SphereGeometry(0.25, 8, 8)
+            material = new MeshLambertMaterial({ color: 0xffffff })
+            const mesh = new Mesh(geometry, material)
+            mesh.name = meshId
+            mesh.castShadow = true
+            mesh.receiveShadow = true
+            return mesh
         }
-
-        return mesh
     }
 
-    private createModelMesh(meshId: string, meshType: string): Mesh {
-        const parentMesh = new Mesh(meshId, this.scene)
+    private createModelMesh(meshId: string, meshType: string): Group {
+        const parentGroup = new Group()
+        parentGroup.name = meshId
 
         const modelConfig = getModelConfig(meshType) as ModelConfig
 
-        const assetsManager = new AssetsManager(this.scene)
-        const meshTask = assetsManager.addMeshTask(
-            `${meshType}_task`,
-            '',
-            'assets/models/',
-            modelConfig.fileName,
+        // Load the glTF model
+        this.gltfLoader.load(
+            `assets/models/${modelConfig.fileName}`,
+            (gltf: GLTF) => {
+                // Success callback
+                const model = gltf.scene
+                model.traverse((child) => {
+                    if (child instanceof Mesh) {
+                        child.castShadow = true
+                        child.receiveShadow = true
+                    }
+                })
+
+                parentGroup.add(model)
+                parentGroup.scale.setScalar(modelConfig.scale)
+            },
+            (progress: ProgressEvent) => {
+                // Progress callback (optional)
+                console.log('Loading progress:', progress)
+            },
+            (error: unknown) => {
+                // Error callback - GLB loading failed
+                console.warn(
+                    `Failed to load model ${modelConfig.fileName}:`,
+                    error,
+                )
+
+                // Create a fallback primitive instead
+                const fallbackGeometry = new BoxGeometry(1, 0.5, 2)
+                const fallbackMaterial = new MeshLambertMaterial({
+                    color: 0x00ff00,
+                })
+                const fallbackMesh = new Mesh(
+                    fallbackGeometry,
+                    fallbackMaterial,
+                )
+                fallbackMesh.castShadow = true
+                fallbackMesh.receiveShadow = true
+                parentGroup.add(fallbackMesh)
+                parentGroup.scale.setScalar(modelConfig.scale)
+            },
         )
 
-        meshTask.onSuccess = (task: MeshAssetTask) => {
-            if (task.loadedMeshes.length > 0) {
-                task.loadedMeshes.forEach((mesh: AbstractMesh) => {
-                    mesh.parent = parentMesh
-                })
-                parentMesh.scaling.setAll(modelConfig.scale)
-            }
-        }
-
-        meshTask.onError = () => {
-            // GLB loading failed - mesh will remain empty
-        }
-
-        assetsManager.load()
-        return parentMesh
+        return parentGroup
     }
 
     cleanup(): void {
@@ -148,7 +195,25 @@ export class RenderSystem extends System {
             const renderable =
                 entity.getComponent<RenderableComponent>('renderable')
             if (renderable?.mesh) {
-                renderable.mesh.dispose()
+                // Remove from scene
+                this.scene.remove(renderable.mesh)
+
+                // Dispose geometry and materials
+                if (renderable.mesh instanceof Mesh) {
+                    if (renderable.mesh.geometry) {
+                        renderable.mesh.geometry.dispose()
+                    }
+                    if (renderable.mesh.material) {
+                        if (Array.isArray(renderable.mesh.material)) {
+                            for (const material of renderable.mesh.material) {
+                                material.dispose()
+                            }
+                        } else {
+                            renderable.mesh.material.dispose()
+                        }
+                    }
+                }
+
                 renderable.mesh = undefined
             }
         }

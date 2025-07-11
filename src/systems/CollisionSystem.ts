@@ -1,3 +1,4 @@
+import { Mesh } from 'three'
 import type {
     DamageableComponent,
     HealthComponent,
@@ -15,7 +16,7 @@ export class CollisionSystem extends System {
         super(world, []) // We'll manually query for different component combinations
     }
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         const projectiles = this.world.getEntitiesWithComponents([
             'projectile',
             'position',
@@ -101,7 +102,28 @@ export class CollisionSystem extends System {
             const renderable =
                 entity.getComponent<RenderableComponent>('renderable')
             if (renderable?.mesh) {
-                renderable.mesh.dispose()
+                // Remove from scene (assuming parent is handling this)
+                if (renderable.mesh.parent) {
+                    renderable.mesh.parent.remove(renderable.mesh)
+                }
+
+                // Dispose geometry and materials if it's a Mesh
+                if (renderable.mesh instanceof Mesh) {
+                    if (renderable.mesh.geometry) {
+                        renderable.mesh.geometry.dispose()
+                    }
+                    if (renderable.mesh.material) {
+                        if (Array.isArray(renderable.mesh.material)) {
+                            for (const material of renderable.mesh.material) {
+                                material.dispose()
+                            }
+                        } else {
+                            renderable.mesh.material.dispose()
+                        }
+                    }
+                }
+
+                renderable.mesh = undefined
             }
 
             // Remove entity from world

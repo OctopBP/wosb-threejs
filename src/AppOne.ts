@@ -1,39 +1,59 @@
 // Tree-shakeable imports - only import what we actually use
+
+import { GUI } from 'lil-gui'
 import {
-    Color3,
+    Color,
     DirectionalLight,
-    Engine,
-    FreeCamera,
-    HemisphericLight,
-    MeshBuilder,
+    Fog,
+    HemisphereLight,
+    Mesh,
+    MeshLambertMaterial,
+    PCFSoftShadowMap,
+    PerspectiveCamera,
+    PlaneGeometry,
     Scene,
-    StandardMaterial,
     Vector3,
-} from '@babylonjs/core'
+    WebGLRenderer,
+} from 'three'
 import { GameWorld } from './GameWorld'
-import '@babylonjs/inspector'
-import '@babylonjs/loaders/glTF'
 
 export class AppOne {
-    engine: Engine
+    renderer: WebGLRenderer
     scene: Scene
+    camera: PerspectiveCamera
     gameWorld: GameWorld
+    gui?: GUI
 
     constructor(readonly canvas: HTMLCanvasElement) {
-        this.engine = new Engine(canvas)
+        // Create renderer
+        this.renderer = new WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: false,
+        })
+        this.renderer.setSize(canvas.clientWidth, canvas.clientHeight)
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        this.renderer.shadowMap.enabled = true
+        this.renderer.shadowMap.type = PCFSoftShadowMap
+        this.renderer.setClearColor(0x87ceeb, 1) // Sky blue background
+
+        // Handle window resize
         window.addEventListener('resize', () => {
-            this.engine.resize()
+            this.handleResize()
         })
 
-        this.scene = this.createScene(this.engine, this.canvas)
-        this.gameWorld = new GameWorld(this.scene, this.canvas)
+        this.scene = this.createScene()
+        this.camera = this.createCamera()
+        this.gameWorld = new GameWorld(this.scene, this.renderer, this.canvas)
     }
 
     debug(debugOn: boolean = true) {
-        if (debugOn) {
-            this.scene.debugLayer.show({ overlay: true })
-        } else {
-            this.scene.debugLayer.hide()
+        if (debugOn && !this.gui) {
+            this.gui = new GUI()
+            this.createDebugControls()
+        } else if (!debugOn && this.gui) {
+            this.gui.destroy()
+            this.gui = undefined
         }
     }
 
@@ -44,67 +64,131 @@ export class AppOne {
 
         this.gameWorld.init()
 
-        this.engine.runRenderLoop(() => {
-            this.gameWorld.update(performance.now())
-            this.scene.render()
-        })
+        this.startRenderLoop()
     }
 
-    private createScene(engine: Engine, _canvas: HTMLCanvasElement): Scene {
-        // Create a basic Babylon Scene object
-        const scene = new Scene(engine)
-
-        // Create and position a free camera
-        const camera = new FreeCamera('camera1', new Vector3(0, 8, -15), scene)
-
-        // Point camera at the origin where the player ship will be
-        camera.setTarget(new Vector3(0, 0, 0))
-
-        // Disable default camera controls since we're implementing our own
-        // camera.attachControl(canvas, true);
+    private createScene(): Scene {
+        const scene = new Scene()
 
         // Create hemisphere light for general illumination
-        const light = new HemisphericLight('light', new Vector3(0, 1, 0), scene)
-        light.intensity = 0.8
+        const hemisphereLight = new HemisphereLight(0xffffff, 0x444444, 0.8)
+        hemisphereLight.position.set(0, 20, 0)
+        scene.add(hemisphereLight)
 
-        // Create directional light for better depth perception
-        const directionalLight = new DirectionalLight(
-            'dirLight',
-            new Vector3(-1, -1, -1),
-            scene,
-        )
-        directionalLight.position = new Vector3(10, 10, 10)
-        directionalLight.intensity = 0.4
+        // Create directional light for better depth perception and shadows
+        const directionalLight = new DirectionalLight(0xffffff, 0.4)
+        directionalLight.position.set(10, 10, 10)
+        directionalLight.target.position.set(0, 0, 0)
+        directionalLight.castShadow = true
+        directionalLight.shadow.mapSize.width = 2048
+        directionalLight.shadow.mapSize.height = 2048
+        directionalLight.shadow.camera.near = 0.5
+        directionalLight.shadow.camera.far = 50
+        directionalLight.shadow.camera.left = -25
+        directionalLight.shadow.camera.right = 25
+        directionalLight.shadow.camera.top = 25
+        directionalLight.shadow.camera.bottom = -25
+        scene.add(directionalLight)
 
         // Create ocean/ground plane
-        const ground = MeshBuilder.CreateGround(
-            'ocean',
-            { width: 50, height: 50 },
-            scene,
-        )
-        const groundMaterial = new StandardMaterial('oceanMaterial', scene)
-        groundMaterial.diffuseColor = new Color3(0.2, 0.4, 0.8) // Blue ocean
-        groundMaterial.specularColor = new Color3(0.1, 0.2, 0.4)
-        ground.material = groundMaterial
+        const groundGeometry = new PlaneGeometry(50, 50)
+        const groundMaterial = new MeshLambertMaterial({
+            color: new Color(0.2, 0.4, 0.8), // Blue ocean
+        })
+        const ground = new Mesh(groundGeometry, groundMaterial)
+        ground.rotation.x = -Math.PI / 2 // Rotate to be horizontal
+        ground.receiveShadow = true
+        scene.add(ground)
 
-        // Add some atmosphere with fog
-        scene.fogMode = Scene.FOGMODE_EXP2
-        scene.fogColor = new Color3(0.7, 0.8, 0.9)
-        scene.fogDensity = 0.01
+        // Add fog for atmosphere
+        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 10, 100)
 
         return scene
     }
 
+    private createCamera(): PerspectiveCamera {
+        const camera = new PerspectiveCamera(
+            75, // field of view
+            window.innerWidth / window.innerHeight, // aspect ratio
+            0.1, // near plane
+            1000, // far plane
+        )
+
+        // Position camera
+        camera.position.set(0, 8, -15)
+        camera.lookAt(new Vector3(0, 0, 0)) // Point camera at the origin where the player ship will be
+
+        return camera
+    }
+
+    private createDebugControls() {
+        if (!this.gui) return
+
+        // Camera controls
+        const cameraFolder = this.gui.addFolder('Camera')
+        cameraFolder.add(this.camera.position, 'x', -20, 20, 0.1)
+        cameraFolder.add(this.camera.position, 'y', 1, 20, 0.1)
+        cameraFolder.add(this.camera.position, 'z', -30, 10, 0.1)
+
+        // Lighting controls
+        const lightFolder = this.gui.addFolder('Lighting')
+        const hemisphereLight = this.scene.children.find(
+            (child): child is HemisphereLight =>
+                child instanceof HemisphereLight,
+        )
+        const directionalLight = this.scene.children.find(
+            (child): child is DirectionalLight =>
+                child instanceof DirectionalLight,
+        )
+
+        if (hemisphereLight) {
+            lightFolder
+                .add(hemisphereLight, 'intensity', 0, 2, 0.01)
+                .name('Hemisphere Intensity')
+        }
+        if (directionalLight) {
+            lightFolder
+                .add(directionalLight, 'intensity', 0, 2, 0.01)
+                .name('Directional Intensity')
+        }
+
+        // Fog controls
+        const fogFolder = this.gui.addFolder('Fog')
+        if (this.scene.fog instanceof Fog) {
+            fogFolder.add(this.scene.fog, 'near', 1, 50, 0.1)
+            fogFolder.add(this.scene.fog, 'far', 50, 200, 1)
+        }
+    }
+
+    private handleResize() {
+        const width = this.canvas.clientWidth
+        const height = this.canvas.clientHeight
+
+        this.camera.aspect = width / height
+        this.camera.updateProjectionMatrix()
+
+        this.renderer.setSize(width, height)
+    }
+
+    private startRenderLoop() {
+        const animate = (time: number) => {
+            this.gameWorld.update(time)
+            this.renderer.render(this.scene, this.camera)
+            requestAnimationFrame(animate)
+        }
+        requestAnimationFrame(animate)
+    }
+
     // Cleanup method
     dispose() {
+        if (this.gui) {
+            this.gui.destroy()
+        }
         if (this.gameWorld) {
             this.gameWorld.cleanup()
         }
-        if (this.scene) {
-            this.scene.dispose()
-        }
-        if (this.engine) {
-            this.engine.dispose()
+        if (this.renderer) {
+            this.renderer.dispose()
         }
     }
 }
