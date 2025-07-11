@@ -41,10 +41,10 @@ This project uses [Biome.js](https://biomejs.dev/) for linting and formatting to
 
 ```typescript
   // ✅ DO: Prefix with underscore if intentionally unused
-  private createScene(engine: BABYLON.Engine, _canvas: HTMLCanvasElement): BABYLON.Scene
+  private createScene(renderer: THREE.WebGLRenderer, _canvas: HTMLCanvasElement): THREE.Scene
 
   // ❌ DON'T: Leave unused parameters without indication
-  private createScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene
+  private createScene(renderer: THREE.WebGLRenderer, canvas: HTMLCanvasElement): THREE.Scene
   ```
 
 ### **Code Style Standards**
@@ -88,11 +88,11 @@ Biome runs automatically before each commit through:
 2. **Address remaining warnings manually** (like `any` types)
 3. **Ensure all TypeScript errors are resolved**
 
-### **Handling Babylon.js Types**
+### **Handling Three.js Types**
 
-* **Import types properly** for Babylon.js objects
+* **Import types properly** for Three.js objects
 * **Use specific types** instead of `any` for meshes and components
-* **Consider creating type definitions** for complex Babylon objects
+* **Consider creating type definitions** for complex Three.js objects
 
 ### **Error Resolution Priority**
 

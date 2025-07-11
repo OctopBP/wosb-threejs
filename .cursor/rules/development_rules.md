@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-This is a 20-30 second HTML5 playable advertisement game built with Vite, TypeScript, and Babylon.js. The game showcases naval combat mechanics with progressive ship upgrades, culminating in a boss encounter that drives conversion to the main game.
+This is a 20-30 second HTML5 playable advertisement game built with Vite, TypeScript, and Three.js. The game showcases naval combat mechanics with progressive ship upgrades, culminating in a boss encounter that drives conversion to the main game.
 
 ## Tech Stack
 
 * **Build Tool**: Vite for fast development and optimized bundling
 * **Language**: TypeScript for type safety and better development experience
-* **3D Engine**: Babylon.js for 3D rendering and game logic
+* **3D Engine**: Three.js for 3D rendering and game logic
 * **Target**: Mobile web browsers (iOS Safari, Android Chrome) with desktop fallback
 * **File Size**: <10MB total bundle size
 * **Performance**: 60 FPS on mid-tier mobile devices
@@ -32,11 +32,11 @@ src/
 
 ### Naming Conventions
 
-* **Files**: PascalCase for classes, camelCase for utilities (e.g.,    `PlayerShip.ts`,    `mathUtils.ts`)
-* **Classes**: PascalCase (e.g.,    `PlayerShip`,    `CombatSystem`)
-* **Functions/Variables**: camelCase (e.g.,    `updatePosition`,    `currentLevel`)
-* **Constants**: SCREAMING_SNAKE_CASE (e.g.,    `MAX_LEVEL`,    `CANNON_DAMAGE`)
-* **Enums**: PascalCase with descriptive names (e.g.,    `ShipType`,    `GameState`)
+* **Files**: PascalCase for classes, camelCase for utilities (e.g.,  `PlayerShip.ts`,  `mathUtils.ts`)
+* **Classes**: PascalCase (e.g.,  `PlayerShip`,  `CombatSystem`)
+* **Functions/Variables**: camelCase (e.g.,  `updatePosition`,  `currentLevel`)
+* **Constants**: SCREAMING_SNAKE_CASE (e.g.,  `MAX_LEVEL`,  `CANNON_DAMAGE`)
+* **Enums**: PascalCase with descriptive names (e.g.,  `ShipType`,  `GameState`)
 
 ## Code Quality Standards
 

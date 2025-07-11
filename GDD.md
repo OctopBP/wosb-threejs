@@ -224,7 +224,7 @@
 
 ### 7.1 Engine & Framework
 
-* **Rendering:** Babylon.js 3D engine
+* **Rendering:** Three.js 3D engine
 * **Language:** TypeScript for type safety
 * **Build Tool:** Vite for development and bundling
 * **Package Management:** npm

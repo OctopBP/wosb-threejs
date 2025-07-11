@@ -49,7 +49,7 @@ World of Sea Battle is a 20-30 second HTML5 playable advertisement game designed
 <PRD>
 # Technical Architecture
 ## Core Systems
-- **Game Engine**: Babylon.js 3D rendering with TypeScript
+- **Game Engine**: Three.js 3D rendering with TypeScript
 - **Build System**: Vite for fast development and optimized bundling
 - **Entity-Component Architecture**: Modular design with clear separation of concerns
 - **Configuration System**: JSON-based configs for all game values, no hardcoded constants
@@ -79,7 +79,7 @@ World of Sea Battle is a 20-30 second HTML5 playable advertisement game designed
 
 # Development Roadmap
 ## Phase 1: Core Framework (Foundation)
-- Project setup with Vite, TypeScript, and Babylon.js
+- Project setup with Vite, TypeScript, and Three.js
 - Basic scene management and transitions
 - Configuration system architecture
 - Entity-component base classes
