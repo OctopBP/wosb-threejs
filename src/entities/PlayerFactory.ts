@@ -1,3 +1,8 @@
+import {
+    createLevelComponent,
+    createLevelingStatsComponent,
+    createXPComponent,
+} from '../config/LevelingConfig'
 import type { MovementConfigPreset } from '../config/MovementPresets'
 import { createMovementConfig } from '../config/MovementPresets'
 import {
@@ -104,6 +109,18 @@ export function createPlayerShip(
         type: 'player',
     }
     entity.addComponent(player)
+
+    // XP component for tracking experience points
+    const xp = createXPComponent()
+    entity.addComponent(xp)
+
+    // Level component for tracking player level
+    const level = createLevelComponent()
+    entity.addComponent(level)
+
+    // Leveling stats component for stat improvements
+    const levelingStats = createLevelingStatsComponent()
+    entity.addComponent(levelingStats)
 
     return entity
 }

@@ -1,5 +1,6 @@
 import { Mesh } from 'three'
 import { enemySpawningConfig } from '../config/EnemyConfig'
+import { enemyXPConfig } from '../config/LevelingConfig'
 import type {
     HealthComponent,
     PositionComponent,
@@ -14,9 +15,18 @@ export class EnemySpawningSystem extends System {
     private spawnInterval: number = enemySpawningConfig.spawnInterval
     private maxEnemies: number = enemySpawningConfig.maxEnemies
     private spawnDistance: number = enemySpawningConfig.spawnDistance
+    private levelingSystem: import('./LevelingSystem').LevelingSystem | null =
+        null
 
     constructor(world: World) {
         super(world, []) // No required components for spawning system
+    }
+
+    // Method to set the leveling system reference
+    setLevelingSystem(
+        levelingSystem: import('./LevelingSystem').LevelingSystem,
+    ): void {
+        this.levelingSystem = levelingSystem
     }
 
     update(_deltaTime: number): void {
@@ -80,6 +90,26 @@ export class EnemySpawningSystem extends System {
             const health = enemy.getComponent<HealthComponent>('health')
             return health?.isDead === true
         })
+
+        // Award XP for each dead enemy before removing them
+        if (deadEnemies.length > 0 && this.levelingSystem) {
+            // Find the player entity to award XP to
+            const playerEntities = this.world.getEntitiesWithComponents([
+                'player',
+            ])
+            if (playerEntities.length > 0) {
+                const player = playerEntities[0]
+
+                for (const deadEnemy of deadEnemies) {
+                    // Award XP for each enemy type (currently only basic enemies)
+                    const xpAwarded = enemyXPConfig.basicEnemy
+                    this.levelingSystem.awardXP(player.id, xpAwarded)
+                    console.log(
+                        `💀 Enemy defeated! Awarded ${xpAwarded} XP to player`,
+                    )
+                }
+            }
+        }
 
         // Remove dead enemies from world
         for (const deadEnemy of deadEnemies) {

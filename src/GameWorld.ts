@@ -1,4 +1,4 @@
-import type { Scene, WebGLRenderer } from 'three'
+import type { Camera, Scene, WebGLRenderer } from 'three'
 import type {
     HealthComponent,
     InputComponent,
@@ -21,6 +21,8 @@ import { EnemyAISystem, EnemySpawningSystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { InputSystem } from './systems/InputSystem'
+import { LevelingSystem } from './systems/LevelingSystem'
+import { LevelingUISystem } from './systems/LevelingUISystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -41,6 +43,8 @@ export class GameWorld {
     private renderSystem: RenderSystem
     private enemySpawningSystem: EnemySpawningSystem
     private enemyAISystem: EnemyAISystem
+    private levelingSystem: LevelingSystem
+    private levelingUISystem: LevelingUISystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -48,6 +52,7 @@ export class GameWorld {
         private scene: Scene,
         private renderer: WebGLRenderer,
         private canvas: HTMLCanvasElement,
+        private camera: Camera,
     ) {
         this.world = new World()
 
@@ -63,6 +68,16 @@ export class GameWorld {
         this.renderSystem = new RenderSystem(this.world, scene)
         this.enemySpawningSystem = new EnemySpawningSystem(this.world)
         this.enemyAISystem = new EnemyAISystem(this.world)
+        this.levelingSystem = new LevelingSystem(this.world)
+        this.levelingUISystem = new LevelingUISystem(
+            this.world,
+            scene,
+            camera,
+            canvas,
+        )
+
+        // Connect systems that need references to each other
+        this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
 
         // Add systems to world in execution order
         this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
@@ -75,7 +90,9 @@ export class GameWorld {
         this.world.addSystem(this.projectileMovementSystem) // 8. Move projectiles with gravity
         this.world.addSystem(this.projectileSystem) // 9. Update projectile lifetimes
         this.world.addSystem(this.collisionSystem) // 10. Check collisions and apply damage
-        this.world.addSystem(this.renderSystem) // 11. Render the results
+        this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
+        this.world.addSystem(this.levelingUISystem) // 12. Update leveling UI
+        this.world.addSystem(this.renderSystem) // 13. Render the results
     }
 
     init(): void {

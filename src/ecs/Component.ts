@@ -147,3 +147,33 @@ export interface EnemyAIComponent extends Component {
     // Target tracking
     targetId: number | null
 }
+
+// XP (Experience Points) component for tracking player progression
+export interface XPComponent extends Component {
+    type: 'xp'
+    currentXP: number
+    totalXP: number // Total XP gained throughout the game
+}
+
+// Level component for tracking player level and level-up state
+export interface LevelComponent extends Component {
+    type: 'level'
+    currentLevel: number
+    maxLevel: number
+    // Level-up state tracking
+    hasLeveledUp: boolean // Flag to trigger level-up effects
+    levelUpTime: number // Timestamp of last level up for animations
+}
+
+// Leveling Stats component for stat improvements per level
+export interface LevelingStatsComponent extends Component {
+    type: 'levelingStats'
+    baseDamage: number
+    damagePerLevel: number
+    baseFireRate: number
+    fireRatePerLevel: number
+    baseMaxHealth: number
+    healthPerLevel: number
+    baseMaxSpeed: number
+    speedPerLevel: number
+}
