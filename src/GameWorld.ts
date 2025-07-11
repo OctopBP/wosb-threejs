@@ -29,6 +29,7 @@ import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
+import { ShipCollisionSystem } from './systems/ShipCollisionSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 
 export class GameWorld {
@@ -40,6 +41,7 @@ export class GameWorld {
     private weaponSystem: WeaponSystem
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
+    private shipCollisionSystem: ShipCollisionSystem
     private collisionSystem: CollisionSystem
     private renderSystem: RenderSystem
     private enemySpawningSystem: EnemySpawningSystem
@@ -66,6 +68,7 @@ export class GameWorld {
         this.weaponSystem = new WeaponSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
+        this.shipCollisionSystem = new ShipCollisionSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
         this.enemySpawningSystem = new EnemySpawningSystem(this.world)
@@ -88,14 +91,15 @@ export class GameWorld {
         this.world.addSystem(this.rotationSystem) // 4. Handle rotation
         this.world.addSystem(this.accelerationSystem) // 5. Apply acceleration/deceleration
         this.world.addSystem(this.movementSystem) // 6. Apply velocity to position (ships only)
-        this.world.addSystem(this.weaponSystem) // 7. Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // 8. Move projectiles with gravity
-        this.world.addSystem(this.projectileSystem) // 9. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 10. Check collisions and apply damage
-        this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.renderSystem) // 14. Render the results
+        this.world.addSystem(this.shipCollisionSystem) // 7. Handle ship-to-ship collisions
+        this.world.addSystem(this.weaponSystem) // 8. Handle weapon firing
+        this.world.addSystem(this.projectileMovementSystem) // 9. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 10. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 11. Check projectile collisions and apply damage
+        this.world.addSystem(this.levelingSystem) // 12. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 13. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 14. Update enemy health UI
+        this.world.addSystem(this.renderSystem) // 15. Render the results
     }
 
     init(): void {

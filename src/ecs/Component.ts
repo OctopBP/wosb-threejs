@@ -177,3 +177,12 @@ export interface LevelingStatsComponent extends Component {
     baseMaxSpeed: number
     speedPerLevel: number
 }
+
+// Collision component for ship-to-ship collision detection and response
+export interface CollisionComponent extends Component {
+    type: 'collision'
+    radius: number // Collision radius for this entity
+    mass: number // Mass for collision response calculations
+    restitution: number // Bounciness (0 = no bounce, 1 = perfectly elastic)
+    isStatic: boolean // Whether this entity can be moved by collisions
+}
