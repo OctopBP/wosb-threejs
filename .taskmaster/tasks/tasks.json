@@ -192,7 +192,53 @@
                 "status": "pending",
                 "dependencies": [1, 2, 3],
                 "priority": "medium",
-                "subtasks": []
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Implement XP Tracking and Configurable Progression Curves",
+                        "description": "Develop an XP tracking component for player entities that supports XP gain from combat and other sources. Implement a progression system that calculates level thresholds using configurable curves (linear, polynomial, or custom arrays), allowing designers to adjust XP requirements per level.",
+                        "dependencies": [],
+                        "details": "Create an ECS component to store current XP and level for each player entity. Design a progression manager that reads XP thresholds from external configuration (e.g., JSON, ScriptableObject). Support multiple progression curve types and allow designers to modify them without code changes. Ensure XP can be incremented from various sources, with events or hooks for XP gain.",
+                        "status": "pending",
+                        "testStrategy": "Unit test XP gain and threshold calculations for all supported curve types. Validate that configuration changes are reflected in-game without code changes."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Integrate XP Gain with Combat and Enemy Spawning Systems",
+                        "description": "Connect the XP gain system to the combat and enemy spawning systems so that destroying enemies and completing combat actions award XP according to configurable rules.",
+                        "dependencies": [],
+                        "details": "Modify enemy death logic to trigger XP gain events for the player entity responsible. Make XP values per enemy type configurable via external data. Ensure XP gain is correctly attributed in multiplayer or co-op scenarios. Provide hooks for other XP sources if needed.",
+                        "status": "pending",
+                        "testStrategy": "Simulate enemy destruction and verify correct XP is awarded. Test with different enemy types and XP configurations."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Implement Level-Up Mechanics: Stat Improvements and Health Restoration",
+                        "description": "Develop logic to handle level-ups, including incrementing the level, restoring player health, and applying stat improvements such as increased weapon damage, fire rate, and max HP.",
+                        "dependencies": [],
+                        "details": "On XP threshold crossing, increment the level, optionally carry over excess XP, and trigger stat upgrades. Define stat improvements per level in external configuration. Restore player health to max on level-up. Ensure stat changes are reflected in ECS components and propagate to combat/movement systems.",
+                        "status": "pending",
+                        "testStrategy": "Trigger level-ups via XP gain and verify health restoration and stat upgrades. Confirm stat changes affect gameplay (damage, fire rate, HP)."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Apply Visual Upgrades and Level-Up Effects",
+                        "description": "Implement ship visual upgrades (sails, cannons, hull colors) and a level-up animation (scale up/down) that trigger on level-up, using a data-driven approach for easy modification.",
+                        "dependencies": [],
+                        "details": "Define visual upgrade assets and mappings per level in configuration. On level-up, update the ship's visual components to match the new level. Implement a scaling animation for the ship model as a level-up effect. Ensure visual changes are modular and can be extended or modified easily.",
+                        "status": "pending",
+                        "testStrategy": "Level up in-game and verify correct visual upgrades and animation play. Test with different upgrade configurations."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Create and Integrate Level and XP UI Above Ship Model",
+                        "description": "Develop a UI element that displays the current level number and XP bar above the ship model, updating in real-time as XP is gained and levels change.",
+                        "dependencies": [],
+                        "details": "Design a world-space UI prefab showing level and XP bar. Attach the UI to the ship entity and update it via ECS events or data bindings. Ensure the UI reflects current XP, level, and next threshold. Provide hooks for additional UI updates if needed.",
+                        "status": "pending",
+                        "testStrategy": "Gain XP and level up in-game, verifying the UI updates accurately and remains positioned above the ship."
+                    }
+                ]
             },
             {
                 "id": 6,
