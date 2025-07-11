@@ -1,11 +1,15 @@
+import {
+    createEnemyAIConfig,
+    createEnemyHealthConfig,
+    createEnemyWeaponConfig,
+    enemyMovementPreset,
+} from '../config/EnemyConfig'
 import { createMovementConfig } from '../config/MovementPresets'
-import { createWeaponConfig } from '../config/WeaponConfig'
 import type {
     DamageableComponent,
     EnemyAIComponent,
     EnemyComponent,
     HealthComponent,
-    MovementConfigComponent,
     PositionComponent,
     RenderableComponent,
     VelocityComponent,
@@ -45,37 +49,16 @@ export function createEnemyShip(
     }
     entity.addComponent(velocity)
 
-    // Movement configuration - enemies move slower than player
-    const movementConfig = createMovementConfig({
-        maxSpeed: 2.0, // Slower than player
-        accelerationForce: 4.0, // Slower acceleration
-        boundaries: {
-            minX: -15,
-            maxX: 15,
-            minY: 0,
-            maxY: 5,
-            minZ: -15,
-            maxZ: 15,
-        },
-    })
+    // Movement configuration - use enemy preset
+    const movementConfig = createMovementConfig(enemyMovementPreset)
     entity.addComponent(movementConfig)
 
-    // Health component - enemies have 50 HP as specified
-    const health: HealthComponent = {
-        type: 'health',
-        maxHealth: 50,
-        currentHealth: 50,
-        isDead: false,
-    }
+    // Health component - use enemy health config
+    const health = createEnemyHealthConfig()
     entity.addComponent(health)
 
-    // Weapon component - weak weapon as specified
-    const weapon = createWeaponConfig({
-        damage: 15, // Weaker than player (player has 25)
-        fireRate: 0.5, // Slower fire rate than player
-        projectileSpeed: 8.0, // Slower projectiles
-        range: 12.0, // Shorter range
-    })
+    // Weapon component - use enemy weapon config
+    const weapon = createEnemyWeaponConfig()
     entity.addComponent(weapon)
 
     // Damageable component - enemy can take damage
@@ -100,18 +83,8 @@ export function createEnemyShip(
     }
     entity.addComponent(enemy)
 
-    // Enemy AI component
-    const enemyAI: EnemyAIComponent = {
-        type: 'enemyAI',
-        moveSpeed: 2.0,
-        shootingRange: 12.0,
-        lastShotTime: 0,
-        targetId: targetId,
-        movementDirection: {
-            x: 0,
-            z: -1, // Move towards player initially (negative Z)
-        },
-    }
+    // Enemy AI component - use enemy AI config
+    const enemyAI = createEnemyAIConfig(targetId)
     entity.addComponent(enemyAI)
 
     return entity

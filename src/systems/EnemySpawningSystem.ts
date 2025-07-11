@@ -1,3 +1,4 @@
+import { enemySpawningConfig } from '../config/EnemyConfig'
 import type {
     HealthComponent,
     PlayerComponent,
@@ -10,9 +11,9 @@ import { createEnemyShip } from '../entities/EnemyFactory'
 
 export class EnemySpawningSystem extends System {
     private lastSpawnTime: number = 0
-    private spawnInterval: number = 3.0 // Spawn every 3 seconds
-    private maxEnemies: number = 5 // Maximum enemies at once
-    private spawnDistance: number = 12.0 // Distance from player to spawn enemies
+    private spawnInterval: number = enemySpawningConfig.spawnInterval
+    private maxEnemies: number = enemySpawningConfig.maxEnemies
+    private spawnDistance: number = enemySpawningConfig.spawnDistance
 
     constructor(world: World) {
         super(world, []) // No required components for spawning system
