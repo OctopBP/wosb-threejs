@@ -68,7 +68,7 @@ export function createEnemyShip(
         type: 'renderable',
         meshId: `enemy_ship_${entity.id}`,
         mesh: undefined, // Will be created by RenderSystem
-        meshType: 'ship', // Use same ship model for now
+        meshType: 'enemy1',
         visible: true,
     }
     entity.addComponent(renderable)

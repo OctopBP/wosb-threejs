@@ -110,6 +110,10 @@ export interface WeaponComponent extends Component {
     range: number
     lastShotTime: number
     projectileType: 'sphere' // for now, just sphere
+    // Auto-targeting properties
+    isAutoTargeting: boolean // whether this weapon auto-aims at enemies
+    detectionRange: number // range for enemy detection (can be different from firing range)
+    requiresLineOfSight: boolean // whether to check for obstacles (future feature)
 }
 
 // Projectile component for projectile entities
@@ -142,9 +146,4 @@ export interface EnemyAIComponent extends Component {
     lastShotTime: number
     // Target tracking
     targetId: number | null
-    // Movement behavior
-    movementDirection: {
-        x: number
-        z: number
-    }
 }

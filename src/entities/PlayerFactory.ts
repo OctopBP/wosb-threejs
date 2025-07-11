@@ -1,6 +1,9 @@
 import type { MovementConfigPreset } from '../config/MovementPresets'
 import { createMovementConfig } from '../config/MovementPresets'
-import { createWeaponConfig } from '../config/WeaponConfig'
+import {
+    createAutoTargetingWeaponConfig,
+    createWeaponConfig,
+} from '../config/WeaponConfig'
 import type {
     DamageableComponent,
     HealthComponent,
@@ -25,7 +28,7 @@ export function createPlayerShip(
         y: 0.1, // Slightly above the ground
         z: 0,
         rotationX: 0,
-        rotationY: 0,
+        rotationY: Math.PI, // Face forward (compensate for model facing backwards by default)
         rotationZ: 0,
     }
     entity.addComponent(position)
@@ -124,4 +127,34 @@ export function updateWeaponConfig(
     if (weapon) {
         Object.assign(weapon, overrides)
     }
+}
+
+// New function to equip player with auto-targeting weapon
+export function equipAutoTargetingWeapon(
+    entity: Entity,
+    overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
+): void {
+    const newWeapon = createAutoTargetingWeaponConfig(overrides)
+
+    // Remove existing weapon and add new one
+    entity.removeComponent('weapon')
+    entity.addComponent(newWeapon)
+}
+
+// New function to equip player with manual weapon
+export function equipManualWeapon(
+    entity: Entity,
+    overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
+): void {
+    const newWeapon = createWeaponConfig(overrides)
+
+    // Remove existing weapon and add new one
+    entity.removeComponent('weapon')
+    entity.addComponent(newWeapon)
+}
+
+// Helper function to check if player has auto-targeting weapon
+export function hasAutoTargetingWeapon(entity: Entity): boolean {
+    const weapon = entity.getComponent<WeaponComponent>('weapon')
+    return weapon?.isAutoTargeting ?? false
 }

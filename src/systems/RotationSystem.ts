@@ -45,7 +45,9 @@ export class RotationSystem extends System {
             (input.direction.y !== 0 || input.direction.x !== 0)
         ) {
             // Calculate target angle based on movement direction
-            const targetAngle = Math.atan2(input.direction.x, input.direction.y)
+            // Add Math.PI to compensate for ship model facing backwards by default
+            const targetAngle =
+                Math.atan2(input.direction.x, input.direction.y) + Math.PI
             const currentAngle = position.rotationY
 
             // Calculate the shortest rotation difference

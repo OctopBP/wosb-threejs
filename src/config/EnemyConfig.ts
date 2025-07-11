@@ -4,21 +4,12 @@ import type {
     WeaponComponent,
 } from '../ecs/Component'
 import type { MovementConfigPreset } from './MovementPresets'
+import type { WeaponConfigPreset } from './WeaponConfig'
 
 // Enemy health configuration
 export interface EnemyHealthConfig
     extends Omit<HealthComponent, 'type' | 'currentHealth' | 'isDead'> {
     maxHealth: number
-}
-
-// Enemy weapon configuration preset
-export interface EnemyWeaponConfig
-    extends Omit<WeaponComponent, 'type' | 'lastShotTime'> {
-    damage: number
-    fireRate: number
-    projectileSpeed: number
-    range: number
-    projectileType: 'sphere'
 }
 
 // Enemy AI configuration
@@ -28,7 +19,7 @@ export interface EnemyAIConfig
         'type' | 'lastShotTime' | 'targetId' | 'movementDirection'
     > {
     moveSpeed: number
-    shootingRange: number
+    shootingRange: number // This will be less important since weapon handles targeting
 }
 
 // Enemy spawning configuration
@@ -63,18 +54,48 @@ export const basicEnemyHealthPreset: EnemyHealthConfig = {
     maxHealth: 50, // As specified in requirements
 }
 
-// Weak weapon configuration for enemies
-export const weakEnemyWeaponPreset: EnemyWeaponConfig = {
-    damage: 15, // Weaker than player (player has 25)
-    fireRate: 0.5, // Slower fire rate than player
-    projectileSpeed: 8.0, // Slower projectiles
-    range: 12.0, // Shorter range
+// Auto-targeting weapon configuration for enemies
+export const autoTargetingEnemyWeaponPreset: WeaponConfigPreset = {
+    damage: 15, // Decent damage but less than player's manual weapon
+    fireRate: 0.8, // Slightly slower than player auto-targeting weapon
+    projectileSpeed: 10.0, // Standard projectile speed
+    range: 16.0, // Good range for enemies
     projectileType: 'sphere',
+    // Auto-targeting properties
+    isAutoTargeting: true,
+    detectionRange: 18.0, // Larger detection range than firing range
+    requiresLineOfSight: false,
+}
+
+// Alternative: Fast enemy auto-targeting weapon
+export const fastEnemyWeaponPreset: WeaponConfigPreset = {
+    damage: 10, // Lower damage
+    fireRate: 1.5, // Faster fire rate
+    projectileSpeed: 12.0, // Faster projectiles
+    range: 14.0, // Shorter range
+    projectileType: 'sphere',
+    // Auto-targeting properties
+    isAutoTargeting: true,
+    detectionRange: 16.0,
+    requiresLineOfSight: false,
+}
+
+// Legacy: Manual enemy weapon (for comparison/testing)
+export const weakEnemyWeaponPreset: WeaponConfigPreset = {
+    damage: 10,
+    fireRate: 0.5,
+    projectileSpeed: 8.0,
+    range: 12.0,
+    projectileType: 'sphere',
+    // Manual targeting (old behavior)
+    isAutoTargeting: false,
+    detectionRange: 12.0,
+    requiresLineOfSight: false,
 }
 
 // Basic enemy AI configuration
 export const basicEnemyAIPreset: EnemyAIConfig = {
-    moveSpeed: 5.0,
+    moveSpeed: 1.0,
     shootingRange: 5.0,
 }
 
@@ -99,12 +120,36 @@ export function createEnemyHealthConfig(
 }
 
 export function createEnemyWeaponConfig(
-    overrides: Partial<EnemyWeaponConfig> = {},
+    overrides: Partial<WeaponConfigPreset> = {},
 ): WeaponComponent {
     return {
         type: 'weapon',
         lastShotTime: 0,
-        ...weakEnemyWeaponPreset,
+        ...autoTargetingEnemyWeaponPreset, // Use auto-targeting by default
+        ...overrides,
+    }
+}
+
+// Helper function to create manual enemy weapon (for testing/comparison)
+export function createManualEnemyWeaponConfig(
+    overrides: Partial<WeaponConfigPreset> = {},
+): WeaponComponent {
+    return {
+        type: 'weapon',
+        lastShotTime: 0,
+        ...weakEnemyWeaponPreset, // Use manual targeting
+        ...overrides,
+    }
+}
+
+// Helper function to create fast auto-targeting enemy weapon
+export function createFastEnemyWeaponConfig(
+    overrides: Partial<WeaponConfigPreset> = {},
+): WeaponComponent {
+    return {
+        type: 'weapon',
+        lastShotTime: 0,
+        ...fastEnemyWeaponPreset, // Use fast auto-targeting
         ...overrides,
     }
 }
@@ -117,10 +162,6 @@ export function createEnemyAIConfig(
         type: 'enemyAI',
         lastShotTime: 0,
         targetId: targetId,
-        movementDirection: {
-            x: 0,
-            z: -1, // Move towards player initially (negative Z)
-        },
         ...basicEnemyAIPreset,
         ...overrides,
     }

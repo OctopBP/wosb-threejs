@@ -11,6 +11,9 @@ import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
 import {
     createPlayerShip,
+    equipAutoTargetingWeapon,
+    equipManualWeapon,
+    hasAutoTargetingWeapon,
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
@@ -119,6 +122,47 @@ export class GameWorld {
         if (this.playerEntity) {
             updateWeaponConfig(this.playerEntity, overrides)
         }
+    }
+
+    // Method to equip player with auto-targeting weapon
+    equipPlayerAutoTargetingWeapon(
+        overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
+    ): void {
+        if (this.playerEntity) {
+            equipAutoTargetingWeapon(this.playerEntity, overrides)
+        }
+    }
+
+    // Method to equip player with manual weapon
+    equipPlayerManualWeapon(
+        overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
+    ): void {
+        if (this.playerEntity) {
+            equipManualWeapon(this.playerEntity, overrides)
+        }
+    }
+
+    // Method to check if player has auto-targeting weapon
+    playerHasAutoTargetingWeapon(): boolean {
+        return this.playerEntity
+            ? hasAutoTargetingWeapon(this.playerEntity)
+            : false
+    }
+
+    // Method to toggle between weapon types
+    togglePlayerWeaponType(): void {
+        if (this.playerEntity) {
+            if (hasAutoTargetingWeapon(this.playerEntity)) {
+                equipManualWeapon(this.playerEntity)
+            } else {
+                equipAutoTargetingWeapon(this.playerEntity)
+            }
+        }
+    }
+
+    // Method to enable/disable auto-targeting weapon debug logging
+    setAutoTargetingDebug(enabled: boolean): void {
+        this.weaponSystem.setAutoTargetingDebug(enabled)
     }
 
     // Debug methods

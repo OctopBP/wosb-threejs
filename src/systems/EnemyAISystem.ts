@@ -1,12 +1,12 @@
 import type {
     EnemyAIComponent,
     HealthComponent,
-    PlayerComponent,
     PositionComponent,
     VelocityComponent,
     WeaponComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 
 export class EnemyAISystem extends System {
@@ -14,7 +14,7 @@ export class EnemyAISystem extends System {
         super(world, ['enemy', 'enemyAI', 'position', 'velocity', 'weapon'])
     }
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         const enemies = this.getEntities()
         const playerEntities = this.world.getEntitiesWithComponents(['player'])
 
@@ -42,20 +42,12 @@ export class EnemyAISystem extends System {
             if (!enemyAI || !position || !velocity || !weapon) continue
 
             // Update AI behavior
-            this.updateMovement(
-                enemyAI,
-                position,
-                velocity,
-                playerPosition,
-                deltaTime,
-            )
-            this.updateShooting(
-                enemyAI,
-                position,
-                weapon,
-                playerPosition,
-                deltaTime,
-            )
+            this.updateMovement(enemyAI, position, velocity, playerPosition)
+
+            // Only handle shooting for manual weapons - auto-targeting weapons are handled by WeaponSystem
+            if (!weapon.isAutoTargeting) {
+                this.updateShooting(enemyAI, position, weapon, playerPosition)
+            }
         }
     }
 
@@ -64,7 +56,6 @@ export class EnemyAISystem extends System {
         position: PositionComponent,
         velocity: VelocityComponent,
         playerPosition: PositionComponent,
-        deltaTime: number,
     ): void {
         // Calculate direction to player
         const dx = playerPosition.x - position.x
@@ -77,7 +68,7 @@ export class EnemyAISystem extends System {
             const dirZ = dz / distance
 
             // Apply movement towards player
-            const moveForce = ai.moveSpeed * deltaTime
+            const moveForce = ai.moveSpeed
             velocity.dx = dirX * moveForce
             velocity.dz = dirZ * moveForce
 
@@ -95,7 +86,6 @@ export class EnemyAISystem extends System {
         position: PositionComponent,
         weapon: WeaponComponent,
         playerPosition: PositionComponent,
-        deltaTime: number,
     ): void {
         // Calculate distance to player
         const dx = playerPosition.x - position.x

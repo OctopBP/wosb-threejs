@@ -16,10 +16,15 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
     {
         ship: {
             kind: 'model',
-            fileName: 'pl_01.glb',
-            scale: 0.5,
+            fileName: 'ship_bb/ship bb.gltf',
+            scale: 0.75,
         },
         // Add primitive types for projectiles and obstacles
+        enemy1: {
+            kind: 'model',
+            fileName: 'Enemy01.glb',
+            scale: 5,
+        },
         sphere: {
             kind: 'primitive',
             scale: 1.0,

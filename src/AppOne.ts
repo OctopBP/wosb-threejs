@@ -130,6 +130,161 @@ export class AppOne {
         cameraFolder.add(this.camera.position, 'y', 1, 20, 0.1)
         cameraFolder.add(this.camera.position, 'z', -30, 10, 0.1)
 
+        // Weapon controls
+        const weaponFolder = this.gui.addFolder('Weapons')
+
+        // Weapon type toggle
+        weaponFolder
+            .add(
+                {
+                    toggleWeaponType: () => {
+                        this.gameWorld.togglePlayerWeaponType()
+                        console.log(
+                            `Weapon switched to: ${
+                                this.gameWorld.playerHasAutoTargetingWeapon()
+                                    ? 'Auto-Targeting'
+                                    : 'Manual'
+                            }`,
+                        )
+                    },
+                },
+                'toggleWeaponType',
+            )
+            .name('Toggle Weapon Type')
+
+        // Current weapon status display
+        const weaponStatus = { type: 'Manual' }
+        const weaponStatusController = weaponFolder
+            .add(weaponStatus, 'type')
+            .name('Current Weapon')
+        weaponStatusController.disable()
+
+        // Update weapon status display
+        const updateWeaponStatus = () => {
+            weaponStatus.type = this.gameWorld.playerHasAutoTargetingWeapon()
+                ? 'Auto-Targeting'
+                : 'Manual'
+            weaponStatusController.updateDisplay()
+        }
+
+        // Update weapon status every frame (simple approach)
+        setInterval(updateWeaponStatus, 100)
+
+        // Quick weapon presets
+        weaponFolder
+            .add(
+                {
+                    equipManual: () => {
+                        this.gameWorld.equipPlayerManualWeapon()
+                        console.log('Equipped Manual Weapon')
+                    },
+                },
+                'equipManual',
+            )
+            .name('Equip Manual Weapon')
+
+        weaponFolder
+            .add(
+                {
+                    equipAutoTargeting: () => {
+                        this.gameWorld.equipPlayerAutoTargetingWeapon()
+                        console.log('Equipped Auto-Targeting Weapon')
+                    },
+                },
+                'equipAutoTargeting',
+            )
+            .name('Equip Auto-Targeting')
+
+        weaponFolder
+            .add(
+                {
+                    equipFastAuto: () => {
+                        this.gameWorld.equipPlayerAutoTargetingWeapon({
+                            damage: 15,
+                            fireRate: 2.0,
+                            projectileSpeed: 15.0,
+                            range: 15.0,
+                            detectionRange: 18.0,
+                        })
+                        console.log('Equipped Fast Auto-Targeting Weapon')
+                    },
+                },
+                'equipFastAuto',
+            )
+            .name('Equip Fast Auto-Targeting')
+
+        // Auto-targeting debug controls
+        weaponFolder
+            .add(
+                {
+                    enableDebug: () => {
+                        this.gameWorld.setAutoTargetingDebug(true)
+                        console.log(
+                            '🎯 Auto-targeting debug enabled - watch console for weapon behavior',
+                        )
+                    },
+                },
+                'enableDebug',
+            )
+            .name('Enable Auto-Targeting Debug')
+
+        weaponFolder
+            .add(
+                {
+                    disableDebug: () => {
+                        this.gameWorld.setAutoTargetingDebug(false)
+                        console.log('🎯 Auto-targeting debug disabled')
+                    },
+                },
+                'disableDebug',
+            )
+            .name('Disable Auto-Targeting Debug')
+
+        // Enemy weapon info
+        weaponFolder
+            .add(
+                {
+                    enemyWeaponInfo: () => {
+                        console.log('🤖 Enemy Auto-Targeting Weapons:')
+                        console.log('- Uses unified WeaponConfigPreset system')
+                        console.log('- Detection Range: 18 units')
+                        console.log('- Firing Range: 16 units')
+                        console.log('- Damage: 15 per shot')
+                        console.log('- Fire Rate: 0.8 shots/second')
+                        console.log('- Only fire when player is in range')
+                        console.log(
+                            '- Projectiles aim directly at player position',
+                        )
+                        console.log('- Same codebase as player weapons')
+                    },
+                },
+                'enemyWeaponInfo',
+            )
+            .name('Enemy Weapon Info')
+
+        weaponFolder
+            .add(
+                {
+                    unifiedSystemInfo: () => {
+                        console.log('🔧 Unified Weapon System Benefits:')
+                        console.log(
+                            '- Single WeaponConfigPreset for all entities',
+                        )
+                        console.log(
+                            '- Consistent behavior between players and enemies',
+                        )
+                        console.log(
+                            '- Simplified configuration and maintenance',
+                        )
+                        console.log('- Reduced code duplication')
+                        console.log('- Same WeaponSystem handles all entities')
+                        console.log('- Easy to add new weapon types')
+                    },
+                },
+                'unifiedSystemInfo',
+            )
+            .name('Unified System Info')
+
         // Lighting controls
         const lightFolder = this.gui.addFolder('Lighting')
         const hemisphereLight = this.scene.children.find(
