@@ -1,7 +1,10 @@
 import * as BABYLON from 'babylonjs'
+import { GameWorld } from './GameWorld';
+
 export class AppOne {
     engine: BABYLON.Engine;
     scene: BABYLON.Scene;
+    gameWorld: GameWorld;
 
     constructor(readonly canvas: HTMLCanvasElement) {
         this.engine = new BABYLON.Engine(canvas)
@@ -9,7 +12,59 @@ export class AppOne {
             this.engine.resize();
         });
         this.scene = createScene(this.engine, this.canvas)
+        
+        // Initialize the game world with leveling system
+        this.gameWorld = new GameWorld(this.scene);
+        
+        // Create a player entity
+        this.gameWorld.createPlayer();
+        
+        // Setup testing/demo controls
+        this.setupLevelingDemo();
+    }
 
+    private setupLevelingDemo(): void {
+        // Add keyboard controls for testing the leveling system
+        this.scene.onKeyboardObservable.add((kbInfo: BABYLON.KeyboardInfo) => {
+            switch (kbInfo.type) {
+                case BABYLON.KeyboardEventTypes.KEYDOWN:
+                    switch (kbInfo.event.code) {
+                        case 'KeyX':
+                            // Award 50 XP
+                            this.gameWorld.awardXP(50);
+                            console.log('Awarded 50 XP! Current level:', this.gameWorld.getPlayerLevel());
+                            break;
+                        case 'KeyC':
+                            // Award 200 XP (for quicker testing)
+                            this.gameWorld.awardXP(200);
+                            console.log('Awarded 200 XP! Current level:', this.gameWorld.getPlayerLevel());
+                            break;
+                        case 'KeyD':
+                            // Debug current state
+                            this.gameWorld.debugLeveling();
+                            break;
+                        case 'KeyR':
+                            // Reset to level 1
+                            this.gameWorld.forceLevel(1);
+                            console.log('Reset to level 1');
+                            break;
+                        case 'KeyF':
+                            // Force to max level
+                            this.gameWorld.forceLevel(6);
+                            console.log('Forced to max level');
+                            break;
+                    }
+                    break;
+            }
+        });
+        
+        // Display controls in console
+        console.log('🎮 LEVELING SYSTEM DEMO CONTROLS:');
+        console.log('Press X - Award 50 XP');
+        console.log('Press C - Award 200 XP');
+        console.log('Press D - Debug current state');
+        console.log('Press R - Reset to level 1');
+        console.log('Press F - Force to max level');
     }
 
     debug(debugOn: boolean = true) {
@@ -26,9 +81,6 @@ export class AppOne {
             this.scene.render();
         });
     }
-
-
-
 }
 
 
