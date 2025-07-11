@@ -44,7 +44,12 @@ export class AppOne {
 
         this.scene = this.createScene()
         this.camera = this.createCamera()
-        this.gameWorld = new GameWorld(this.scene, this.renderer, this.canvas)
+        this.gameWorld = new GameWorld(
+            this.scene,
+            this.renderer,
+            this.canvas,
+            this.camera,
+        )
     }
 
     debug(debugOn: boolean = true) {
