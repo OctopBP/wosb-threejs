@@ -1,14 +1,12 @@
 import { enemySpawningConfig } from '../config/EnemyConfig'
 import type {
     HealthComponent,
-    PlayerComponent,
     PositionComponent,
     RenderableComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import { createEnemyShip } from '../entities/EnemyFactory'
-
 export class EnemySpawningSystem extends System {
     private lastSpawnTime: number = 0
     private spawnInterval: number = enemySpawningConfig.spawnInterval
@@ -19,7 +17,7 @@ export class EnemySpawningSystem extends System {
         super(world, []) // No required components for spawning system
     }
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         const currentTime = performance.now() / 1000
 
         // Check if it's time to spawn a new enemy

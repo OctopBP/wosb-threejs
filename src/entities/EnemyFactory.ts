@@ -7,16 +7,12 @@ import {
 import { createMovementConfig } from '../config/MovementPresets'
 import type {
     DamageableComponent,
-    EnemyAIComponent,
     EnemyComponent,
-    HealthComponent,
     PositionComponent,
     RenderableComponent,
     VelocityComponent,
-    WeaponComponent,
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
-
 export function createEnemyShip(
     x: number,
     y: number,

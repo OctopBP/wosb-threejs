@@ -14,10 +14,9 @@ import {
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
+import { EnemyAISystem, EnemySpawningSystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
-import { EnemyAISystem } from './systems/EnemyAISystem'
-import { EnemySpawningSystem } from './systems/EnemySpawningSystem'
 import { InputSystem } from './systems/InputSystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'

@@ -40,9 +40,9 @@ export interface EnemySpawningConfig {
 
 // Enemy movement configuration preset
 export const enemyMovementPreset: MovementConfigPreset = {
-    maxSpeed: 2.0, // Slower than player
-    accelerationForce: 4.0, // Slower acceleration
-    decelerationForce: 5.0,
+    maxSpeed: 5.0,
+    accelerationForce: 6.0,
+    decelerationForce: 2.0,
     autoRotationStrength: 5,
     inputResponsiveness: 1.0,
     inputDeadZone: 0.1,
@@ -74,8 +74,8 @@ export const weakEnemyWeaponPreset: EnemyWeaponConfig = {
 
 // Basic enemy AI configuration
 export const basicEnemyAIPreset: EnemyAIConfig = {
-    moveSpeed: 2.0,
-    shootingRange: 12.0,
+    moveSpeed: 5.0,
+    shootingRange: 5.0,
 }
 
 // Enemy spawning configuration
