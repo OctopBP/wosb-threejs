@@ -249,7 +249,53 @@
                 "status": "pending",
                 "dependencies": [1, 2],
                 "priority": "medium",
-                "subtasks": []
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Develop Cartoon-Style Water Shader with Blue Base and White Highlights",
+                        "description": "Create a custom Three.js water shader that renders a stylized blue water surface with white sparkles or highlights, using GLSL and noise functions for dynamic effects.",
+                        "dependencies": [],
+                        "details": "Implement a fragment shader that blends blue tones for the water base and overlays animated white highlights to achieve a cartoon-like appearance. Ensure the shader is optimized for mobile performance.",
+                        "status": "pending",
+                        "testStrategy": "Render the water surface in a test scene and verify the presence of blue base color and animated white highlights under various lighting and camera angles."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Implement Geometry-Based Small Wave Animation",
+                        "description": "Animate the water surface using geometry displacement to create small, dynamic waves, leveraging vertex shaders for real-time performance.",
+                        "dependencies": [1],
+                        "details": "Modify the water mesh vertices in the vertex shader using procedural noise or sine functions to simulate small, continuous wave motion. Ensure the effect is visually smooth and does not impact frame rate on mobile devices.",
+                        "status": "pending",
+                        "testStrategy": "Observe the water mesh in motion and confirm that small waves animate smoothly across the surface without visible artifacts or performance drops."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Add Depth-Based Transparency for Underwater Visibility",
+                        "description": "Integrate a transparency system into the water shader so that submerged objects are visible but fade with increasing depth.",
+                        "dependencies": [1, 2],
+                        "details": "Use depth information in the fragment shader to modulate water opacity, allowing objects beneath the surface to be seen clearly when shallow and gradually obscured as depth increases.",
+                        "status": "pending",
+                        "testStrategy": "Place objects at varying depths below the water surface and verify that their visibility decreases smoothly with depth, matching the intended fade effect."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Generate White Foam/Waves Around Intersecting Objects",
+                        "description": "Detect intersections between water and objects (such as islands or debris) and render stylized white foam or wave effects around their boundaries.",
+                        "dependencies": [1, 2, 3],
+                        "details": "Implement foam generation in the shader by calculating proximity to object boundaries, using screen-space or world-space distance fields, and overlaying animated white foam textures or procedural effects.",
+                        "status": "pending",
+                        "testStrategy": "Position primitive islands and debris in the water and confirm that white foam appears dynamically around their edges, adapting as objects move or interact with the water."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Integrate Primitive Islands and Debris with Optimized Placement",
+                        "description": "Add simple primitive shapes as islands and floating debris, ensuring efficient instancing and placement for mobile performance.",
+                        "dependencies": [4],
+                        "details": "Use basic Three.js primitives (e.g., boxes, spheres, cylinders) to represent islands and debris. Implement instancing or pooling to minimize draw calls and optimize for mobile devices.",
+                        "status": "pending",
+                        "testStrategy": "Populate the scene with multiple primitive islands and debris, monitor performance metrics, and verify correct rendering and interaction with water and foam effects."
+                    }
+                ]
             },
             {
                 "id": 7,
