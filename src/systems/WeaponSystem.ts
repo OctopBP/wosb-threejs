@@ -18,7 +18,7 @@ export class WeaponSystem extends System {
         this.scene = scene
     }
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         const currentTime = performance.now() / 1000 // Convert to seconds
         const entities = this.getEntities()
 
@@ -33,7 +33,7 @@ export class WeaponSystem extends System {
             const fireInterval = 1 / weapon.fireRate // Convert fire rate to interval
 
             if (timeSinceLastShot >= fireInterval) {
-                this.fireProjectile(entity.id, weapon, position, currentTime)
+                this.fireProjectile(entity.id, weapon, position)
                 weapon.lastShotTime = currentTime
             }
         }
@@ -43,7 +43,6 @@ export class WeaponSystem extends System {
         shooterId: number,
         weapon: WeaponComponent,
         shooterPosition: PositionComponent,
-        currentTime: number,
     ): void {
         // Create projectile entity
         const projectile = this.world.createEntity()

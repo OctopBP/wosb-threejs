@@ -1,16 +1,16 @@
 // Tree-shakeable ES6 imports - only import what we actually use
+
+import type { Object3D, Scene } from 'three'
 import {
     BoxGeometry,
     Group,
     LoadingManager,
-    Material,
     Mesh,
     MeshLambertMaterial,
-    type Object3D,
-    type Scene,
     SphereGeometry,
 } from 'three'
-import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
 import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
 import type { PositionComponent, RenderableComponent } from '../ecs/Component'

@@ -16,7 +16,7 @@ export class CollisionSystem extends System {
         super(world, []) // We'll manually query for different component combinations
     }
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         const projectiles = this.world.getEntitiesWithComponents([
             'projectile',
             'position',
