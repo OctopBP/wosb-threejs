@@ -6,11 +6,8 @@ import {
     DirectionalLight,
     Fog,
     HemisphereLight,
-    Mesh,
-    MeshLambertMaterial,
     PCFSoftShadowMap,
     PerspectiveCamera,
-    PlaneGeometry,
     Scene,
     Vector3,
     WebGLRenderer,
@@ -95,15 +92,7 @@ export class AppOne {
         directionalLight.shadow.camera.bottom = -25
         scene.add(directionalLight)
 
-        // Create ocean/ground plane
-        const groundGeometry = new PlaneGeometry(50, 50)
-        const groundMaterial = new MeshLambertMaterial({
-            color: new Color(0.2, 0.4, 0.8), // Blue ocean
-        })
-        const ground = new Mesh(groundGeometry, groundMaterial)
-        ground.rotation.x = -Math.PI / 2 // Rotate to be horizontal
-        ground.receiveShadow = true
-        scene.add(ground)
+        // Ocean/water will be handled by the WaterSystem
 
         // Add fog for atmosphere
         scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 10, 100)
@@ -317,6 +306,33 @@ export class AppOne {
         if (this.scene.fog instanceof Fog) {
             fogFolder.add(this.scene.fog, 'near', 1, 50, 0.1)
             fogFolder.add(this.scene.fog, 'far', 50, 200, 1)
+        }
+
+        // Water controls
+        const waterFolder = this.gui.addFolder('Water')
+        const waterMaterial = this.gameWorld.getWaterMaterial()
+        if (waterMaterial) {
+            waterFolder
+                .add(waterMaterial.uniforms.uWaveStrength, 'value', 0, 1, 0.01)
+                .name('Wave Strength')
+            waterFolder
+                .add(waterMaterial.uniforms.uWaveSpeed, 'value', 0, 3, 0.1)
+                .name('Wave Speed')
+            waterFolder
+                .add(waterMaterial.uniforms.uOpacity, 'value', 0, 1, 0.01)
+                .name('Opacity')
+            waterFolder
+                .add(
+                    waterMaterial.uniforms.uSparkleIntensity,
+                    'value',
+                    0,
+                    1,
+                    0.01,
+                )
+                .name('Sparkle Intensity')
+            waterFolder
+                .add(waterMaterial.uniforms.uSparkleSize, 'value', 10, 100, 1)
+                .name('Sparkle Size')
         }
     }
 

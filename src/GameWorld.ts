@@ -29,6 +29,7 @@ import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
+import { WaterSystem } from './systems/WaterSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 
 export class GameWorld {
@@ -47,6 +48,7 @@ export class GameWorld {
     private levelingSystem: LevelingSystem
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
+    private waterSystem: WaterSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -77,25 +79,27 @@ export class GameWorld {
             camera,
             canvas,
         )
+        this.waterSystem = new WaterSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
 
         // Add systems to world in execution order
         this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
-        this.world.addSystem(this.enemySpawningSystem) // 2. Spawn enemies
-        this.world.addSystem(this.enemyAISystem) // 3. Update enemy AI (movement and targeting)
-        this.world.addSystem(this.rotationSystem) // 4. Handle rotation
-        this.world.addSystem(this.accelerationSystem) // 5. Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) // 6. Apply velocity to position (ships only)
-        this.world.addSystem(this.weaponSystem) // 7. Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // 8. Move projectiles with gravity
-        this.world.addSystem(this.projectileSystem) // 9. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 10. Check collisions and apply damage
-        this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.renderSystem) // 14. Render the results
+        this.world.addSystem(this.waterSystem) // 2. Update water animation and floating debris
+        this.world.addSystem(this.enemySpawningSystem) // 3. Spawn enemies
+        this.world.addSystem(this.enemyAISystem) // 4. Update enemy AI (movement and targeting)
+        this.world.addSystem(this.rotationSystem) // 5. Handle rotation
+        this.world.addSystem(this.accelerationSystem) // 6. Apply acceleration/deceleration
+        this.world.addSystem(this.movementSystem) // 7. Apply velocity to position (ships only)
+        this.world.addSystem(this.weaponSystem) // 8. Handle weapon firing
+        this.world.addSystem(this.projectileMovementSystem) // 9. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 10. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 11. Check collisions and apply damage
+        this.world.addSystem(this.levelingSystem) // 12. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 13. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 14. Update enemy health UI
+        this.world.addSystem(this.renderSystem) // 15. Render the results
     }
 
     init(): void {
@@ -183,6 +187,11 @@ export class GameWorld {
     // Method to enable/disable auto-targeting weapon debug logging
     setAutoTargetingDebug(enabled: boolean): void {
         this.weaponSystem.setAutoTargetingDebug(enabled)
+    }
+
+    // Method to get water material for debug controls
+    getWaterMaterial() {
+        return this.waterSystem.getWaterMaterial()
     }
 
     // Debug methods
