@@ -74,7 +74,6 @@ export class GameWorld {
         this.playerUISystem = new PlayerUISystem(this.world, camera, canvas)
         this.enemyHealthUISystem = new EnemyHealthUISystem(
             this.world,
-            scene,
             camera,
             canvas,
         )

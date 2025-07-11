@@ -1,4 +1,4 @@
-import type { Camera, Scene } from 'three'
+import type { Camera } from 'three'
 import { Vector3 } from 'three'
 import type {
     HealthComponent,
@@ -16,19 +16,12 @@ interface EnemyHealthUI {
 }
 
 export class EnemyHealthUISystem extends System {
-    private scene: Scene
     private camera: Camera
     private canvas: HTMLCanvasElement
     private enemyUIMap: Map<number, EnemyHealthUI> = new Map()
 
-    constructor(
-        world: World,
-        scene: Scene,
-        camera: Camera,
-        canvas: HTMLCanvasElement,
-    ) {
+    constructor(world: World, camera: Camera, canvas: HTMLCanvasElement) {
         super(world, ['enemy', 'health', 'position', 'renderable'])
-        this.scene = scene
         this.camera = camera
         this.canvas = canvas
     }
@@ -213,7 +206,7 @@ export class EnemyHealthUISystem extends System {
 
     cleanup(): void {
         // Remove all enemy UI elements
-        for (const [entityId, enemyUI] of this.enemyUIMap.entries()) {
+        for (const [_, enemyUI] of this.enemyUIMap.entries()) {
             if (enemyUI.container.parentNode) {
                 enemyUI.container.parentNode.removeChild(enemyUI.container)
             }
