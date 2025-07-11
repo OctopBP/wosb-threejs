@@ -1,4 +1,4 @@
-import type { Camera, Scene } from 'three'
+import type { Camera } from 'three'
 import { Vector3 } from 'three'
 import { calculateNextLevelXP } from '../config/LevelingConfig'
 import type {
