@@ -99,13 +99,6 @@ export class RenderSystem extends System {
                         config.options.segments || 8,
                     )
                     break
-                case 'box':
-                    geometry = new BoxGeometry(
-                        config.options.width || 1,
-                        config.options.height || 1,
-                        config.options.depth || 1,
-                    )
-                    break
                 default:
                     // Fallback to sphere
                     geometry = new SphereGeometry(0.25, 8, 8)
@@ -113,7 +106,7 @@ export class RenderSystem extends System {
 
             // Create material
             material = new MeshLambertMaterial({
-                color: 0xffffff,
+                color: 0x000000, // Black color for projectiles
                 transparent: false,
             })
 
@@ -127,7 +120,7 @@ export class RenderSystem extends System {
         } else {
             // Fallback
             geometry = new SphereGeometry(0.25, 8, 8)
-            material = new MeshLambertMaterial({ color: 0xffffff })
+            material = new MeshLambertMaterial({ color: 0x000000 }) // Black color for projectiles
             const mesh = new Mesh(geometry, material)
             mesh.name = meshId
             mesh.castShadow = true

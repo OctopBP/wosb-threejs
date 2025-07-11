@@ -22,20 +22,14 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
         // Add primitive types for projectiles and obstacles
         enemy1: {
             kind: 'model',
-            fileName: 'Enemy01.glb',
-            scale: 5,
+            fileName: 'ship_bb/ship bb.gltf',
+            scale: 0.5,
         },
-        sphere: {
+        bullet: {
             kind: 'primitive',
-            scale: 1.0,
+            scale: 0.75,
             primitive: 'sphere',
             options: { diameter: 0.2, segments: 8 },
-        },
-        box: {
-            kind: 'primitive',
-            scale: 1.0,
-            primitive: 'box',
-            options: { width: 1, height: 1, depth: 1 },
         },
     } as const
 

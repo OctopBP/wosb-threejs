@@ -108,14 +108,14 @@ export class AppOne {
 
     private createCamera(): PerspectiveCamera {
         const camera = new PerspectiveCamera(
-            75, // field of view
+            50, // field of view
             window.innerWidth / window.innerHeight, // aspect ratio
             0.1, // near plane
             1000, // far plane
         )
 
         // Position camera
-        camera.position.set(0, 8, -15)
+        camera.position.set(0, 12, -10)
         camera.lookAt(new Vector3(0, 0, 0)) // Point camera at the origin where the player ship will be
 
         return camera

@@ -8,7 +8,7 @@ export const basicCannonPreset: WeaponConfigPreset = {
     fireRate: 0.75, // Every 1.5 seconds (1/0.75 shots per second)
     projectileSpeed: 10.0,
     range: 15.0,
-    projectileType: 'sphere',
+    projectileType: 'bullet',
     // Manual targeting (traditional weapon)
     isAutoTargeting: false,
     detectionRange: 15.0, // Same as range for manual weapons
@@ -20,11 +20,11 @@ export const autoTargetingCannonPreset: WeaponConfigPreset = {
     damage: 25, // Slightly less damage than manual weapon for balance
     fireRate: 1.0, // Faster fire rate to compensate for lower damage
     projectileSpeed: 15.0, // Faster projectiles for better tracking
-    range: 18.0, // Longer range for auto-targeting
-    projectileType: 'sphere',
+    range: 10.0, // Longer range for auto-targeting
+    projectileType: 'bullet',
     // Auto-targeting properties
     isAutoTargeting: true,
-    detectionRange: 15.0, // Larger detection range than firing range
+    detectionRange: 8.0, // Larger detection range than firing range
     requiresLineOfSight: false, // Simple implementation for now
 }
 
@@ -34,7 +34,7 @@ export const fastAutoTargetingPreset: WeaponConfigPreset = {
     fireRate: 2.0, // Much faster fire rate
     projectileSpeed: 15.0, // Very fast projectiles
     range: 15.0, // Standard range
-    projectileType: 'sphere',
+    projectileType: 'bullet',
     // Auto-targeting properties
     isAutoTargeting: true,
     detectionRange: 18.0,
@@ -46,7 +46,7 @@ export const projectilePhysicsConfig = {
     gravity: -9.8, // Gravity acceleration (m/s²)
     upwardVelocity: 2.0, // Initial upward velocity for arc trajectory
     heightOffset: 0.2, // How high above shooter to spawn projectile
-    forwardOffset: 0.5, // How far in front of shooter to spawn projectile
+    forwardOffset: 0, // How far in front of shooter to spawn projectile
 }
 
 // Helper function to create a weapon configuration

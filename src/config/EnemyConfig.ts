@@ -31,7 +31,7 @@ export interface EnemySpawningConfig {
 
 // Enemy movement configuration preset
 export const enemyMovementPreset: MovementConfigPreset = {
-    maxSpeed: 5.0,
+    maxSpeed: 7.0,
     accelerationForce: 6.0,
     decelerationForce: 2.0,
     autoRotationStrength: 5,
@@ -56,14 +56,14 @@ export const basicEnemyHealthPreset: EnemyHealthConfig = {
 
 // Auto-targeting weapon configuration for enemies
 export const autoTargetingEnemyWeaponPreset: WeaponConfigPreset = {
-    damage: 15, // Decent damage but less than player's manual weapon
+    damage: 10, // Decent damage but less than player's manual weapon
     fireRate: 0.8, // Slightly slower than player auto-targeting weapon
     projectileSpeed: 10.0, // Standard projectile speed
-    range: 16.0, // Good range for enemies
-    projectileType: 'sphere',
+    range: 12.0, // Good range for enemies
+    projectileType: 'bullet',
     // Auto-targeting properties
     isAutoTargeting: true,
-    detectionRange: 18.0, // Larger detection range than firing range
+    detectionRange: 10.0, // Larger detection range than firing range
     requiresLineOfSight: false,
 }
 
@@ -73,7 +73,7 @@ export const fastEnemyWeaponPreset: WeaponConfigPreset = {
     fireRate: 1.5, // Faster fire rate
     projectileSpeed: 12.0, // Faster projectiles
     range: 14.0, // Shorter range
-    projectileType: 'sphere',
+    projectileType: 'bullet',
     // Auto-targeting properties
     isAutoTargeting: true,
     detectionRange: 16.0,
@@ -86,7 +86,7 @@ export const weakEnemyWeaponPreset: WeaponConfigPreset = {
     fireRate: 0.5,
     projectileSpeed: 8.0,
     range: 12.0,
-    projectileType: 'sphere',
+    projectileType: 'bullet',
     // Manual targeting (old behavior)
     isAutoTargeting: false,
     detectionRange: 12.0,

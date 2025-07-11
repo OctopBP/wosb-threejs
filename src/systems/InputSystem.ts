@@ -177,10 +177,10 @@ export class InputSystem extends System {
 
         // Left/Right movement (X direction)
         if (input.moveLeft) {
-            input.direction.x -= 1
+            input.direction.x += 1
         }
         if (input.moveRight) {
-            input.direction.x += 1
+            input.direction.x -= 1
         }
     }
 

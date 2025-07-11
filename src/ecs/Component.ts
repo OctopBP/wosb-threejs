@@ -109,7 +109,7 @@ export interface WeaponComponent extends Component {
     projectileSpeed: number
     range: number
     lastShotTime: number
-    projectileType: 'sphere' // for now, just sphere
+    projectileType: 'bullet' // for now, just sphere
     // Auto-targeting properties
     isAutoTargeting: boolean // whether this weapon auto-aims at enemies
     detectionRange: number // range for enemy detection (can be different from firing range)

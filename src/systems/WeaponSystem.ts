@@ -265,7 +265,7 @@ export class WeaponSystem extends System {
             type: 'renderable',
             meshId: `projectile_${projectile.id}`,
             mesh: undefined, // Will be created by RenderSystem using primitive
-            meshType: 'sphere', // Now properly supported
+            meshType: 'bullet', // Now properly supported
             visible: true,
         }
         projectile.addComponent(renderable)
@@ -336,7 +336,7 @@ export class WeaponSystem extends System {
             type: 'renderable',
             meshId: `projectile_${projectile.id}`,
             mesh: undefined, // Will be created by RenderSystem using primitive
-            meshType: 'sphere', // Now properly supported
+            meshType: 'bullet', // Now properly supported
             visible: true,
         }
         projectile.addComponent(renderable)
