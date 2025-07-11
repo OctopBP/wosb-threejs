@@ -14,7 +14,6 @@ import {
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
-import { createTestObstacle } from './entities/TestObstacleFactory'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { EnemyAISystem } from './systems/EnemyAISystem'
@@ -41,7 +40,6 @@ export class GameWorld {
     private enemySpawningSystem: EnemySpawningSystem
     private enemyAISystem: EnemyAISystem
     private playerEntity: Entity | null = null
-    private testObstacle: Entity | null = null
     private lastTime: number = 0
 
     constructor(
@@ -82,12 +80,6 @@ export class GameWorld {
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
         }
-
-        // Create a test obstacle for the player to shoot at
-        this.testObstacle = createTestObstacle(0, 0.1, 5) // 5 units in front of player
-        if (this.testObstacle) {
-            this.world.addEntity(this.testObstacle)
-        }
     }
 
     update(time: number): void {
@@ -105,10 +97,6 @@ export class GameWorld {
 
     getPlayerEntity(): Entity | null {
         return this.playerEntity
-    }
-
-    getTestObstacle(): Entity | null {
-        return this.testObstacle
     }
 
     getEntityCount(): number {
@@ -184,26 +172,8 @@ export class GameWorld {
             : null
     }
 
-    getObstacleHealth(): {
-        current: number
-        max: number
-        isDead: boolean
-    } | null {
-        if (!this.testObstacle) return null
-
-        const health = this.testObstacle.getComponent<HealthComponent>('health')
-        return health
-            ? {
-                  current: health.currentHealth,
-                  max: health.maxHealth,
-                  isDead: health.isDead,
-              }
-            : null
-    }
-
     cleanup(): void {
         this.world.clear()
         this.playerEntity = null
-        this.testObstacle = null
     }
 }
