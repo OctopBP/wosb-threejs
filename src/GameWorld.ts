@@ -14,7 +14,7 @@ import {
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
-import { createTestObstacle } from './entities/TestObstacleFactory'
+import { EnemyAISystem, EnemySpawningSystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { InputSystem } from './systems/InputSystem'
@@ -36,8 +36,9 @@ export class GameWorld {
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
     private renderSystem: RenderSystem
+    private enemySpawningSystem: EnemySpawningSystem
+    private enemyAISystem: EnemyAISystem
     private playerEntity: Entity | null = null
-    private testObstacle: Entity | null = null
     private lastTime: number = 0
 
     constructor(
@@ -56,29 +57,27 @@ export class GameWorld {
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
+        this.enemySpawningSystem = new EnemySpawningSystem(this.world)
+        this.enemyAISystem = new EnemyAISystem(this.world)
 
         // Add systems to world in execution order
         this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
-        this.world.addSystem(this.rotationSystem) // 2. Handle rotation
-        this.world.addSystem(this.accelerationSystem) // 3. Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) // 4. Apply velocity to position (ships only)
-        this.world.addSystem(this.weaponSystem) // 5. Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // 6. Move projectiles with gravity
-        this.world.addSystem(this.projectileSystem) // 7. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 8. Check collisions and apply damage
-        this.world.addSystem(this.renderSystem) // 9. Render the results
+        this.world.addSystem(this.enemySpawningSystem) // 2. Spawn enemies
+        this.world.addSystem(this.enemyAISystem) // 3. Update enemy AI (movement and targeting)
+        this.world.addSystem(this.rotationSystem) // 4. Handle rotation
+        this.world.addSystem(this.accelerationSystem) // 5. Apply acceleration/deceleration
+        this.world.addSystem(this.movementSystem) // 6. Apply velocity to position (ships only)
+        this.world.addSystem(this.weaponSystem) // 7. Handle weapon firing
+        this.world.addSystem(this.projectileMovementSystem) // 8. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 9. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 10. Check collisions and apply damage
+        this.world.addSystem(this.renderSystem) // 11. Render the results
     }
 
     init(): void {
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
-        }
-
-        // Create a test obstacle for the player to shoot at
-        this.testObstacle = createTestObstacle(0, 0.1, 5) // 5 units in front of player
-        if (this.testObstacle) {
-            this.world.addEntity(this.testObstacle)
         }
     }
 
@@ -97,10 +96,6 @@ export class GameWorld {
 
     getPlayerEntity(): Entity | null {
         return this.playerEntity
-    }
-
-    getTestObstacle(): Entity | null {
-        return this.testObstacle
     }
 
     getEntityCount(): number {
@@ -176,26 +171,8 @@ export class GameWorld {
             : null
     }
 
-    getObstacleHealth(): {
-        current: number
-        max: number
-        isDead: boolean
-    } | null {
-        if (!this.testObstacle) return null
-
-        const health = this.testObstacle.getComponent<HealthComponent>('health')
-        return health
-            ? {
-                  current: health.currentHealth,
-                  max: health.maxHealth,
-                  isDead: health.isDead,
-              }
-            : null
-    }
-
     cleanup(): void {
         this.world.clear()
         this.playerEntity = null
-        this.testObstacle = null
     }
 }
