@@ -127,3 +127,24 @@ export interface DamageableComponent extends Component {
     type: 'damageable'
     // This is a marker component that works with HealthComponent
 }
+
+// Enemy tag component
+export interface EnemyComponent extends Component {
+    type: 'enemy'
+}
+
+// Enemy AI component for controlling enemy behavior
+export interface EnemyAIComponent extends Component {
+    type: 'enemyAI'
+    // AI behavior state
+    moveSpeed: number
+    shootingRange: number
+    lastShotTime: number
+    // Target tracking
+    targetId: number | null
+    // Movement behavior
+    movementDirection: {
+        x: number
+        z: number
+    }
+}
