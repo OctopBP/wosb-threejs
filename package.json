@@ -34,8 +34,8 @@
         ]
     },
     "dependencies": {
-        "@babylonjs/core": "^8.16.0",
-        "@babylonjs/inspector": "^8.16.0",
-        "@babylonjs/loaders": "^8.16.0"
+        "three": "^0.170.0",
+        "@types/three": "^0.170.0",
+        "lil-gui": "^0.20.0"
     }
 }

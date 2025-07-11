@@ -1,4 +1,4 @@
-import type { Scene } from '@babylonjs/core'
+import type { Scene, WebGLRenderer } from 'three'
 import type {
     HealthComponent,
     InputComponent,
@@ -43,6 +43,7 @@ export class GameWorld {
 
     constructor(
         private scene: Scene,
+        private renderer: WebGLRenderer,
         private canvas: HTMLCanvasElement,
     ) {
         this.world = new World()
