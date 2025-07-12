@@ -24,12 +24,12 @@ import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { PhysicsSystem } from './systems/PhysicsSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
-import { ShipCollisionSystem } from './systems/ShipCollisionSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 
 export class GameWorld {
@@ -41,7 +41,7 @@ export class GameWorld {
     private weaponSystem: WeaponSystem
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
-    private shipCollisionSystem: ShipCollisionSystem
+    private physicsSystem: PhysicsSystem
     private collisionSystem: CollisionSystem
     private renderSystem: RenderSystem
     private enemySpawningSystem: EnemySpawningSystem
@@ -68,7 +68,7 @@ export class GameWorld {
         this.weaponSystem = new WeaponSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
-        this.shipCollisionSystem = new ShipCollisionSystem(this.world)
+        this.physicsSystem = new PhysicsSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
         this.enemySpawningSystem = new EnemySpawningSystem(this.world)
@@ -91,7 +91,7 @@ export class GameWorld {
         this.world.addSystem(this.rotationSystem) // 4. Handle rotation
         this.world.addSystem(this.accelerationSystem) // 5. Apply acceleration/deceleration
         this.world.addSystem(this.movementSystem) // 6. Apply velocity to position (ships only)
-        this.world.addSystem(this.shipCollisionSystem) // 7. Handle ship-to-ship collisions
+        this.world.addSystem(this.physicsSystem) // 7. Handle ship-to-ship physics using cannon-es
         this.world.addSystem(this.weaponSystem) // 8. Handle weapon firing
         this.world.addSystem(this.projectileMovementSystem) // 9. Move projectiles with gravity
         this.world.addSystem(this.projectileSystem) // 10. Update projectile lifetimes

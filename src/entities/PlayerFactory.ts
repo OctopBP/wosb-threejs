@@ -10,11 +10,11 @@ import {
     createWeaponConfig,
 } from '../config/WeaponConfig'
 import type {
-    CollisionComponent,
     DamageableComponent,
     HealthComponent,
     InputComponent,
     MovementConfigComponent,
+    PhysicsComponent,
     PlayerComponent,
     PositionComponent,
     RenderableComponent,
@@ -123,15 +123,21 @@ export function createPlayerShip(
     const levelingStats = createLevelingStatsComponent()
     entity.addComponent(levelingStats)
 
-    // Collision component for ship-to-ship physics
-    const collision: CollisionComponent = {
-        type: 'collision',
-        radius: 1.2, // Player ships are slightly larger
+    // Physics component for ship-to-ship collision using cannon-es
+    const physics: PhysicsComponent = {
+        type: 'physics',
+        bodyType: 'dynamic',
+        shape: 'sphere',
         mass: 100, // Heavy ship for stability
-        restitution: 0.3, // Some bounce but not too much
-        isStatic: false, // Player can be pushed by collisions
+        material: {
+            friction: 0.3,
+            restitution: 0.3, // Some bounce but not too much
+        },
+        dimensions: {
+            radius: 1.2, // Player ships are slightly larger
+        },
     }
-    entity.addComponent(collision)
+    entity.addComponent(physics)
 
     return entity
 }

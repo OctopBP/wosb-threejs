@@ -6,9 +6,9 @@ import {
 } from '../config/EnemyConfig'
 import { createMovementConfig } from '../config/MovementPresets'
 import type {
-    CollisionComponent,
     DamageableComponent,
     EnemyComponent,
+    PhysicsComponent,
     PositionComponent,
     RenderableComponent,
     VelocityComponent,
@@ -84,15 +84,21 @@ export function createEnemyShip(
     const enemyAI = createEnemyAIConfig(targetId)
     entity.addComponent(enemyAI)
 
-    // Collision component for ship-to-ship physics
-    const collision: CollisionComponent = {
-        type: 'collision',
-        radius: 1.0, // Enemy ships are standard size
+    // Physics component for ship-to-ship collision using cannon-es
+    const physics: PhysicsComponent = {
+        type: 'physics',
+        bodyType: 'dynamic',
+        shape: 'sphere',
         mass: 80, // Lighter than player for easier pushing
-        restitution: 0.4, // Slightly more bouncy
-        isStatic: false, // Enemies can be pushed by collisions
+        material: {
+            friction: 0.3,
+            restitution: 0.4, // Slightly more bouncy
+        },
+        dimensions: {
+            radius: 1.0, // Enemy ships are standard size
+        },
     }
-    entity.addComponent(collision)
+    entity.addComponent(physics)
 
     return entity
 }

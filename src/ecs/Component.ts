@@ -178,11 +178,23 @@ export interface LevelingStatsComponent extends Component {
     speedPerLevel: number
 }
 
-// Collision component for ship-to-ship collision detection and response
-export interface CollisionComponent extends Component {
-    type: 'collision'
-    radius: number // Collision radius for this entity
-    mass: number // Mass for collision response calculations
-    restitution: number // Bounciness (0 = no bounce, 1 = perfectly elastic)
-    isStatic: boolean // Whether this entity can be moved by collisions
+// Physics component for cannon-es physics body integration
+export interface PhysicsComponent extends Component {
+    type: 'physics'
+    bodyType: 'dynamic' | 'static' | 'kinematic' // Physics body type
+    shape: 'sphere' | 'box' | 'cylinder' // Collision shape
+    mass: number // Mass for physics calculations
+    material?: {
+        friction: number // Surface friction
+        restitution: number // Bounciness (0 = no bounce, 1 = perfectly elastic)
+    }
+    dimensions: {
+        radius?: number // For sphere shape
+        width?: number // For box shape
+        height?: number // For box shape
+        depth?: number // For box shape
+        radiusTop?: number // For cylinder shape
+        radiusBottom?: number // For cylinder shape
+    }
+    body?: any // cannon-es Body instance (will be set by PhysicsSystem)
 }
