@@ -1,4 +1,5 @@
-import type { Camera, Scene, WebGLRenderer } from 'three'
+import type { Camera, Clock, Scene, WebGLRenderer } from 'three'
+import { Clock as ThreeClock } from 'three'
 import type {
     HealthComponent,
     InputComponent,
@@ -17,7 +18,12 @@ import {
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
-import { EnemyAISystem, EnemySpawningSystem } from './systems'
+import {
+    EnemyAISystem,
+    EnemySpawningSystem,
+    EnvironmentSystem,
+    WaterSystem,
+} from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
@@ -47,8 +53,11 @@ export class GameWorld {
     private levelingSystem: LevelingSystem
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
+    private waterSystem: WaterSystem
+    private environmentSystem: EnvironmentSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
+    private clock: Clock
 
     constructor(
         private scene: Scene,
@@ -57,6 +66,7 @@ export class GameWorld {
         private camera: Camera,
     ) {
         this.world = new World()
+        this.clock = new ThreeClock()
 
         // Initialize systems in the correct order
         this.inputSystem = new InputSystem(this.world, canvas)
@@ -78,6 +88,14 @@ export class GameWorld {
             canvas,
         )
 
+        // Initialize water and environment systems
+        this.waterSystem = new WaterSystem(this.world, scene, this.clock)
+        this.environmentSystem = new EnvironmentSystem(
+            this.world,
+            scene,
+            this.waterSystem.getWaterLevel(),
+        )
+
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
 
@@ -95,7 +113,9 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.renderSystem) // 14. Render the results
+        this.world.addSystem(this.waterSystem) // 14. Update water animations
+        this.world.addSystem(this.environmentSystem) // 15. Update environment (debris animation)
+        this.world.addSystem(this.renderSystem) // 16. Render the results
     }
 
     init(): void {
@@ -113,6 +133,9 @@ export class GameWorld {
 
         // Clamp delta time to prevent large jumps
         const clampedDeltaTime = Math.min(deltaTime, 1 / 30) // Max 30 FPS minimum
+
+        // Update clock for water system
+        this.clock.elapsedTime = time / 1000
 
         // Update all systems
         this.world.update(clampedDeltaTime)
