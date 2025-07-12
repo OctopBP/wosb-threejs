@@ -317,7 +317,53 @@
                 "status": "pending",
                 "dependencies": [2, 3, 4, 5],
                 "priority": "medium",
-                "subtasks": []
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Design Red Arrow Visual Indicator System",
+                        "description": "Design the visual system for displaying red arrows around the player ship that point toward enemy ships, ensuring clarity and minimalism.",
+                        "dependencies": [],
+                        "details": "Define the visual style, size, and placement of the red arrows. Specify how arrows should appear/disappear based on enemy presence and distance. Create mockups or wireframes to illustrate the intended look and feel. Document rules for arrow overlap, stacking, and animation for smooth transitions.",
+                        "status": "pending",
+                        "testStrategy": "Review mockups with stakeholders and verify that arrow designs are clear, non-intrusive, and visually consistent with the game's UI style."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Implement Enemy Direction Calculation Logic",
+                        "description": "Develop the logic to calculate the direction from the player ship to each enemy ship in real time, providing data for arrow orientation.",
+                        "dependencies": [1],
+                        "details": "Integrate with the ECS to track all active enemy ship positions. For each frame, compute the vector from the player ship to each enemy and determine the corresponding angle. Optimize to handle multiple enemies efficiently. Expose this data to the UI system for arrow rendering.",
+                        "status": "pending",
+                        "testStrategy": "Unit test direction calculations with various enemy positions and verify correct angle outputs. Use debug logs or overlays to confirm accuracy."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Render Red Arrows Based on Enemy Directions",
+                        "description": "Implement the rendering of red arrows around the player ship, updating their orientation and visibility in real time based on calculated enemy directions.",
+                        "dependencies": [2],
+                        "details": "Create UI components or sprites for the arrows. Position arrows at the edge of the player ship's radius, rotating each to point toward its respective enemy. Ensure arrows update smoothly as enemies move. Handle cases with multiple enemies by limiting the number of arrows or prioritizing closest threats.",
+                        "status": "pending",
+                        "testStrategy": "Playtest with multiple enemies to confirm arrows point accurately and update responsively. Check for visual clutter and performance impact."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Design and Implement Shooting Range Indicator",
+                        "description": "Design and implement a circular visual indicator around the player ship that dynamically shows the current shooting range.",
+                        "dependencies": [],
+                        "details": "Define the visual style (color, thickness, transparency) of the range circle. Implement a UI element or shader that draws a circle centered on the player ship, with radius based on the current weapon's range. Ensure the indicator updates in real time if the range changes (e.g., weapon swap, power-up).",
+                        "status": "pending",
+                        "testStrategy": "Verify the circle accurately reflects the weapon's range under different scenarios. Test with various screen sizes and aspect ratios for consistency."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Integrate and Optimize Visual Guidance Elements",
+                        "description": "Integrate the red arrow and shooting range indicator systems into the main game UI, ensuring performance, clarity, and responsiveness.",
+                        "dependencies": [3, 4],
+                        "details": "Combine both UI elements within the game's HUD layer. Test for overlapping scenarios and adjust z-order or opacity as needed. Optimize update and rendering logic to minimize performance overhead. Ensure both elements scale and position correctly across different resolutions and input methods.",
+                        "status": "pending",
+                        "testStrategy": "Conduct end-to-end playtests to confirm both features work together seamlessly, remain non-intrusive, and provide clear guidance. Profile performance and address any bottlenecks."
+                    }
+                ]
             },
             {
                 "id": 9,
