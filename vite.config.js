@@ -1,7 +1,9 @@
 import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig } from 'vite'
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
+    const { default: glsl } = await import('vite-plugin-glsl')
+
     const isProduction = mode === 'production'
     const isAnalyze = mode === 'analyze'
 
@@ -48,6 +50,7 @@ export default defineConfig(({ mode }) => {
         },
 
         plugins: [
+            glsl(), // Add GLSL support
             isAnalyze &&
                 visualizer({
                     filename: 'dist/stats.html',

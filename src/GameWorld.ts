@@ -1,5 +1,6 @@
 import type { Camera, Clock, Scene, WebGLRenderer } from 'three'
 import { Clock as ThreeClock } from 'three'
+import { defaultWaterConfig, type WaterConfig } from './config/WaterConfig'
 import type {
     HealthComponent,
     InputComponent,
@@ -37,6 +38,10 @@ import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 
+export interface GameWorldOptions {
+    waterConfig?: Partial<WaterConfig>
+}
+
 export class GameWorld {
     private world: World
     private inputSystem: InputSystem
@@ -64,6 +69,7 @@ export class GameWorld {
         private renderer: WebGLRenderer,
         private canvas: HTMLCanvasElement,
         private camera: Camera,
+        options: GameWorldOptions = {},
     ) {
         this.world = new World()
         this.clock = new ThreeClock()
@@ -88,8 +94,13 @@ export class GameWorld {
             canvas,
         )
 
-        // Initialize water and environment systems
-        this.waterSystem = new WaterSystem(this.world, scene, this.clock)
+        // Initialize water and environment systems with configuration
+        this.waterSystem = new WaterSystem(
+            this.world,
+            scene,
+            this.clock,
+            options.waterConfig,
+        )
         this.environmentSystem = new EnvironmentSystem(
             this.world,
             scene,
@@ -139,6 +150,23 @@ export class GameWorld {
 
         // Update all systems
         this.world.update(clampedDeltaTime)
+    }
+
+    // Water system methods
+    getWaterSystem(): WaterSystem {
+        return this.waterSystem
+    }
+
+    updateWaterConfig(config: Partial<WaterConfig>): void {
+        this.waterSystem.updateConfig(config)
+        // Update environment system with new water level if it changed
+        if (config.waterLevel !== undefined) {
+            this.environmentSystem.setWaterLevel(config.waterLevel)
+        }
+    }
+
+    getWaterConfig(): WaterConfig {
+        return this.waterSystem.getConfig()
     }
 
     getPlayerEntity(): Entity | null {

@@ -15,7 +15,8 @@ import {
     Vector3,
     WebGLRenderer,
 } from 'three'
-import { GameWorld } from './GameWorld'
+import { type WaterConfig, waterPresets } from './config/WaterConfig'
+import { GameWorld, type GameWorldOptions } from './GameWorld'
 
 export class AppOne {
     renderer: WebGLRenderer
@@ -44,11 +45,23 @@ export class AppOne {
 
         this.scene = this.createScene()
         this.camera = this.createCamera()
+
+        // Create game world with water configuration
+        const gameWorldOptions: GameWorldOptions = {
+            waterConfig: {
+                // Start with default settings, can be customized here
+                waveSpeed: 1.0,
+                waveAmplitude: 0.12,
+                textureSize: 45,
+            },
+        }
+
         this.gameWorld = new GameWorld(
             this.scene,
             this.renderer,
             this.canvas,
             this.camera,
+            gameWorldOptions,
         )
     }
 
@@ -95,232 +108,189 @@ export class AppOne {
         directionalLight.shadow.camera.bottom = -25
         scene.add(directionalLight)
 
-        // Create ocean/ground plane
-        const groundGeometry = new PlaneGeometry(50, 50)
-        const groundMaterial = new MeshLambertMaterial({
-            color: new Color(0.2, 0.4, 0.8), // Blue ocean
-        })
-        const ground = new Mesh(groundGeometry, groundMaterial)
-        ground.rotation.x = -Math.PI / 2 // Rotate to be horizontal
-        ground.receiveShadow = true
-        scene.add(ground)
-
-        // Add fog for atmosphere
-        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 10, 100)
+        // Add fog for atmospheric effect
+        scene.fog = new Fog(0x87ceeb, 50, 200)
 
         return scene
     }
 
     private createCamera(): PerspectiveCamera {
         const camera = new PerspectiveCamera(
-            50, // field of view
-            window.innerWidth / window.innerHeight, // aspect ratio
-            0.1, // near plane
-            1000, // far plane
+            45,
+            this.canvas.clientWidth / this.canvas.clientHeight,
+            0.1,
+            1000,
         )
 
-        // Position camera
-        camera.position.set(0, 12, -10)
-        camera.lookAt(new Vector3(0, 0, 0)) // Point camera at the origin where the player ship will be
+        // Position camera for isometric-like view of the ship
+        camera.position.set(0, 15, 20)
+        camera.lookAt(0, 0, 0)
 
         return camera
     }
 
-    private createDebugControls() {
+    private createDebugControls(): void {
         if (!this.gui) return
 
-        // Camera controls
-        const cameraFolder = this.gui.addFolder('Camera')
-        cameraFolder.add(this.camera.position, 'x', -20, 20, 0.1)
-        cameraFolder.add(this.camera.position, 'y', 1, 20, 0.1)
-        cameraFolder.add(this.camera.position, 'z', -30, 10, 0.1)
+        // Get current water config
+        const waterConfig = this.gameWorld.getWaterConfig()
 
-        // Weapon controls
-        const weaponFolder = this.gui.addFolder('Weapons')
+        // Water Controls folder
+        const waterFolder = this.gui.addFolder('Water Settings')
 
-        // Weapon type toggle
-        weaponFolder
-            .add(
-                {
-                    toggleWeaponType: () => {
-                        this.gameWorld.togglePlayerWeaponType()
-                        console.log(
-                            `Weapon switched to: ${
-                                this.gameWorld.playerHasAutoTargetingWeapon()
-                                    ? 'Auto-Targeting'
-                                    : 'Manual'
-                            }`,
-                        )
-                    },
-                },
-                'toggleWeaponType',
-            )
-            .name('Toggle Weapon Type')
+        // Basic water parameters
+        waterFolder
+            .add(waterConfig, 'waterLevel', 0, 3, 0.1)
+            .onChange((value: number) => {
+                this.gameWorld.updateWaterConfig({ waterLevel: value })
+            })
 
-        // Current weapon status display
-        const weaponStatus = { type: 'Manual' }
-        const weaponStatusController = weaponFolder
-            .add(weaponStatus, 'type')
-            .name('Current Weapon')
-        weaponStatusController.disable()
+        waterFolder
+            .add(waterConfig, 'waveSpeed', 0.1, 3, 0.1)
+            .onChange((value: number) => {
+                this.gameWorld.updateWaterConfig({ waveSpeed: value })
+            })
 
-        // Update weapon status display
-        const updateWeaponStatus = () => {
-            weaponStatus.type = this.gameWorld.playerHasAutoTargetingWeapon()
-                ? 'Auto-Targeting'
-                : 'Manual'
-            weaponStatusController.updateDisplay()
+        waterFolder
+            .add(waterConfig, 'waveAmplitude', 0.01, 0.5, 0.01)
+            .onChange((value: number) => {
+                this.gameWorld.updateWaterConfig({ waveAmplitude: value })
+            })
+
+        waterFolder
+            .add(waterConfig, 'textureSize', 10, 100, 5)
+            .onChange((value: number) => {
+                this.gameWorld.updateWaterConfig({ textureSize: value })
+            })
+
+        waterFolder
+            .add(waterConfig, 'foamDepth', 0.01, 0.2, 0.01)
+            .onChange((value: number) => {
+                this.gameWorld.updateWaterConfig({ foamDepth: value })
+            })
+
+        waterFolder
+            .add(waterConfig, 'foamThreshold', 0.3, 0.9, 0.05)
+            .onChange((value: number) => {
+                this.gameWorld.updateWaterConfig({ foamThreshold: value })
+            })
+
+        // Water color controls
+        const colorParams = {
+            colorNear: `#${waterConfig.colorNear.getHexString()}`,
+            colorFar: `#${waterConfig.colorFar.getHexString()}`,
         }
 
-        // Update weapon status every frame (simple approach)
-        setInterval(updateWeaponStatus, 100)
+        waterFolder
+            .addColor(colorParams, 'colorNear')
+            .onChange((value: string) => {
+                this.gameWorld.updateWaterConfig({
+                    colorNear: new Color(value),
+                })
+            })
 
-        // Quick weapon presets
-        weaponFolder
-            .add(
-                {
-                    equipManual: () => {
-                        this.gameWorld.equipPlayerManualWeapon()
-                        console.log('Equipped Manual Weapon')
-                    },
-                },
-                'equipManual',
-            )
-            .name('Equip Manual Weapon')
+        waterFolder
+            .addColor(colorParams, 'colorFar')
+            .onChange((value: string) => {
+                this.gameWorld.updateWaterConfig({ colorFar: new Color(value) })
+            })
 
-        weaponFolder
-            .add(
-                {
-                    equipAutoTargeting: () => {
-                        this.gameWorld.equipPlayerAutoTargetingWeapon()
-                        console.log('Equipped Auto-Targeting Weapon')
-                    },
-                },
-                'equipAutoTargeting',
-            )
-            .name('Equip Auto-Targeting')
-
-        weaponFolder
-            .add(
-                {
-                    equipFastAuto: () => {
-                        this.gameWorld.equipPlayerAutoTargetingWeapon({
-                            damage: 15,
-                            fireRate: 2.0,
-                            projectileSpeed: 15.0,
-                            range: 15.0,
-                            detectionRange: 18.0,
-                        })
-                        console.log('Equipped Fast Auto-Targeting Weapon')
-                    },
-                },
-                'equipFastAuto',
-            )
-            .name('Equip Fast Auto-Targeting')
-
-        // Auto-targeting debug controls
-        weaponFolder
-            .add(
-                {
-                    enableDebug: () => {
-                        this.gameWorld.setAutoTargetingDebug(true)
-                        console.log(
-                            '🎯 Auto-targeting debug enabled - watch console for weapon behavior',
-                        )
-                    },
-                },
-                'enableDebug',
-            )
-            .name('Enable Auto-Targeting Debug')
-
-        weaponFolder
-            .add(
-                {
-                    disableDebug: () => {
-                        this.gameWorld.setAutoTargetingDebug(false)
-                        console.log('🎯 Auto-targeting debug disabled')
-                    },
-                },
-                'disableDebug',
-            )
-            .name('Disable Auto-Targeting Debug')
-
-        // Enemy weapon info
-        weaponFolder
-            .add(
-                {
-                    enemyWeaponInfo: () => {
-                        console.log('🤖 Enemy Auto-Targeting Weapons:')
-                        console.log('- Uses unified WeaponConfigPreset system')
-                        console.log('- Detection Range: 18 units')
-                        console.log('- Firing Range: 16 units')
-                        console.log('- Damage: 15 per shot')
-                        console.log('- Fire Rate: 0.8 shots/second')
-                        console.log('- Only fire when player is in range')
-                        console.log(
-                            '- Projectiles aim directly at player position',
-                        )
-                        console.log('- Same codebase as player weapons')
-                    },
-                },
-                'enemyWeaponInfo',
-            )
-            .name('Enemy Weapon Info')
-
-        weaponFolder
-            .add(
-                {
-                    unifiedSystemInfo: () => {
-                        console.log('🔧 Unified Weapon System Benefits:')
-                        console.log(
-                            '- Single WeaponConfigPreset for all entities',
-                        )
-                        console.log(
-                            '- Consistent behavior between players and enemies',
-                        )
-                        console.log(
-                            '- Simplified configuration and maintenance',
-                        )
-                        console.log('- Reduced code duplication')
-                        console.log('- Same WeaponSystem handles all entities')
-                        console.log('- Easy to add new weapon types')
-                    },
-                },
-                'unifiedSystemInfo',
-            )
-            .name('Unified System Info')
-
-        // Lighting controls
-        const lightFolder = this.gui.addFolder('Lighting')
-        const hemisphereLight = this.scene.children.find(
-            (child): child is HemisphereLight =>
-                child instanceof HemisphereLight,
-        )
-        const directionalLight = this.scene.children.find(
-            (child): child is DirectionalLight =>
-                child instanceof DirectionalLight,
-        )
-
-        if (hemisphereLight) {
-            lightFolder
-                .add(hemisphereLight, 'intensity', 0, 2, 0.01)
-                .name('Hemisphere Intensity')
-        }
-        if (directionalLight) {
-            lightFolder
-                .add(directionalLight, 'intensity', 0, 2, 0.01)
-                .name('Directional Intensity')
+        // Water presets
+        const presetParams = {
+            preset: 'default',
         }
 
-        // Fog controls
-        const fogFolder = this.gui.addFolder('Fog')
-        if (this.scene.fog instanceof Fog) {
-            fogFolder.add(this.scene.fog, 'near', 1, 50, 0.1)
-            fogFolder.add(this.scene.fog, 'far', 50, 200, 1)
+        waterFolder
+            .add(presetParams, 'preset', [
+                'default',
+                'calm',
+                'rough',
+                'tropical',
+            ])
+            .onChange((value: string) => {
+                if (value !== 'default') {
+                    const preset =
+                        waterPresets[value as keyof typeof waterPresets]
+                    this.gameWorld.updateWaterConfig(preset)
+
+                    // Update GUI values to reflect preset
+                    waterFolder.controllersRecursive().forEach((controller) => {
+                        controller.updateDisplay()
+                    })
+
+                    // Update color GUI values
+                    colorParams.colorNear = `#${preset.colorNear.getHexString()}`
+                    colorParams.colorFar = `#${preset.colorFar.getHexString()}`
+                    waterFolder.controllersRecursive().forEach((controller) => {
+                        controller.updateDisplay()
+                    })
+                }
+            })
+
+        // Game Controls folder
+        const gameFolder = this.gui.addFolder('Game Controls')
+
+        const gameParams = {
+            playerHealth: () => this.gameWorld.getPlayerHealth(),
+            playerPosition: () => this.gameWorld.getPlayerPosition(),
+            entityCount: () => this.gameWorld.getEntityCount(),
+            toggleWeaponType: () => this.gameWorld.togglePlayerWeaponType(),
+            autoTargetingDebug: false,
         }
+
+        gameFolder.add(gameParams, 'toggleWeaponType').name('Toggle Weapon')
+        gameFolder
+            .add(gameParams, 'autoTargetingDebug')
+            .onChange((value: boolean) => {
+                this.gameWorld.setAutoTargetingDebug(value)
+            })
+            .name('Auto-Target Debug')
+
+        // Performance folder
+        const perfFolder = this.gui.addFolder('Performance')
+
+        const performanceParams = {
+            wireframe: false,
+            shadows: true,
+        }
+
+        perfFolder
+            .add(performanceParams, 'wireframe')
+            .onChange((value: boolean) => {
+                this.scene.traverse((child) => {
+                    if (child instanceof Mesh && child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach((mat) => {
+                                if ('wireframe' in mat) mat.wireframe = value
+                            })
+                        } else {
+                            if ('wireframe' in child.material)
+                                child.material.wireframe = value
+                        }
+                    }
+                })
+            })
+
+        perfFolder
+            .add(performanceParams, 'shadows')
+            .onChange((value: boolean) => {
+                this.renderer.shadowMap.enabled = value
+            })
+
+        waterFolder.open()
     }
 
-    private handleResize() {
+    private startRenderLoop(): void {
+        const animate = (time: number) => {
+            this.gameWorld.update(time)
+            this.renderer.render(this.scene, this.camera)
+            requestAnimationFrame(animate)
+        }
+
+        requestAnimationFrame(animate)
+    }
+
+    private handleResize(): void {
         const width = this.canvas.clientWidth
         const height = this.canvas.clientHeight
 
@@ -328,27 +298,5 @@ export class AppOne {
         this.camera.updateProjectionMatrix()
 
         this.renderer.setSize(width, height)
-    }
-
-    private startRenderLoop() {
-        const animate = (time: number) => {
-            this.gameWorld.update(time)
-            this.renderer.render(this.scene, this.camera)
-            requestAnimationFrame(animate)
-        }
-        requestAnimationFrame(animate)
-    }
-
-    // Cleanup method
-    dispose() {
-        if (this.gui) {
-            this.gui.destroy()
-        }
-        if (this.gameWorld) {
-            this.gameWorld.cleanup()
-        }
-        if (this.renderer) {
-            this.renderer.dispose()
-        }
     }
 }
