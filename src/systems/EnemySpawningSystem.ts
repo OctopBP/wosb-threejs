@@ -17,6 +17,8 @@ export class EnemySpawningSystem extends System {
     private spawnDistance: number = enemySpawningConfig.spawnDistance
     private levelingSystem: import('./LevelingSystem').LevelingSystem | null =
         null
+    private particleSystem: import('./ParticleSystem').ParticleSystem | null =
+        null
 
     constructor(world: World) {
         super(world, []) // No required components for spawning system
@@ -27,6 +29,13 @@ export class EnemySpawningSystem extends System {
         levelingSystem: import('./LevelingSystem').LevelingSystem,
     ): void {
         this.levelingSystem = levelingSystem
+    }
+
+    // Method to set the particle system reference
+    setParticleSystem(
+        particleSystem: import('./ParticleSystem').ParticleSystem,
+    ): void {
+        this.particleSystem = particleSystem
     }
 
     update(_deltaTime: number): void {
@@ -100,7 +109,7 @@ export class EnemySpawningSystem extends System {
             if (playerEntities.length > 0) {
                 const player = playerEntities[0]
 
-                for (const deadEnemy of deadEnemies) {
+                for (const _deadEnemy of deadEnemies) {
                     // Award XP for each enemy type (currently only basic enemies)
                     const xpAwarded = enemyXPConfig.basicEnemy
                     this.levelingSystem.awardXP(player.id, xpAwarded)
@@ -113,6 +122,19 @@ export class EnemySpawningSystem extends System {
 
         // Remove dead enemies from world
         for (const deadEnemy of deadEnemies) {
+            // Create explosion effect at enemy position
+            if (this.particleSystem) {
+                const enemyPosition =
+                    deadEnemy.getComponent<PositionComponent>('position')
+                if (enemyPosition) {
+                    this.particleSystem.createExplosion({
+                        x: enemyPosition.x,
+                        y: enemyPosition.y,
+                        z: enemyPosition.z,
+                    })
+                }
+            }
+
             // Clean up mesh if exists
             const renderable =
                 deadEnemy.getComponent<RenderableComponent>('renderable')

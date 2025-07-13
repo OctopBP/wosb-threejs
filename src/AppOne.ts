@@ -69,6 +69,9 @@ export class AppOne {
 
         this.gameWorld.init()
 
+        // Start automatic particle effects demo
+        this.startParticleDemo()
+
         this.startRenderLoop()
     }
 
@@ -318,6 +321,109 @@ export class AppOne {
             fogFolder.add(this.scene.fog, 'near', 1, 50, 0.1)
             fogFolder.add(this.scene.fog, 'far', 50, 200, 1)
         }
+
+        // Particle effects controls
+        const particleFolder = this.gui.addFolder('Particle Effects')
+
+        particleFolder
+            .add(
+                {
+                    createExplosion: () => {
+                        const playerPos = this.gameWorld.getPlayerPosition()
+                        if (playerPos) {
+                            this.gameWorld.createExplosion(playerPos)
+                            console.log(
+                                '💥 Created explosion at player position',
+                            )
+                        } else {
+                            this.gameWorld.createExplosion({ x: 0, y: 0, z: 0 })
+                            console.log('💥 Created explosion at origin')
+                        }
+                    },
+                },
+                'createExplosion',
+            )
+            .name('Create Explosion')
+
+        particleFolder
+            .add(
+                {
+                    createFireEffect: () => {
+                        const playerPos = this.gameWorld.getPlayerPosition()
+                        if (playerPos) {
+                            this.gameWorld.createFireEffect(playerPos)
+                            console.log(
+                                '🔥 Created fire effect at player position',
+                            )
+                        } else {
+                            this.gameWorld.createFireEffect({
+                                x: 0,
+                                y: 0,
+                                z: 0,
+                            })
+                            console.log('🔥 Created fire effect at origin')
+                        }
+                    },
+                },
+                'createFireEffect',
+            )
+            .name('Create Fire Effect')
+
+        particleFolder
+            .add(
+                {
+                    createSparkleEffect: () => {
+                        const playerPos = this.gameWorld.getPlayerPosition()
+                        if (playerPos) {
+                            this.gameWorld.createSparkleEffect(playerPos)
+                            console.log(
+                                '✨ Created sparkle effect at player position',
+                            )
+                        } else {
+                            this.gameWorld.createSparkleEffect({
+                                x: 0,
+                                y: 0,
+                                z: 0,
+                            })
+                            console.log('✨ Created sparkle effect at origin')
+                        }
+                    },
+                },
+                'createSparkleEffect',
+            )
+            .name('Create Sparkle Effect')
+
+        particleFolder
+            .add(
+                {
+                    createRandomEffects: () => {
+                        for (let i = 0; i < 5; i++) {
+                            const randomPos = {
+                                x: (Math.random() - 0.5) * 20,
+                                y: Math.random() * 10,
+                                z: (Math.random() - 0.5) * 20,
+                            }
+                            const effects = [
+                                () => this.gameWorld.createExplosion(randomPos),
+                                () =>
+                                    this.gameWorld.createFireEffect(randomPos),
+                                () =>
+                                    this.gameWorld.createSparkleEffect(
+                                        randomPos,
+                                    ),
+                            ]
+                            const randomEffect =
+                                effects[
+                                    Math.floor(Math.random() * effects.length)
+                                ]
+                            randomEffect()
+                        }
+                        console.log('🎆 Created 5 random particle effects')
+                    },
+                },
+                'createRandomEffects',
+            )
+            .name('Create Random Effects')
     }
 
     private handleResize() {
@@ -337,6 +443,28 @@ export class AppOne {
             requestAnimationFrame(animate)
         }
         requestAnimationFrame(animate)
+    }
+
+    private startParticleDemo(): void {
+        // Create periodic particle effects to showcase the system
+        setInterval(() => {
+            // Create random particle effects around the scene
+            const randomPos = {
+                x: (Math.random() - 0.5) * 30,
+                y: Math.random() * 15,
+                z: (Math.random() - 0.5) * 30,
+            }
+
+            const effects = [
+                () => this.gameWorld.createExplosion(randomPos),
+                () => this.gameWorld.createFireEffect(randomPos),
+                () => this.gameWorld.createSparkleEffect(randomPos),
+            ]
+
+            const randomEffect =
+                effects[Math.floor(Math.random() * effects.length)]
+            randomEffect()
+        }, 3000) // Every 3 seconds
     }
 
     // Cleanup method

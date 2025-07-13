@@ -177,3 +177,173 @@ export interface LevelingStatsComponent extends Component {
     baseMaxSpeed: number
     speedPerLevel: number
 }
+
+// Particle component for individual particles
+export interface ParticleComponent extends Component {
+    type: 'particle'
+    // Life cycle
+    age: number
+    maxAge: number
+    isDead: boolean
+
+    // Position and movement
+    position: {
+        x: number
+        y: number
+        z: number
+    }
+    velocity: {
+        x: number
+        y: number
+        z: number
+    }
+    acceleration: {
+        x: number
+        y: number
+        z: number
+    }
+
+    // Visual properties
+    size: number
+    initialSize: number
+    finalSize: number
+
+    color: {
+        r: number
+        g: number
+        b: number
+        a: number
+    }
+    initialColor: {
+        r: number
+        g: number
+        b: number
+        a: number
+    }
+    finalColor: {
+        r: number
+        g: number
+        b: number
+        a: number
+    }
+
+    // Rotation
+    rotation: number
+    rotationSpeed: number
+
+    // Sprite sheet animation (if applicable)
+    spriteIndex: number
+    totalSprites: number
+    spriteAnimationSpeed: number
+
+    // Physics
+    gravity: number
+    drag: number
+}
+
+// Particle emitter component for creating particles
+export interface ParticleEmitterComponent extends Component {
+    type: 'particleEmitter'
+    // Emission settings
+    emissionType: 'burst' | 'continuous'
+    burstCount: number // Number of particles to emit in a burst
+    emissionRate: number // Particles per second for continuous emission
+    lastEmissionTime: number
+
+    // Position and area
+    position: {
+        x: number
+        y: number
+        z: number
+    }
+    emissionArea: {
+        type: 'point' | 'sphere' | 'box' | 'circle'
+        radius?: number
+        width?: number
+        height?: number
+        depth?: number
+    }
+
+    // Particle properties
+    particleConfig: {
+        // Life
+        minAge: number
+        maxAge: number
+
+        // Size
+        minSize: number
+        maxSize: number
+        sizeOverLifetime: boolean
+        finalSizeMultiplier: number
+
+        // Color
+        color: {
+            r: number
+            g: number
+            b: number
+            a: number
+        }
+        colorOverLifetime: boolean
+        finalColor: {
+            r: number
+            g: number
+            b: number
+            a: number
+        }
+
+        // Velocity
+        minSpeed: number
+        maxSpeed: number
+        direction: {
+            x: number
+            y: number
+            z: number
+        }
+        directionSpread: number // Angle in radians
+
+        // Physics
+        gravity: number
+        drag: number
+
+        // Rotation
+        minRotationSpeed: number
+        maxRotationSpeed: number
+
+        // Sprite sheet
+        useSpriteSheet: boolean
+        spriteSheetConfig?: {
+            textureUrl: string
+            columns: number
+            rows: number
+            totalFrames: number
+            animationSpeed: number
+        }
+    }
+
+    // Emitter state
+    isActive: boolean
+    totalEmitted: number
+    maxParticles?: number // Optional limit on total particles
+}
+
+// Particle renderer component for visual representation
+export interface ParticleRendererComponent extends Component {
+    type: 'particleRenderer'
+    // Render type
+    renderType: 'sprite' | 'shape' | 'spriteSheet'
+
+    // Shape properties (for shape render type)
+    shapeType: 'circle' | 'square' | 'triangle'
+
+    // Texture properties (for sprite render types)
+    textureUrl?: string
+    texture?: any // Three.js texture
+
+    // Material properties
+    material?: any // Three.js material
+    blending: 'normal' | 'additive' | 'multiply'
+
+    // Rendering
+    mesh?: any // Three.js mesh
+    visible: boolean
+}

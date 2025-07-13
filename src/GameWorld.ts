@@ -24,6 +24,7 @@ import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -47,6 +48,7 @@ export class GameWorld {
     private levelingSystem: LevelingSystem
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
+    private particleSystem: ParticleSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -77,9 +79,11 @@ export class GameWorld {
             camera,
             canvas,
         )
+        this.particleSystem = new ParticleSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
+        this.enemySpawningSystem.setParticleSystem(this.particleSystem)
 
         // Add systems to world in execution order
         this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
@@ -95,7 +99,8 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.renderSystem) // 14. Render the results
+        this.world.addSystem(this.particleSystem) // 14. Update particles
+        this.world.addSystem(this.renderSystem) // 15. Render the results
     }
 
     init(): void {
@@ -183,6 +188,19 @@ export class GameWorld {
     // Method to enable/disable auto-targeting weapon debug logging
     setAutoTargetingDebug(enabled: boolean): void {
         this.weaponSystem.setAutoTargetingDebug(enabled)
+    }
+
+    // Particle system methods
+    createExplosion(position: { x: number; y: number; z: number }): void {
+        this.particleSystem.createExplosion(position)
+    }
+
+    createFireEffect(position: { x: number; y: number; z: number }): void {
+        this.particleSystem.createFireEffect(position)
+    }
+
+    createSparkleEffect(position: { x: number; y: number; z: number }): void {
+        this.particleSystem.createSparkleEffect(position)
     }
 
     // Debug methods
