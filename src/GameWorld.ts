@@ -29,6 +29,7 @@ import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
+import { VisualGuidanceSystem } from './systems/VisualGuidanceSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 
 export class GameWorld {
@@ -47,6 +48,7 @@ export class GameWorld {
     private levelingSystem: LevelingSystem
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
+    private visualGuidanceSystem: VisualGuidanceSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -77,6 +79,11 @@ export class GameWorld {
             camera,
             canvas,
         )
+        this.visualGuidanceSystem = new VisualGuidanceSystem(
+            this.world,
+            camera,
+            canvas,
+        )
 
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
@@ -95,7 +102,8 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.renderSystem) // 14. Render the results
+        this.world.addSystem(this.visualGuidanceSystem) // 14. Update visual guidance (arrows and range indicator)
+        this.world.addSystem(this.renderSystem) // 15. Render the results
     }
 
     init(): void {
