@@ -14,6 +14,7 @@ import type {
     HealthComponent,
     InputComponent,
     MovementConfigComponent,
+    PhysicsComponent,
     PlayerComponent,
     PositionComponent,
     RenderableComponent,
@@ -121,6 +122,22 @@ export function createPlayerShip(
     // Leveling stats component for stat improvements
     const levelingStats = createLevelingStatsComponent()
     entity.addComponent(levelingStats)
+
+    // Physics component for ship-to-ship collision using cannon-es
+    const physics: PhysicsComponent = {
+        type: 'physics',
+        bodyType: 'dynamic',
+        shape: 'sphere',
+        mass: 100, // Heavy ship for stability
+        material: {
+            friction: 0.3,
+            restitution: 0.3, // Some bounce but not too much
+        },
+        dimensions: {
+            radius: 1.2, // Player ships are slightly larger
+        },
+    }
+    entity.addComponent(physics)
 
     return entity
 }
