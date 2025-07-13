@@ -1,4 +1,5 @@
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 
 export interface JoystickInput {
@@ -176,8 +177,8 @@ export class VirtualJoystickSystem extends System {
         }
 
         // Update input values (-1 to 1)
-        this.joystickInput.x = finalX / this.maxDistance
-        this.joystickInput.y = -finalY / this.maxDistance // Invert Y for game coordinates
+        this.joystickInput.x = -finalX / this.maxDistance
+        this.joystickInput.y = -finalY / this.maxDistance
     }
 
     private onPointerEnd(event: MouseEvent | TouchEvent): void {
