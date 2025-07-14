@@ -1,7 +1,7 @@
 import { AppOne as App } from './AppOne'
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
     const app = new App(canvas)
-    app.run()
+    await app.run()
 })

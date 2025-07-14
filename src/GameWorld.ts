@@ -30,6 +30,7 @@ import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
+import { WaterSystem } from './systems/WaterSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 
 export class GameWorld {
@@ -39,6 +40,7 @@ export class GameWorld {
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
+    private waterSystem: WaterSystem
     private weaponSystem: WeaponSystem
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
@@ -69,6 +71,7 @@ export class GameWorld {
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
+        this.waterSystem = new WaterSystem(this.world, scene, camera, renderer)
         this.weaponSystem = new WeaponSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
@@ -103,10 +106,14 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.renderSystem) // 14. Render the results
+        this.world.addSystem(this.waterSystem) // 14. Update water and environment
+        this.world.addSystem(this.renderSystem) // 15. Render the results
     }
 
-    init(): void {
+    async init(): Promise<void> {
+        // Initialize water system first
+        await this.waterSystem.initialize()
+        
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
@@ -245,6 +252,7 @@ export class GameWorld {
     }
 
     cleanup(): void {
+        this.waterSystem.cleanup()
         this.world.clear()
         this.playerEntity = null
     }

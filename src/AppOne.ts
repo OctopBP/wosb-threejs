@@ -62,12 +62,12 @@ export class AppOne {
         }
     }
 
-    run() {
+    async run() {
         // Only enable debug in development
         const isDevelopment = import.meta.env.DEV
         this.debug(isDevelopment)
 
-        this.gameWorld.init()
+        await this.gameWorld.init()
 
         this.startRenderLoop()
     }
