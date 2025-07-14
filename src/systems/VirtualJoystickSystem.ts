@@ -30,6 +30,7 @@ export class VirtualJoystickSystem extends System {
     init(): void {
         this.createJoystickUI()
         this.setupEventListeners()
+        this.setupGlobalListeners()
     }
 
     private createJoystickUI(): void {
@@ -38,9 +39,9 @@ export class VirtualJoystickSystem extends System {
         // Create joystick container
         this.joystickContainer = document.createElement('div')
         this.joystickContainer.style.cssText = `
-            position: fixed;
-            bottom: 30px;
-            left: 30px;
+            position: absolute;
+            left: 0;
+            top: 0;
             width: ${this.joystickSize}px;
             height: ${this.joystickSize}px;
             z-index: 1000;
@@ -49,6 +50,7 @@ export class VirtualJoystickSystem extends System {
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
+            display: none; /* Hidden by default */
         `
 
         // Create joystick base
@@ -96,7 +98,7 @@ export class VirtualJoystickSystem extends System {
     private setupEventListeners(): void {
         if (!this.joystickContainer) return
 
-        // Mouse events
+        // Mouse events (only on joystick container)
         this.joystickContainer.addEventListener(
             'mousedown',
             this.onPointerStart.bind(this),
@@ -104,7 +106,7 @@ export class VirtualJoystickSystem extends System {
         document.addEventListener('mousemove', this.onPointerMove.bind(this))
         document.addEventListener('mouseup', this.onPointerEnd.bind(this))
 
-        // Touch events
+        // Touch events (only on joystick container)
         this.joystickContainer.addEventListener(
             'touchstart',
             this.onPointerStart.bind(this),
@@ -116,6 +118,44 @@ export class VirtualJoystickSystem extends System {
         document.addEventListener('touchend', this.onPointerEnd.bind(this), {
             passive: false,
         })
+    }
+
+    // Listen for global touch/click to show and position joystick
+    private setupGlobalListeners(): void {
+        // Mouse down on canvas
+        this.canvas.addEventListener('mousedown', (event: MouseEvent) => {
+            this.showJoystickAt(event.clientX, event.clientY)
+            // Forward event to joystick for drag logic
+            this.onPointerStart(event)
+        })
+        // Touch start on canvas
+        this.canvas.addEventListener(
+            'touchstart',
+            (event: TouchEvent) => {
+                if (event.touches.length === 0) return
+                const touch = event.touches[0]
+                this.showJoystickAt(touch.clientX, touch.clientY)
+                // Forward event to joystick for drag logic
+                this.onPointerStart(event)
+            },
+            { passive: false },
+        )
+    }
+
+    // Show and position joystick at (clientX, clientY)
+    private showJoystickAt(clientX: number, clientY: number): void {
+        if (!this.joystickContainer) return
+        // Position so that the center of the joystick is at the pointer
+        const size = this.joystickSize
+        this.joystickContainer.style.left = `${clientX - size / 2}px`
+        this.joystickContainer.style.top = `${clientY - size / 2}px`
+        this.joystickContainer.style.display = 'block'
+    }
+
+    // Hide joystick and reset state
+    private hideJoystick(): void {
+        if (!this.joystickContainer) return
+        this.joystickContainer.style.display = 'none'
     }
 
     private onPointerStart(event: MouseEvent | TouchEvent): void {
@@ -204,6 +244,9 @@ export class VirtualJoystickSystem extends System {
             this.joystickBase.style.background =
                 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)'
         }
+
+        // Hide joystick when released
+        this.hideJoystick()
     }
 
     private resetKnobPosition(): void {
