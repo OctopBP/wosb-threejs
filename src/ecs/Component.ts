@@ -200,7 +200,7 @@ export interface CameraStateComponent extends Component {
     transitionProgress: number // 0 to 1
     transitionDuration: number
     transitionEasing: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut'
-    
+
     // Screen shake state
     screenShake: {
         active: boolean
@@ -210,7 +210,7 @@ export interface CameraStateComponent extends Component {
         elapsedTime: number
         originalPosition: { x: number; y: number; z: number }
     }
-    
+
     // Zoom state
     zoom: {
         active: boolean
@@ -219,9 +219,30 @@ export interface CameraStateComponent extends Component {
         duration: number
         elapsedTime: number
     }
-    
+
     // Current camera position and target
     position: { x: number; y: number; z: number }
     target: { x: number; y: number; z: number }
     fov: number
+}
+
+// Visual Guidance component for entities that need range circles and directional arrows
+export interface VisualGuidanceComponent extends Component {
+    type: 'visualGuidance'
+    showRangeCircle: boolean
+    showEnemyArrows: boolean
+    rangeCircleRadius: number
+    rangeCircleMesh?: Object3D
+    enemyArrows: Array<{
+        enemyId: number
+        arrowMesh?: Object3D
+        direction: { x: number; z: number }
+        distance: number
+    }>
+    // Visual settings
+    rangeCircleColor: number
+    rangeCircleOpacity: number
+    arrowColor: number
+    arrowScale: number
+    maxArrows: number
 }

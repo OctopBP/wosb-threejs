@@ -1,6 +1,7 @@
 // Export all systems
 
 export * from './AccelerationSystem'
+export * from './CameraSystem'
 export * from './CollisionSystem'
 export * from './EnemyAISystem'
 export * from './EnemyHealthUISystem'
@@ -14,5 +15,5 @@ export * from './ProjectileSystem'
 export * from './RenderSystem'
 export * from './RotationSystem'
 export * from './VirtualJoystickSystem'
+export * from './VisualGuidanceSystem'
 export * from './WeaponSystem'
-export * from './CameraSystem'

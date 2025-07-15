@@ -5,6 +5,7 @@ import type {
     MovementConfigComponent,
     PositionComponent,
     VelocityComponent,
+    VisualGuidanceComponent,
     WeaponComponent,
 } from './ecs'
 import type { Entity } from './ecs/Entity'
@@ -31,6 +32,7 @@ import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
+import { VisualGuidanceSystem } from './systems/VisualGuidanceSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 
 export class GameWorld {
@@ -51,6 +53,7 @@ export class GameWorld {
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
     private cameraSystem: CameraSystem
+    private visualGuidanceSystem: VisualGuidanceSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -86,6 +89,7 @@ export class GameWorld {
             canvas,
         )
         this.cameraSystem = new CameraSystem(this.world, camera)
+        this.visualGuidanceSystem = new VisualGuidanceSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
@@ -106,8 +110,9 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.cameraSystem) // 14. Update camera system
-        this.world.addSystem(this.renderSystem) // 15. Render the results
+        this.world.addSystem(this.visualGuidanceSystem) // 14. Update visual guidance elements
+        this.world.addSystem(this.cameraSystem) // 15. Update camera system
+        this.world.addSystem(this.renderSystem) // 16. Render the results
     }
 
     init(): void {
@@ -120,6 +125,15 @@ export class GameWorld {
                 'player',
                 10,
             )
+
+            // Enable visual guidance for the player
+            this.enablePlayerVisualGuidance({
+                showRangeCircle: true,
+                showEnemyArrows: true,
+                maxArrows: 5,
+                rangeCircleColor: 0x00ff00, // Green
+                arrowColor: 0xff0000, // Red
+            })
         }
     }
 
@@ -196,6 +210,61 @@ export class GameWorld {
                 equipAutoTargetingWeapon(this.playerEntity)
             }
         }
+    }
+
+    // Visual guidance methods
+    enablePlayerVisualGuidance(
+        options: {
+            showRangeCircle?: boolean
+            showEnemyArrows?: boolean
+            maxArrows?: number
+            rangeCircleColor?: number
+            arrowColor?: number
+        } = {},
+    ): void {
+        if (!this.playerEntity) return
+
+        const {
+            showRangeCircle = true,
+            showEnemyArrows = true,
+            maxArrows = 5,
+            rangeCircleColor = 0x00ff00, // Green
+            arrowColor = 0xff0000, // Red
+        } = options
+
+        // Add or update visual guidance component
+        this.playerEntity.addComponent({
+            type: 'visualGuidance',
+            showRangeCircle,
+            showEnemyArrows,
+            rangeCircleRadius: 0,
+            enemyArrows: [],
+            rangeCircleColor,
+            rangeCircleOpacity: 0.3,
+            arrowColor,
+            arrowScale: 1.0,
+            maxArrows,
+        })
+    }
+
+    disablePlayerVisualGuidance(): void {
+        if (!this.playerEntity) return
+        this.playerEntity.removeComponent('visualGuidance')
+    }
+
+    updatePlayerVisualGuidance(options: {
+        showRangeCircle?: boolean
+        showEnemyArrows?: boolean
+        maxArrows?: number
+        rangeCircleColor?: number
+        arrowColor?: number
+    }): void {
+        if (!this.playerEntity) return
+
+        const visualGuidance = this.playerEntity.getComponent('visualGuidance')
+        if (!visualGuidance) return
+
+        Object.assign(visualGuidance, options)
     }
 
     // Method to enable/disable auto-targeting weapon debug logging
