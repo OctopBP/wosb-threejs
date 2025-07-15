@@ -16,10 +16,8 @@ export class PlayerUISystem extends System {
     private canvas: HTMLCanvasElement
     private uiContainer: HTMLElement | null = null
     private healthBar: HTMLElement | null = null
-    private healthText: HTMLElement | null = null
     private levelDisplay: HTMLElement | null = null
     private xpBar: HTMLElement | null = null
-    private xpText: HTMLElement | null = null
     private isUICreated = false
 
     constructor(world: World, camera: Camera, canvas: HTMLCanvasElement) {
@@ -88,20 +86,27 @@ export class PlayerUISystem extends System {
         const mainContainer = document.createElement('div')
         mainContainer.style.display = 'flex'
         mainContainer.style.alignItems = 'center'
-        mainContainer.style.gap = '4px'
+        mainContainer.style.gap = '0px' // Remove gap for overlap
+        mainContainer.style.position = 'relative' // For absolute positioning of circle
+        mainContainer.style.height = '32px' // Ensure enough height for overlap
 
         // Create circular level display container
         const levelCircle = document.createElement('div')
         levelCircle.style.width = '30px'
         levelCircle.style.height = '30px'
         levelCircle.style.borderRadius = '50%'
-        levelCircle.style.backgroundColor = 'rgba(0,0,0,0.8)'
+        levelCircle.style.backgroundColor = 'rgba(100,110,130,1)'
         levelCircle.style.border = '2px solid rgba(255,255,255,0.6)'
         levelCircle.style.display = 'flex'
         levelCircle.style.flexDirection = 'column'
         levelCircle.style.alignItems = 'center'
         levelCircle.style.justifyContent = 'center'
         levelCircle.style.textAlign = 'center'
+        levelCircle.style.position = 'absolute'
+        levelCircle.style.left = '0'
+        levelCircle.style.top = '50%'
+        levelCircle.style.transform = 'translateY(-50%)'
+        levelCircle.style.zIndex = '2'
 
         // Create level number display
         this.levelDisplay = document.createElement('div')
@@ -124,6 +129,9 @@ export class PlayerUISystem extends System {
         const barsContainer = document.createElement('div')
         barsContainer.style.display = 'flex'
         barsContainer.style.flexDirection = 'column'
+        barsContainer.style.marginLeft = '18px' // Overlap: about half the circle width
+        barsContainer.style.zIndex = '1'
+        barsContainer.style.minWidth = '100px'
 
         // Create health bar row
         const healthRow = document.createElement('div')
@@ -133,11 +141,11 @@ export class PlayerUISystem extends System {
 
         // Create health bar container
         const healthBarContainer = document.createElement('div')
-        healthBarContainer.style.width = '80px'
-        healthBarContainer.style.height = '8px'
+        healthBarContainer.style.width = '100px' // Increased width
+        healthBarContainer.style.height = '12px' // Increased height
         healthBarContainer.style.backgroundColor = 'rgba(0,0,0,0.7)'
         healthBarContainer.style.border = '1px solid rgba(255,255,255,0.4)'
-        healthBarContainer.style.borderRadius = '4px'
+        healthBarContainer.style.borderRadius = '4px' // Increased radius
         healthBarContainer.style.overflow = 'hidden'
 
         // Create health bar fill
@@ -149,17 +157,9 @@ export class PlayerUISystem extends System {
         this.healthBar.style.background =
             'linear-gradient(90deg, #4CAF50, #66BB6A)'
 
-        // Create health text
-        this.healthText = document.createElement('div')
-        this.healthText.style.fontSize = '9px'
-        this.healthText.style.opacity = '0.8'
-        this.healthText.style.color = '#E8F5E8'
-        this.healthText.style.minWidth = '50px'
-
         // Assemble health row
         healthBarContainer.appendChild(this.healthBar)
         healthRow.appendChild(healthBarContainer)
-        healthRow.appendChild(this.healthText)
 
         // Create XP bar row
         const xpRow = document.createElement('div')
@@ -169,11 +169,11 @@ export class PlayerUISystem extends System {
 
         // Create XP bar container
         const xpBarContainer = document.createElement('div')
-        xpBarContainer.style.width = '80px'
-        xpBarContainer.style.height = '6px'
+        xpBarContainer.style.width = '100px' // Increased width
+        xpBarContainer.style.height = '8px' // Increased height
         xpBarContainer.style.backgroundColor = 'rgba(0,0,0,0.5)'
         xpBarContainer.style.border = '1px solid rgba(255,255,255,0.3)'
-        xpBarContainer.style.borderRadius = '3px'
+        xpBarContainer.style.borderRadius = '4px' // Increased radius
         xpBarContainer.style.overflow = 'hidden'
 
         // Create XP bar fill
@@ -184,16 +184,9 @@ export class PlayerUISystem extends System {
         this.xpBar.style.transition = 'width 0.3s ease'
         this.xpBar.style.background = 'linear-gradient(90deg, #FFC107, #FFD54F)'
 
-        // Create XP text
-        this.xpText = document.createElement('div')
-        this.xpText.style.fontSize = '8px'
-        this.xpText.style.opacity = '0.8'
-        this.xpText.style.minWidth = '50px'
-
         // Assemble XP row
         xpBarContainer.appendChild(this.xpBar)
         xpRow.appendChild(xpBarContainer)
-        xpRow.appendChild(this.xpText)
 
         // Assemble bars container
         barsContainer.appendChild(healthRow)
@@ -212,7 +205,7 @@ export class PlayerUISystem extends System {
     }
 
     private updateHealthBar(currentHealth: number, maxHealth: number): void {
-        if (!this.healthBar || !this.healthText) return
+        if (!this.healthBar) return
 
         const healthPercent = Math.max(0, currentHealth) / maxHealth
         const healthWidth = `${healthPercent * 100}%`
@@ -233,9 +226,6 @@ export class PlayerUISystem extends System {
             this.healthBar.style.background =
                 'linear-gradient(90deg, #F44336, #EF5350)'
         }
-
-        // Update text
-        this.healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`
     }
 
     private updateLevelDisplay(level: number): void {
@@ -249,19 +239,17 @@ export class PlayerUISystem extends System {
         currentLevel: number,
         maxLevel: number,
     ): void {
-        if (!this.xpBar || !this.xpText) return
+        if (!this.xpBar) return
 
         if (currentLevel >= maxLevel) {
             // Max level reached
             this.xpBar.style.width = '100%'
             this.xpBar.style.backgroundColor = '#FFD700' // Gold color for max level
-            this.xpText.textContent = 'MAX'
         } else {
             const nextLevelXP = calculateNextLevelXP(currentLevel)
             const progress = Math.min(currentXP / nextLevelXP, 1)
 
             this.xpBar.style.width = `${progress * 100}%`
-            this.xpText.textContent = `${currentXP}/${nextLevelXP}`
         }
     }
 
@@ -307,7 +295,7 @@ export class PlayerUISystem extends System {
     }
 
     cleanup(): void {
-        if (this.uiContainer && this.uiContainer.parentNode) {
+        if (this.uiContainer?.parentNode) {
             this.uiContainer.parentNode.removeChild(this.uiContainer)
         }
         this.isUICreated = false
