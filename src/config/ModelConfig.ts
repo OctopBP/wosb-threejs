@@ -16,14 +16,14 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
     {
         ship: {
             kind: 'model',
-            fileName: 'ship_bb/ship bb.gltf',
+            fileName: 'player_export.glb',
             scale: 0.75,
         },
         // Add primitive types for projectiles and obstacles
         enemy1: {
             kind: 'model',
-            fileName: 'ship_bb/ship bb.gltf',
-            scale: 0.5,
+            fileName: 'enemy_01.glb',
+            scale: 0.75,
         },
         bullet: {
             kind: 'primitive',

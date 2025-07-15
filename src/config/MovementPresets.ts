@@ -5,9 +5,9 @@ export type MovementConfigPreset = Omit<MovementConfigComponent, 'type'>
 // Balanced movement configuration for general gameplay
 export const balancedPreset: MovementConfigPreset = {
     accelerationForce: 8.0,
-    decelerationForce: 5.0,
-    maxSpeed: 4.0,
-    autoRotationStrength: 5, // High value for near-instant rotation
+    decelerationForce: 2.0,
+    maxSpeed: 3.0,
+    autoRotationStrength: 2, // High value for near-instant rotation
     inputResponsiveness: 1.0,
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,

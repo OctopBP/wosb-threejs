@@ -12,7 +12,6 @@ interface EnemyHealthUI {
     entityId: number
     container: HTMLElement
     healthBar: HTMLElement
-    healthText: HTMLElement
 }
 
 export class EnemyHealthUISystem extends System {
@@ -91,8 +90,8 @@ export class EnemyHealthUISystem extends System {
 
         // Create health bar container
         const healthBarContainer = document.createElement('div')
-        healthBarContainer.style.width = '50px'
-        healthBarContainer.style.height = '6px'
+        healthBarContainer.style.width = '80px'
+        healthBarContainer.style.height = '8px'
         healthBarContainer.style.backgroundColor = 'rgba(0,0,0,0.6)'
         healthBarContainer.style.border = '1px solid rgba(255,255,255,0.4)'
         healthBarContainer.style.borderRadius = '3px'
@@ -107,16 +106,9 @@ export class EnemyHealthUISystem extends System {
             'width 0.2s ease, background-color 0.2s ease'
         healthBar.style.background = 'linear-gradient(90deg, #FF6B6B, #FF8E8E)'
 
-        // Create health text (optional, can be toggled)
-        const healthText = document.createElement('div')
-        healthText.style.fontSize = '9px'
-        healthText.style.opacity = '0.8'
-        healthText.style.display = 'none' // Hidden by default to reduce clutter
-
         // Assemble UI
         healthBarContainer.appendChild(healthBar)
         container.appendChild(healthBarContainer)
-        container.appendChild(healthText)
 
         // Add to page
         document.body.appendChild(container)
@@ -125,7 +117,6 @@ export class EnemyHealthUISystem extends System {
             entityId,
             container,
             healthBar,
-            healthText,
         }
     }
 
@@ -153,9 +144,6 @@ export class EnemyHealthUISystem extends System {
             enemyUI.healthBar.style.background =
                 'linear-gradient(90deg, #D32F2F, #F44336)'
         }
-
-        // Update text (if visible)
-        enemyUI.healthText.textContent = `${Math.ceil(currentHealth)}`
     }
 
     private positionUI(

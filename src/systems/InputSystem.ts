@@ -1,14 +1,14 @@
 import type { InputComponent, MovementConfigComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
-
 import type { World } from '../ecs/World'
+import type { VirtualJoystickSystem } from './VirtualJoystickSystem'
 
 export class InputSystem extends System {
     private canvas: HTMLCanvasElement
     private keysPressed: Set<string> = new Set()
     private pointerPosition: { x: number; y: number } = { x: 0, y: 0 }
     private isPointerDown: boolean = false
-    private isTouching: boolean = false
+    private virtualJoystickSystem: VirtualJoystickSystem | null = null
 
     constructor(world: World, canvas: HTMLCanvasElement) {
         super(world, ['input', 'movementConfig']) // Requires entities with input and movement config
@@ -17,6 +17,10 @@ export class InputSystem extends System {
 
     init(): void {
         this.setupEventListeners()
+    }
+
+    setVirtualJoystickSystem(joystickSystem: VirtualJoystickSystem): void {
+        this.virtualJoystickSystem = joystickSystem
     }
 
     private setupEventListeners(): void {
@@ -29,19 +33,6 @@ export class InputSystem extends System {
         this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this))
         this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this))
         this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this))
-
-        // Touch events
-        this.canvas.addEventListener(
-            'touchstart',
-            this.onTouchStart.bind(this),
-            { passive: false },
-        )
-        this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this), {
-            passive: false,
-        })
-        this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this), {
-            passive: false,
-        })
 
         // Prevent context menu on right-click/long press
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault())
@@ -74,29 +65,6 @@ export class InputSystem extends System {
         this.isPointerDown = false
     }
 
-    // Touch event handlers
-    private onTouchStart(event: TouchEvent): void {
-        event.preventDefault()
-        this.isTouching = true
-        if (event.touches.length > 0) {
-            const touch = event.touches[0]
-            this.updatePointerPosition(touch.clientX, touch.clientY)
-        }
-    }
-
-    private onTouchEnd(event: TouchEvent): void {
-        event.preventDefault()
-        this.isTouching = false
-    }
-
-    private onTouchMove(event: TouchEvent): void {
-        event.preventDefault()
-        if (event.touches.length > 0) {
-            const touch = event.touches[0]
-            this.updatePointerPosition(touch.clientX, touch.clientY)
-        }
-    }
-
     private updatePointerPosition(clientX: number, clientY: number): void {
         const rect = this.canvas.getBoundingClientRect()
         // Normalize coordinates to -1 to 1 range
@@ -127,11 +95,11 @@ export class InputSystem extends System {
             input.moveRight =
                 this.isKeyPressed('keyd') || this.isKeyPressed('arrowright')
 
-            // Update pointer/touch input
+            // Update pointer input (mouse only, no touch)
             input.pointerX = this.pointerPosition.x
             input.pointerY = this.pointerPosition.y
             input.isPointerDown = this.isPointerDown
-            input.isTouching = this.isTouching
+            input.isTouching = false // No longer used
 
             // Process input into direction vectors
             this.processInputToDirection(input, config)
@@ -149,7 +117,10 @@ export class InputSystem extends System {
         // Process keyboard input to direction
         this.processKeyboardDirection(input)
 
-        // Process pointer input to direction
+        // Process virtual joystick input to direction
+        this.processJoystickDirection(input, config)
+
+        // Process mouse pointer input to direction (for desktop)
         this.processPointerDirection(input, config)
 
         // Apply responsiveness
@@ -184,12 +155,42 @@ export class InputSystem extends System {
         }
     }
 
+    private processJoystickDirection(
+        input: InputComponent,
+        config: MovementConfigComponent,
+    ): void {
+        if (!this.virtualJoystickSystem) return
+
+        const joystickInput = this.virtualJoystickSystem.getJoystickInput()
+        if (!joystickInput.isActive) return
+
+        // Apply dead zone
+        const joystickX =
+            Math.abs(joystickInput.x) > config.inputDeadZone
+                ? joystickInput.x
+                : 0
+        const joystickY =
+            Math.abs(joystickInput.y) > config.inputDeadZone
+                ? joystickInput.y
+                : 0
+
+        // Joystick X affects strafe movement
+        if (joystickX !== 0) {
+            input.direction.x += joystickX * config.pointerSensitivity
+        }
+
+        // Joystick Y affects forward movement
+        if (joystickY !== 0) {
+            input.direction.y += joystickY * config.pointerSensitivity
+        }
+    }
+
     private processPointerDirection(
         input: InputComponent,
         config: MovementConfigComponent,
     ): void {
-        // Only process pointer input if touching or mouse is down
-        if (!input.isTouching && !input.isPointerDown) return
+        // Only process mouse pointer input (not touch)
+        if (!input.isPointerDown) return
 
         // Apply dead zone
         const pointerX =
@@ -207,7 +208,7 @@ export class InputSystem extends System {
             input.direction.y += pointerY * config.pointerSensitivity
         }
 
-        // Automatic forward movement when touching/clicking
+        // Automatic forward movement when clicking
         input.direction.y += config.pointerSensitivity * 0.5
     }
 
@@ -232,16 +233,6 @@ export class InputSystem extends System {
         this.canvas.removeEventListener(
             'mouseleave',
             this.onMouseLeave.bind(this),
-        )
-
-        this.canvas.removeEventListener(
-            'touchstart',
-            this.onTouchStart.bind(this),
-        )
-        this.canvas.removeEventListener('touchend', this.onTouchEnd.bind(this))
-        this.canvas.removeEventListener(
-            'touchmove',
-            this.onTouchMove.bind(this),
         )
     }
 }

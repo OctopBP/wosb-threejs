@@ -177,3 +177,51 @@ export interface LevelingStatsComponent extends Component {
     baseMaxSpeed: number
     speedPerLevel: number
 }
+
+// Camera Target component for entities that the camera should focus on
+export interface CameraTargetComponent extends Component {
+    type: 'cameraTarget'
+    priority: number // Higher priority targets are focused on first
+    targetType: 'player' | 'enemy' | 'boss' | 'cinematic'
+    offset: {
+        x: number
+        y: number
+        z: number
+    }
+    // Optional custom camera state for this target
+    customCameraState?: string
+}
+
+// Camera State component for managing camera transitions and effects
+export interface CameraStateComponent extends Component {
+    type: 'cameraState'
+    currentState: string
+    targetState: string
+    transitionProgress: number // 0 to 1
+    transitionDuration: number
+    transitionEasing: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut'
+
+    // Screen shake state
+    screenShake: {
+        active: boolean
+        intensity: number
+        frequency: number
+        duration: number
+        elapsedTime: number
+        originalPosition: { x: number; y: number; z: number }
+    }
+
+    // Zoom state
+    zoom: {
+        active: boolean
+        targetFOV: number
+        startFOV: number
+        duration: number
+        elapsedTime: number
+    }
+
+    // Current camera position and target
+    position: { x: number; y: number; z: number }
+    target: { x: number; y: number; z: number }
+    fov: number
+}
