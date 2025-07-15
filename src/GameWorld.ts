@@ -29,12 +29,14 @@ import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
+import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 import { CameraSystem } from './systems/CameraSystem'
 
 export class GameWorld {
     private world: World
     private inputSystem: InputSystem
+    private virtualJoystickSystem: VirtualJoystickSystem
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
@@ -62,6 +64,10 @@ export class GameWorld {
 
         // Initialize systems in the correct order
         this.inputSystem = new InputSystem(this.world, canvas)
+        this.virtualJoystickSystem = new VirtualJoystickSystem(
+            this.world,
+            canvas,
+        )
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
@@ -83,8 +89,10 @@ export class GameWorld {
 
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
+        this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
 
         // Add systems to world in execution order
+        this.world.addSystem(this.virtualJoystickSystem) // 0. Handle virtual joystick UI
         this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
         this.world.addSystem(this.enemySpawningSystem) // 2. Spawn enemies
         this.world.addSystem(this.enemyAISystem) // 3. Update enemy AI (movement and targeting)
