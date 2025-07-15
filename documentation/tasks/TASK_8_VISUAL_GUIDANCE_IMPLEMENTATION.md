@@ -105,11 +105,13 @@ gameWorld.disablePlayerVisualGuidance();
 - Radius automatically matches weapon range
 
 ### Enemy Arrows (EnemyArrowSystem)
-- Uses Three.js ConeGeometry for 3D arrow appearance
+- Uses sprite-based arrows instead of 3D geometry for better performance
+- Loads arrow texture from `public/assets/sprites/arrow.png`
+- Sprite arrow should point upward in the texture (top direction)
 - Positioned at fixed radius around player (3.0 units)
-- Points toward enemies using proper angle calculation
+- Points toward enemies using sprite rotation calculation
 - Direction: `enemy.position - player.position`
-- Rotation: `Math.atan2(directionX, directionZ)` for correct orientation
+- Rotation: `Math.atan2(directionX, directionZ)` applied to sprite material rotation
 - Limited to closest enemies for performance
 - Automatically cleaned up when enemies are destroyed
 

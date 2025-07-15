@@ -1,15 +1,36 @@
 import type { Scene } from 'three'
-import { ConeGeometry, Group, Mesh, MeshBasicMaterial } from 'three'
+import { Group, Sprite, SpriteMaterial, TextureLoader } from 'three'
 import type { EnemyArrowComponent, PositionComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
 export class EnemyArrowSystem extends System {
     private scene: Scene
+    private textureLoader: TextureLoader
+    private arrowTexture: any = null
 
     constructor(world: World, scene: Scene) {
         super(world, ['enemyArrow', 'position'])
         this.scene = scene
+        this.textureLoader = new TextureLoader()
+        this.loadArrowTexture()
+    }
+
+    private loadArrowTexture(): void {
+        this.textureLoader.load(
+            'assets/sprites/arrow.png',
+            (texture) => {
+                this.arrowTexture = texture
+                console.log('Arrow texture loaded successfully')
+            },
+            (progress) => {
+                console.log('Loading arrow texture...', progress)
+            },
+            (error) => {
+                console.error('Failed to load arrow texture:', error)
+                // Fallback: we'll create arrows without texture if loading fails
+            },
+        )
     }
 
     update(_deltaTime: number): void {
@@ -105,13 +126,15 @@ export class EnemyArrowSystem extends System {
 
         const group = new Group()
 
-        // Create arrow using cone geometry
-        const arrowGeometry = new ConeGeometry(0.3, 1.0, 8)
-        const arrowMaterial = new MeshBasicMaterial({
+        // Create sprite material
+        const spriteMaterial = new SpriteMaterial({
+            map: this.arrowTexture,
             color: enemyArrow.arrowColor,
+            transparent: true,
         })
 
-        const arrow = new Mesh(arrowGeometry, arrowMaterial)
+        // Create sprite
+        const arrow = new Sprite(spriteMaterial)
 
         // Position arrow at a fixed radius around the player
         const arrowRadius = 3.0 // Distance from player to place arrows
@@ -124,19 +147,18 @@ export class EnemyArrowSystem extends System {
             position.z + normalizedZ * arrowRadius,
         )
 
-        // Calculate direction vector from player to enemy (already in direction parameter)
-        // direction = enemy.position - player.position
+        // Calculate direction vector from player to enemy
         const directionX = direction.x
         const directionZ = direction.z
 
         // Calculate angle from direction vector
-        // atan2(x, z) gives angle in XZ plane where Z is forward in Three.js
+        // Since the sprite arrow points to the top, we need to calculate the rotation
+        // to point toward the enemy. atan2 gives us the angle from positive X axis
         const angle = Math.atan2(directionX, directionZ)
 
-        // Rotate the cone to point horizontally toward the enemy
-        // Cone points up by default (along Y axis)
-        arrow.rotation.x = -Math.PI / 2 // Tip cone forward (negative to point outward)
-        arrow.rotation.y = angle // Rotate around Y axis to point toward enemy
+        // Rotate the sprite to point toward the enemy
+        // Since sprite arrow points up (top), we need to rotate it
+        arrow.material.rotation = angle
 
         // Scale arrow
         arrow.scale.setScalar(enemyArrow.arrowScale)
