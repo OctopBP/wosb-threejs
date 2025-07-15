@@ -225,13 +225,19 @@ export class VisualGuidanceSystem extends System {
             position.z + normalizedZ * arrowRadius,
         )
 
-        // Calculate the angle to point toward the enemy
-        const angle = Math.atan2(normalizedX, normalizedZ)
+        // Calculate direction vector from player to enemy (already in direction parameter)
+        // direction = enemy.position - player.position
+        const directionX = direction.x
+        const directionZ = direction.z
+
+        // Calculate angle from direction vector
+        // atan2(x, z) gives angle in XZ plane where Z is forward in Three.js
+        const angle = Math.atan2(directionX, directionZ)
 
         // Rotate the cone to point horizontally toward the enemy
-        // Cone points up by default, so rotate it to point horizontally
-        arrow.rotation.x = Math.PI / 2 // Point horizontally
-        arrow.rotation.y = angle // Point toward enemy
+        // Cone points up by default (along Y axis)
+        arrow.rotation.x = -Math.PI / 2 // Tip cone forward (negative to point outward)
+        arrow.rotation.y = angle // Rotate around Y axis to point toward enemy
 
         // Scale arrow
         arrow.scale.setScalar(visualGuidance.arrowScale)
