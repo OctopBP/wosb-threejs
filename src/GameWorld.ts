@@ -1,4 +1,4 @@
-import type { Camera, Scene, WebGLRenderer } from 'three'
+import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import type {
     HealthComponent,
     InputComponent,
@@ -19,6 +19,7 @@ import {
 } from './entities/PlayerFactory'
 import { EnemyAISystem, EnemySpawningSystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
+import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
@@ -49,6 +50,7 @@ export class GameWorld {
     private levelingSystem: LevelingSystem
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
+    private cameraSystem: CameraSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -56,7 +58,7 @@ export class GameWorld {
         private scene: Scene,
         private renderer: WebGLRenderer,
         private canvas: HTMLCanvasElement,
-        private camera: Camera,
+        private camera: PerspectiveCamera,
     ) {
         this.world = new World()
 
@@ -83,6 +85,7 @@ export class GameWorld {
             camera,
             canvas,
         )
+        this.cameraSystem = new CameraSystem(this.world, camera)
 
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
@@ -103,13 +106,20 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.renderSystem) // 14. Render the results
+        this.world.addSystem(this.cameraSystem) // 14. Update camera system
+        this.world.addSystem(this.renderSystem) // 15. Render the results
     }
 
     init(): void {
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
+            // Add camera target to player
+            this.cameraSystem.addCameraTarget(
+                this.playerEntity.id,
+                'player',
+                10,
+            )
         }
     }
 
@@ -193,6 +203,47 @@ export class GameWorld {
         this.weaponSystem.setAutoTargetingDebug(enabled)
     }
 
+    // Camera system methods
+    transitionToCameraState(stateName: string, duration?: number): void {
+        this.cameraSystem.transitionToState(stateName, duration)
+    }
+
+    triggerScreenShake(
+        intensity: number,
+        frequency: number,
+        duration: number,
+    ): void {
+        this.cameraSystem.triggerScreenShake(intensity, frequency, duration)
+    }
+
+    triggerScreenShakePreset(
+        presetName: 'light' | 'medium' | 'heavy' | 'boss',
+    ): void {
+        this.cameraSystem.triggerScreenShakePreset(presetName)
+    }
+
+    triggerZoom(targetFOV: number, duration: number): void {
+        this.cameraSystem.triggerZoom(targetFOV, duration)
+    }
+
+    triggerZoomPreset(
+        presetName: 'close' | 'medium' | 'far' | 'cinematic',
+    ): void {
+        this.cameraSystem.triggerZoomPreset(presetName)
+    }
+
+    addCameraTarget(
+        entityId: number,
+        targetType: 'player' | 'enemy' | 'boss' | 'cinematic',
+        priority: number = 0,
+    ): void {
+        this.cameraSystem.addCameraTarget(entityId, targetType, priority)
+    }
+
+    getCurrentCameraState(): string | null {
+        return this.cameraSystem.getCurrentState()
+    }
+
     // Debug methods
     getPlayerPosition(): { x: number; y: number; z: number } | null {
         if (!this.playerEntity) return null
@@ -212,10 +263,7 @@ export class GameWorld {
             : null
     }
 
-    getPlayerInputDirection(): {
-        direction: { x: number; y: number }
-        hasInput: boolean
-    } | null {
+    getPlayerInputDirection() {
         if (!this.playerEntity) return null
 
         const input = this.playerEntity.getComponent<InputComponent>('input')

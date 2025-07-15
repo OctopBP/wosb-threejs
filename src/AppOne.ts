@@ -131,9 +131,211 @@ export class AppOne {
 
         // Camera controls
         const cameraFolder = this.gui.addFolder('Camera')
-        cameraFolder.add(this.camera.position, 'x', -20, 20, 0.1)
-        cameraFolder.add(this.camera.position, 'y', 1, 20, 0.1)
-        cameraFolder.add(this.camera.position, 'z', -30, 10, 0.1)
+        
+        // Camera state transitions
+        cameraFolder
+            .add(
+                {
+                    playerFocus: () => {
+                        this.gameWorld.transitionToCameraState('playerFocus')
+                        console.log('🎥 Camera: Player Focus')
+                    },
+                    enemyFocus: () => {
+                        this.gameWorld.transitionToCameraState('enemyFocus')
+                        console.log('🎥 Camera: Enemy Focus')
+                    },
+                    bossPreview: () => {
+                        this.gameWorld.transitionToCameraState('bossPreview')
+                        console.log('🎥 Camera: Boss Preview')
+                    },
+                    cinematic: () => {
+                        this.gameWorld.transitionToCameraState('cinematic')
+                        console.log('🎥 Camera: Cinematic')
+                    }
+                },
+                'playerFocus'
+            )
+            .name('Player Focus')
+
+        cameraFolder
+            .add(
+                {
+                    enemyFocus: () => {
+                        this.gameWorld.transitionToCameraState('enemyFocus')
+                        console.log('🎥 Camera: Enemy Focus')
+                    }
+                },
+                'enemyFocus'
+            )
+            .name('Enemy Focus')
+
+        cameraFolder
+            .add(
+                {
+                    bossPreview: () => {
+                        this.gameWorld.transitionToCameraState('bossPreview')
+                        console.log('🎥 Camera: Boss Preview')
+                    }
+                },
+                'bossPreview'
+            )
+            .name('Boss Preview')
+
+        cameraFolder
+            .add(
+                {
+                    cinematic: () => {
+                        this.gameWorld.transitionToCameraState('cinematic')
+                        console.log('🎥 Camera: Cinematic')
+                    }
+                },
+                'cinematic'
+            )
+            .name('Cinematic')
+
+        // Screen shake presets
+        cameraFolder
+            .add(
+                {
+                    lightShake: () => {
+                        this.gameWorld.triggerScreenShakePreset('light')
+                        console.log('📳 Screen Shake: Light')
+                    },
+                    mediumShake: () => {
+                        this.gameWorld.triggerScreenShakePreset('medium')
+                        console.log('📳 Screen Shake: Medium')
+                    },
+                    heavyShake: () => {
+                        this.gameWorld.triggerScreenShakePreset('heavy')
+                        console.log('📳 Screen Shake: Heavy')
+                    },
+                    bossShake: () => {
+                        this.gameWorld.triggerScreenShakePreset('boss')
+                        console.log('📳 Screen Shake: Boss')
+                    }
+                },
+                'lightShake'
+            )
+            .name('Light Shake')
+
+        cameraFolder
+            .add(
+                {
+                    mediumShake: () => {
+                        this.gameWorld.triggerScreenShakePreset('medium')
+                        console.log('📳 Screen Shake: Medium')
+                    }
+                },
+                'mediumShake'
+            )
+            .name('Medium Shake')
+
+        cameraFolder
+            .add(
+                {
+                    heavyShake: () => {
+                        this.gameWorld.triggerScreenShakePreset('heavy')
+                        console.log('📳 Screen Shake: Heavy')
+                    }
+                },
+                'heavyShake'
+            )
+            .name('Heavy Shake')
+
+        cameraFolder
+            .add(
+                {
+                    bossShake: () => {
+                        this.gameWorld.triggerScreenShakePreset('boss')
+                        console.log('📳 Screen Shake: Boss')
+                    }
+                },
+                'bossShake'
+            )
+            .name('Boss Shake')
+
+        // Zoom presets
+        cameraFolder
+            .add(
+                {
+                    closeZoom: () => {
+                        this.gameWorld.triggerZoomPreset('close')
+                        console.log('🔍 Zoom: Close')
+                    },
+                    mediumZoom: () => {
+                        this.gameWorld.triggerZoomPreset('medium')
+                        console.log('🔍 Zoom: Medium')
+                    },
+                    farZoom: () => {
+                        this.gameWorld.triggerZoomPreset('far')
+                        console.log('🔍 Zoom: Far')
+                    },
+                    cinematicZoom: () => {
+                        this.gameWorld.triggerZoomPreset('cinematic')
+                        console.log('🔍 Zoom: Cinematic')
+                    }
+                },
+                'closeZoom'
+            )
+            .name('Close Zoom')
+
+        cameraFolder
+            .add(
+                {
+                    mediumZoom: () => {
+                        this.gameWorld.triggerZoomPreset('medium')
+                        console.log('🔍 Zoom: Medium')
+                    }
+                },
+                'mediumZoom'
+            )
+            .name('Medium Zoom')
+
+        cameraFolder
+            .add(
+                {
+                    farZoom: () => {
+                        this.gameWorld.triggerZoomPreset('far')
+                        console.log('🔍 Zoom: Far')
+                    }
+                },
+                'farZoom'
+            )
+            .name('Far Zoom')
+
+        cameraFolder
+            .add(
+                {
+                    cinematicZoom: () => {
+                        this.gameWorld.triggerZoomPreset('cinematic')
+                        console.log('🔍 Zoom: Cinematic')
+                    }
+                },
+                'cinematicZoom'
+            )
+            .name('Cinematic Zoom')
+
+        // Current camera state display
+        const cameraStatus = { state: 'Player Focus' }
+        const cameraStatusController = cameraFolder
+            .add(cameraStatus, 'state')
+            .name('Current State')
+        cameraStatusController.disable()
+
+        // Update camera status display
+        const updateCameraStatus = () => {
+            const currentState = this.gameWorld.getCurrentCameraState()
+            if (currentState) {
+                cameraStatus.state = currentState === 'playerFocus' ? 'Player Focus' :
+                                   currentState === 'enemyFocus' ? 'Enemy Focus' :
+                                   currentState === 'bossPreview' ? 'Boss Preview' :
+                                   currentState === 'cinematic' ? 'Cinematic' : currentState
+            }
+            cameraStatusController.updateDisplay()
+        }
+
+        // Update camera status every frame
+        setInterval(updateCameraStatus, 100)
 
         // Weapon controls
         const weaponFolder = this.gui.addFolder('Weapons')
