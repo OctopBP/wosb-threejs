@@ -225,15 +225,13 @@ export class VisualGuidanceSystem extends System {
             position.z + normalizedZ * arrowRadius,
         )
 
-        // Point arrow toward enemy
-        arrow.lookAt(
-            position.x + direction.x,
-            position.y + 1.0,
-            position.z + direction.z,
-        )
+        // Calculate the angle to point toward the enemy
+        const angle = Math.atan2(normalizedX, normalizedZ)
 
-        // Rotate 90 degrees so cone points in the right direction
-        arrow.rotation.x = Math.PI / 2
+        // Rotate the cone to point horizontally toward the enemy
+        // Cone points up by default, so rotate it to point horizontally
+        arrow.rotation.x = Math.PI / 2 // Point horizontally
+        arrow.rotation.y = angle // Point toward enemy
 
         // Scale arrow
         arrow.scale.setScalar(visualGuidance.arrowScale)
