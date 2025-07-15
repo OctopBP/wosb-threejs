@@ -1,11 +1,12 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import type {
+    EnemyArrowComponent,
     HealthComponent,
     InputComponent,
     MovementConfigComponent,
     PositionComponent,
+    RangeIndicatorComponent,
     VelocityComponent,
-    VisualGuidanceComponent,
     WeaponComponent,
 } from './ecs'
 import type { Entity } from './ecs/Entity'
@@ -22,6 +23,7 @@ import { EnemyAISystem, EnemySpawningSystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
+import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
@@ -29,10 +31,10 @@ import { MovementSystem } from './systems/MovementSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
+import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
-import { VisualGuidanceSystem } from './systems/VisualGuidanceSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 
 export class GameWorld {
@@ -53,7 +55,8 @@ export class GameWorld {
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
     private cameraSystem: CameraSystem
-    private visualGuidanceSystem: VisualGuidanceSystem
+    private rangeIndicatorSystem: RangeIndicatorSystem
+    private enemyArrowSystem: EnemyArrowSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -89,7 +92,8 @@ export class GameWorld {
             canvas,
         )
         this.cameraSystem = new CameraSystem(this.world, camera)
-        this.visualGuidanceSystem = new VisualGuidanceSystem(this.world, scene)
+        this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
+        this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
@@ -110,9 +114,10 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.visualGuidanceSystem) // 14. Update visual guidance elements
-        this.world.addSystem(this.cameraSystem) // 15. Update camera system
-        this.world.addSystem(this.renderSystem) // 16. Render the results
+        this.world.addSystem(this.rangeIndicatorSystem) // 14. Update range indicators
+        this.world.addSystem(this.enemyArrowSystem) // 15. Update enemy arrows
+        this.world.addSystem(this.cameraSystem) // 16. Update camera system
+        this.world.addSystem(this.renderSystem) // 17. Render the results
     }
 
     init(): void {
@@ -232,24 +237,91 @@ export class GameWorld {
             arrowColor = 0xff0000, // Red
         } = options
 
-        // Add or update visual guidance component
-        this.playerEntity.addComponent({
-            type: 'visualGuidance',
-            showRangeCircle,
-            showEnemyArrows,
-            rangeCircleRadius: 0,
-            enemyArrows: [],
-            rangeCircleColor,
-            rangeCircleOpacity: 0.3,
-            arrowColor,
-            arrowScale: 1.0,
-            maxArrows,
-        })
+        // Add range indicator component
+        if (showRangeCircle) {
+            this.playerEntity.addComponent({
+                type: 'rangeIndicator',
+                showRangeCircle: true,
+                rangeCircleRadius: 0,
+                rangeCircleColor,
+                rangeCircleOpacity: 0.3,
+            })
+        }
+
+        // Add enemy arrow component
+        if (showEnemyArrows) {
+            this.playerEntity.addComponent({
+                type: 'enemyArrow',
+                showEnemyArrows: true,
+                enemyArrows: [],
+                arrowColor,
+                arrowScale: 1.0,
+                maxArrows,
+            })
+        }
     }
 
     disablePlayerVisualGuidance(): void {
         if (!this.playerEntity) return
-        this.playerEntity.removeComponent('visualGuidance')
+        this.playerEntity.removeComponent('rangeIndicator')
+        this.playerEntity.removeComponent('enemyArrow')
+    }
+
+    enablePlayerRangeIndicator(
+        options: {
+            rangeCircleColor?: number
+            rangeCircleOpacity?: number
+        } = {},
+    ): void {
+        if (!this.playerEntity) return
+
+        const {
+            rangeCircleColor = 0x00ff00, // Green
+            rangeCircleOpacity = 0.3,
+        } = options
+
+        this.playerEntity.addComponent({
+            type: 'rangeIndicator',
+            showRangeCircle: true,
+            rangeCircleRadius: 0,
+            rangeCircleColor,
+            rangeCircleOpacity,
+        })
+    }
+
+    disablePlayerRangeIndicator(): void {
+        if (!this.playerEntity) return
+        this.playerEntity.removeComponent('rangeIndicator')
+    }
+
+    enablePlayerEnemyArrows(
+        options: {
+            maxArrows?: number
+            arrowColor?: number
+            arrowScale?: number
+        } = {},
+    ): void {
+        if (!this.playerEntity) return
+
+        const {
+            maxArrows = 5,
+            arrowColor = 0xff0000, // Red
+            arrowScale = 1.0,
+        } = options
+
+        this.playerEntity.addComponent({
+            type: 'enemyArrow',
+            showEnemyArrows: true,
+            enemyArrows: [],
+            arrowColor,
+            arrowScale,
+            maxArrows,
+        })
+    }
+
+    disablePlayerEnemyArrows(): void {
+        if (!this.playerEntity) return
+        this.playerEntity.removeComponent('enemyArrow')
     }
 
     updatePlayerVisualGuidance(options: {
@@ -261,10 +333,34 @@ export class GameWorld {
     }): void {
         if (!this.playerEntity) return
 
-        const visualGuidance = this.playerEntity.getComponent('visualGuidance')
-        if (!visualGuidance) return
+        // Update range indicator if exists
+        const rangeIndicator =
+            this.playerEntity.getComponent<RangeIndicatorComponent>(
+                'rangeIndicator',
+            )
+        if (rangeIndicator) {
+            if (options.showRangeCircle !== undefined) {
+                rangeIndicator.showRangeCircle = options.showRangeCircle
+            }
+            if (options.rangeCircleColor !== undefined) {
+                rangeIndicator.rangeCircleColor = options.rangeCircleColor
+            }
+        }
 
-        Object.assign(visualGuidance, options)
+        // Update enemy arrow component if exists
+        const enemyArrow =
+            this.playerEntity.getComponent<EnemyArrowComponent>('enemyArrow')
+        if (enemyArrow) {
+            if (options.showEnemyArrows !== undefined) {
+                enemyArrow.showEnemyArrows = options.showEnemyArrows
+            }
+            if (options.maxArrows !== undefined) {
+                enemyArrow.maxArrows = options.maxArrows
+            }
+            if (options.arrowColor !== undefined) {
+                enemyArrow.arrowColor = options.arrowColor
+            }
+        }
     }
 
     // Method to enable/disable auto-targeting weapon debug logging

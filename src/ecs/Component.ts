@@ -226,13 +226,21 @@ export interface CameraStateComponent extends Component {
     fov: number
 }
 
-// Visual Guidance component for entities that need range circles and directional arrows
-export interface VisualGuidanceComponent extends Component {
-    type: 'visualGuidance'
+// Range Indicator component for entities that need shooting range circles
+export interface RangeIndicatorComponent extends Component {
+    type: 'rangeIndicator'
     showRangeCircle: boolean
-    showEnemyArrows: boolean
     rangeCircleRadius: number
     rangeCircleMesh?: Object3D
+    // Visual settings
+    rangeCircleColor: number
+    rangeCircleOpacity: number
+}
+
+// Enemy Arrow component for entities that need directional arrows to enemies
+export interface EnemyArrowComponent extends Component {
+    type: 'enemyArrow'
+    showEnemyArrows: boolean
     enemyArrows: Array<{
         enemyId: number
         arrowMesh?: Object3D
@@ -240,8 +248,6 @@ export interface VisualGuidanceComponent extends Component {
         distance: number
     }>
     // Visual settings
-    rangeCircleColor: number
-    rangeCircleOpacity: number
     arrowColor: number
     arrowScale: number
     maxArrows: number
