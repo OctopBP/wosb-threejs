@@ -1,4 +1,4 @@
-import type { Camera, Scene, WebGLRenderer } from 'three'
+import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import type {
     HealthComponent,
     InputComponent,
@@ -19,6 +19,7 @@ import {
 } from './entities/PlayerFactory'
 import { EnemyAISystem, EnemySpawningSystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
+import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
@@ -31,7 +32,6 @@ import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
-import { CameraSystem } from './systems/CameraSystem'
 
 export class GameWorld {
     private world: World
@@ -58,7 +58,7 @@ export class GameWorld {
         private scene: Scene,
         private renderer: WebGLRenderer,
         private canvas: HTMLCanvasElement,
-        private camera: Camera,
+        private camera: PerspectiveCamera,
     ) {
         this.world = new World()
 
@@ -115,7 +115,11 @@ export class GameWorld {
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
             // Add camera target to player
-            this.cameraSystem.addCameraTarget(this.playerEntity.id, 'player', 10)
+            this.cameraSystem.addCameraTarget(
+                this.playerEntity.id,
+                'player',
+                10,
+            )
         }
     }
 
@@ -204,11 +208,17 @@ export class GameWorld {
         this.cameraSystem.transitionToState(stateName, duration)
     }
 
-    triggerScreenShake(intensity: number, frequency: number, duration: number): void {
+    triggerScreenShake(
+        intensity: number,
+        frequency: number,
+        duration: number,
+    ): void {
         this.cameraSystem.triggerScreenShake(intensity, frequency, duration)
     }
 
-    triggerScreenShakePreset(presetName: 'light' | 'medium' | 'heavy' | 'boss'): void {
+    triggerScreenShakePreset(
+        presetName: 'light' | 'medium' | 'heavy' | 'boss',
+    ): void {
         this.cameraSystem.triggerScreenShakePreset(presetName)
     }
 
@@ -216,11 +226,17 @@ export class GameWorld {
         this.cameraSystem.triggerZoom(targetFOV, duration)
     }
 
-    triggerZoomPreset(presetName: 'close' | 'medium' | 'far' | 'cinematic'): void {
+    triggerZoomPreset(
+        presetName: 'close' | 'medium' | 'far' | 'cinematic',
+    ): void {
         this.cameraSystem.triggerZoomPreset(presetName)
     }
 
-    addCameraTarget(entityId: number, targetType: 'player' | 'enemy' | 'boss' | 'cinematic', priority: number = 0): void {
+    addCameraTarget(
+        entityId: number,
+        targetType: 'player' | 'enemy' | 'boss' | 'cinematic',
+        priority: number = 0,
+    ): void {
         this.cameraSystem.addCameraTarget(entityId, targetType, priority)
     }
 
