@@ -137,6 +137,16 @@ export interface EnemyComponent extends Component {
     type: 'enemy'
 }
 
+// Boss component for special enemy boss ships
+export interface BossComponent extends Component {
+    type: 'boss'
+    isBoss: boolean
+    damageMultiplier: number
+    maxHealth: number
+    size: number
+    color: string
+}
+
 // Enemy AI component for controlling enemy behavior
 export interface EnemyAIComponent extends Component {
     type: 'enemyAI'
@@ -200,7 +210,7 @@ export interface CameraStateComponent extends Component {
     transitionProgress: number // 0 to 1
     transitionDuration: number
     transitionEasing: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut'
-    
+
     // Screen shake state
     screenShake: {
         active: boolean
@@ -210,7 +220,7 @@ export interface CameraStateComponent extends Component {
         elapsedTime: number
         originalPosition: { x: number; y: number; z: number }
     }
-    
+
     // Zoom state
     zoom: {
         active: boolean
@@ -219,7 +229,7 @@ export interface CameraStateComponent extends Component {
         duration: number
         elapsedTime: number
     }
-    
+
     // Current camera position and target
     position: { x: number; y: number; z: number }
     target: { x: number; y: number; z: number }

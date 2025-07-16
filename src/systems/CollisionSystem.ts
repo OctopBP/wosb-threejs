@@ -1,4 +1,5 @@
 import { Mesh } from 'three'
+import type { BossComponent } from '../components/BossComponent'
 import type {
     DamageableComponent,
     HealthComponent,
@@ -54,8 +55,18 @@ export class CollisionSystem extends System {
 
                 // Check collision using simple distance check
                 if (this.checkCollision(projectilePos, targetPos)) {
+                    // Calculate damage based on projectile owner's boss status
+                    const projectileOwner = this.world.getEntity(
+                        projectileComp.ownerId,
+                    )
+                    const bossComponent =
+                        projectileOwner?.getComponent<BossComponent>('boss')
+                    const finalDamage = bossComponent
+                        ? projectileComp.damage * bossComponent.damageMultiplier
+                        : projectileComp.damage
+
                     // Apply damage
-                    this.applyDamage(targetHealth, projectileComp.damage)
+                    this.applyDamage(targetHealth, finalDamage)
 
                     // Mark projectile for removal
                     if (!projectilesToRemove.includes(projectile.id)) {

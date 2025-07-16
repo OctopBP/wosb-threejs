@@ -22,6 +22,7 @@ import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
+import { GameStateSystem } from './systems/GameStateSystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
@@ -51,6 +52,7 @@ export class GameWorld {
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
     private cameraSystem: CameraSystem
+    private gameStateSystem: GameStateSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -86,28 +88,31 @@ export class GameWorld {
             canvas,
         )
         this.cameraSystem = new CameraSystem(this.world, camera)
+        this.gameStateSystem = new GameStateSystem(this.world)
 
         // Connect systems that need references to each other
         this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
+        this.enemySpawningSystem.setGameStateSystem(this.gameStateSystem)
         this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
 
         // Add systems to world in execution order
-        this.world.addSystem(this.virtualJoystickSystem) // 0. Handle virtual joystick UI
-        this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
-        this.world.addSystem(this.enemySpawningSystem) // 2. Spawn enemies
-        this.world.addSystem(this.enemyAISystem) // 3. Update enemy AI (movement and targeting)
-        this.world.addSystem(this.rotationSystem) // 4. Handle rotation
-        this.world.addSystem(this.accelerationSystem) // 5. Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) // 6. Apply velocity to position (ships only)
-        this.world.addSystem(this.weaponSystem) // 7. Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // 8. Move projectiles with gravity
-        this.world.addSystem(this.projectileSystem) // 9. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 10. Check collisions and apply damage
-        this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.cameraSystem) // 14. Update camera system
-        this.world.addSystem(this.renderSystem) // 15. Render the results
+        this.world.addSystem(this.gameStateSystem) // 0. Handle game state management
+        this.world.addSystem(this.virtualJoystickSystem) // 1. Handle virtual joystick UI
+        this.world.addSystem(this.inputSystem) // 2. Handle input events and process to direction
+        this.world.addSystem(this.enemySpawningSystem) // 3. Spawn enemies
+        this.world.addSystem(this.enemyAISystem) // 4. Update enemy AI (movement and targeting)
+        this.world.addSystem(this.rotationSystem) // 5. Handle rotation
+        this.world.addSystem(this.accelerationSystem) // 6. Apply acceleration/deceleration
+        this.world.addSystem(this.movementSystem) // 7. Apply velocity to position (ships only)
+        this.world.addSystem(this.weaponSystem) // 8. Handle weapon firing
+        this.world.addSystem(this.projectileMovementSystem) // 9. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 10. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 11. Check collisions and apply damage
+        this.world.addSystem(this.levelingSystem) // 12. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 13. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 14. Update enemy health UI
+        this.world.addSystem(this.cameraSystem) // 15. Update camera system
+        this.world.addSystem(this.renderSystem) // 16. Render the results
     }
 
     init(): void {
