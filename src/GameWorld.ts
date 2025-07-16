@@ -17,7 +17,7 @@ import {
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
-import { EnemyAISystem, EnemySpawningSystem } from './systems'
+import { EnemyAISystem, GameStateSystem, NewShipOfferUISystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
@@ -45,11 +45,12 @@ export class GameWorld {
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
     private renderSystem: RenderSystem
-    private enemySpawningSystem: EnemySpawningSystem
+    private gameStateSystem: GameStateSystem
     private enemyAISystem: EnemyAISystem
     private levelingSystem: LevelingSystem
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
+    private newShipOfferUISystem: NewShipOfferUISystem
     private cameraSystem: CameraSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
@@ -76,7 +77,7 @@ export class GameWorld {
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
-        this.enemySpawningSystem = new EnemySpawningSystem(this.world)
+        this.gameStateSystem = new GameStateSystem(this.world)
         this.enemyAISystem = new EnemyAISystem(this.world)
         this.levelingSystem = new LevelingSystem(this.world)
         this.playerUISystem = new PlayerUISystem(this.world, camera, canvas)
@@ -85,16 +86,18 @@ export class GameWorld {
             camera,
             canvas,
         )
+        this.newShipOfferUISystem = new NewShipOfferUISystem(this.world, canvas)
         this.cameraSystem = new CameraSystem(this.world, camera)
 
         // Connect systems that need references to each other
-        this.enemySpawningSystem.setLevelingSystem(this.levelingSystem)
+        this.gameStateSystem.setLevelingSystem(this.levelingSystem)
+        this.newShipOfferUISystem.setGameStateSystem(this.gameStateSystem)
         this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
 
         // Add systems to world in execution order
         this.world.addSystem(this.virtualJoystickSystem) // 0. Handle virtual joystick UI
         this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
-        this.world.addSystem(this.enemySpawningSystem) // 2. Spawn enemies
+        this.world.addSystem(this.gameStateSystem) // 2. Manage game state and spawn enemies
         this.world.addSystem(this.enemyAISystem) // 3. Update enemy AI (movement and targeting)
         this.world.addSystem(this.rotationSystem) // 4. Handle rotation
         this.world.addSystem(this.accelerationSystem) // 5. Apply acceleration/deceleration
@@ -106,8 +109,9 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.cameraSystem) // 14. Update camera system
-        this.world.addSystem(this.renderSystem) // 15. Render the results
+        this.world.addSystem(this.newShipOfferUISystem) // 14. Handle new ship offer UI
+        this.world.addSystem(this.cameraSystem) // 15. Update camera system
+        this.world.addSystem(this.renderSystem) // 16. Render the results
     }
 
     init(): void {
