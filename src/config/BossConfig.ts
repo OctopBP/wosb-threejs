@@ -72,7 +72,7 @@ export const basicBossAIPreset: BossAIConfig = {
 // Boss visual configuration
 export const basicBossVisualPreset: BossVisualConfig = {
     scale: 2.5, // 2.5x bigger than regular enemies
-    meshType: 'enemy1', // For now use enemy model, can be changed to 'boss' later
+    meshType: 'boss', // For now use enemy model, can be changed to 'boss' later
 }
 
 // Helper functions to create configured boss components
