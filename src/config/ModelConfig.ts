@@ -28,7 +28,7 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
         boss: {
             kind: 'model',
             fileName: 'boss.glb',
-            scale: 1,
+            scale: 0.5,
         },
         bullet: {
             kind: 'primitive',

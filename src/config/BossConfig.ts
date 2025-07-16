@@ -71,7 +71,7 @@ export const basicBossAIPreset: BossAIConfig = {
 
 // Boss visual configuration
 export const basicBossVisualPreset: BossVisualConfig = {
-    scale: 2.5, // 2.5x bigger than regular enemies
+    scale: 0.5,
     meshType: 'boss', // For now use enemy model, can be changed to 'boss' later
 }
 
