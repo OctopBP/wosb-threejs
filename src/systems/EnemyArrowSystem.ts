@@ -1,13 +1,13 @@
-import type { Scene } from 'three'
+import type { Scene, Texture } from 'three'
 import { Group, Sprite, SpriteMaterial, TextureLoader } from 'three'
+import { ARROW_INDICATOR_CONFIG } from '../config/ArrowIndicatorConfig'
 import type { EnemyArrowComponent, PositionComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
-
 export class EnemyArrowSystem extends System {
     private scene: Scene
     private textureLoader: TextureLoader
-    private arrowTexture: any = null
+    private arrowTexture: Texture | null = null
 
     constructor(world: World, scene: Scene) {
         super(world, ['enemyArrow', 'position'])
@@ -45,7 +45,7 @@ export class EnemyArrowSystem extends System {
 
             // Update enemy arrows if needed
             if (enemyArrow.showEnemyArrows) {
-                this.updateEnemyArrows(entity.id, enemyArrow, position)
+                this.updateEnemyArrows(enemyArrow, position)
             } else {
                 this.removeEnemyArrows(enemyArrow)
             }
@@ -53,7 +53,6 @@ export class EnemyArrowSystem extends System {
     }
 
     private updateEnemyArrows(
-        entityId: number,
         enemyArrow: EnemyArrowComponent,
         position: PositionComponent,
     ): void {
@@ -87,7 +86,7 @@ export class EnemyArrowSystem extends System {
             .filter((item) => item !== null)
 
         // Sort by distance and take the closest ones up to maxArrows
-        enemyDistances.sort((a, b) => a!.distance - b!.distance)
+        enemyDistances.sort((a, b) => a?.distance - b?.distance)
         const closestEnemies = enemyDistances.slice(0, enemyArrow.maxArrows)
 
         // Create arrows for closest enemies
@@ -137,13 +136,14 @@ export class EnemyArrowSystem extends System {
         const arrow = new Sprite(spriteMaterial)
 
         // Position arrow at a fixed radius around the player
-        const arrowRadius = 3.0 // Distance from player to place arrows
+        const arrowRadius = ARROW_INDICATOR_CONFIG.arrowRadius
+        const arrowHeightOffset = ARROW_INDICATOR_CONFIG.arrowHeightOffset
         const normalizedX = direction.x / distance
         const normalizedZ = direction.z / distance
 
         arrow.position.set(
             position.x + normalizedX * arrowRadius,
-            position.y + 1.0, // Slightly above ground
+            position.y + arrowHeightOffset, // Configurable height offset
             position.z + normalizedZ * arrowRadius,
         )
 

@@ -1,4 +1,5 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
+import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
 import type {
     EnemyArrowComponent,
     HealthComponent,
@@ -133,11 +134,12 @@ export class GameWorld {
 
             // Enable visual guidance for the player
             this.enablePlayerVisualGuidance({
-                showRangeCircle: true,
-                showEnemyArrows: true,
-                maxArrows: 5,
-                rangeCircleColor: 0x00ff00, // Green
-                arrowColor: 0xff0000, // Red
+                showRangeCircle: ARROW_INDICATOR_CONFIG.defaultShowRangeCircle,
+                showEnemyArrows: ARROW_INDICATOR_CONFIG.defaultShowEnemyArrows,
+                maxArrows: ARROW_INDICATOR_CONFIG.defaultMaxArrows,
+                rangeCircleColor:
+                    ARROW_INDICATOR_CONFIG.defaultRangeCircleColor,
+                arrowColor: ARROW_INDICATOR_CONFIG.defaultArrowColor,
             })
         }
     }
@@ -230,11 +232,11 @@ export class GameWorld {
         if (!this.playerEntity) return
 
         const {
-            showRangeCircle = true,
-            showEnemyArrows = true,
-            maxArrows = 5,
-            rangeCircleColor = 0x00ff00, // Green
-            arrowColor = 0xff0000, // Red
+            showRangeCircle = ARROW_INDICATOR_CONFIG.defaultShowRangeCircle,
+            showEnemyArrows = ARROW_INDICATOR_CONFIG.defaultShowEnemyArrows,
+            maxArrows = ARROW_INDICATOR_CONFIG.defaultMaxArrows,
+            rangeCircleColor = ARROW_INDICATOR_CONFIG.defaultRangeCircleColor,
+            arrowColor = ARROW_INDICATOR_CONFIG.defaultArrowColor,
         } = options
 
         // Add range indicator component
@@ -244,7 +246,8 @@ export class GameWorld {
                 showRangeCircle: true,
                 rangeCircleRadius: 0,
                 rangeCircleColor,
-                rangeCircleOpacity: 0.3,
+                rangeCircleOpacity:
+                    ARROW_INDICATOR_CONFIG.defaultRangeCircleOpacity,
             })
         }
 
@@ -255,7 +258,7 @@ export class GameWorld {
                 showEnemyArrows: true,
                 enemyArrows: [],
                 arrowColor,
-                arrowScale: 1.0,
+                arrowScale: ARROW_INDICATOR_CONFIG.defaultArrowScale,
                 maxArrows,
             })
         }
@@ -304,9 +307,9 @@ export class GameWorld {
         if (!this.playerEntity) return
 
         const {
-            maxArrows = 5,
-            arrowColor = 0xff0000, // Red
-            arrowScale = 1.0,
+            maxArrows = ARROW_INDICATOR_CONFIG.defaultMaxArrows,
+            arrowColor = ARROW_INDICATOR_CONFIG.defaultArrowColor,
+            arrowScale = ARROW_INDICATOR_CONFIG.defaultArrowScale,
         } = options
 
         this.playerEntity.addComponent({
