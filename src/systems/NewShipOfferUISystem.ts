@@ -156,26 +156,9 @@ export class NewShipOfferUISystem extends System {
             '🚀 "Get it" button clicked - This would typically redirect to app store',
         )
 
-        // For demo purposes, restart the game
+        // For demo purposes, restart the game (this now handles complete cleanup and player recreation)
         if (this.gameStateSystem) {
             this.gameStateSystem.restartGame()
-
-            // Reset player health
-            const playerEntities = this.world.getEntitiesWithComponents([
-                'player',
-                'health',
-            ])
-            if (playerEntities.length > 0) {
-                const player = playerEntities[0]
-                const health =
-                    player.getComponent<
-                        import('../ecs/Component').HealthComponent
-                    >('health')
-                if (health) {
-                    health.currentHealth = health.maxHealth
-                    health.isDead = false
-                }
-            }
         }
 
         // In a real playable ad, this would redirect to the app store:

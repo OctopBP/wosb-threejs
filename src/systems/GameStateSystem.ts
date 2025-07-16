@@ -23,6 +23,7 @@ export class GameStateSystem extends System {
     private gameStateEntity: import('../ecs/Entity').Entity | null = null
     private levelingSystem: import('./LevelingSystem').LevelingSystem | null =
         null
+    private gameWorld: import('../GameWorld').GameWorld | null = null
     private config: GameStateConfig
     private stateHandlers: Map<string, GameStateHandler> = new Map()
 
@@ -44,11 +45,16 @@ export class GameStateSystem extends System {
         ])
     }
 
-    // Method to set the leveling system reference
+    // Method to set the leveling system reference (called from GameWorld constructor)
     setLevelingSystem(
         levelingSystem: import('./LevelingSystem').LevelingSystem,
     ): void {
         this.levelingSystem = levelingSystem
+    }
+
+    // Method to set the GameWorld reference (called from GameWorld constructor)
+    setGameWorld(gameWorld: import('../GameWorld').GameWorld): void {
+        this.gameWorld = gameWorld
     }
 
     // Method to update configuration (useful for difficulty changes)
@@ -225,6 +231,9 @@ export class GameStateSystem extends System {
         const gameState = this.getGameState()
         if (!gameState) return
 
+        console.log('🎮 Starting complete game restart...')
+
+        // Reset game state
         gameState.currentState = 'enemiesWave1'
         gameState.wave1EnemiesSpawned = 0
         gameState.wave1EnemiesDefeated = 0
@@ -233,13 +242,58 @@ export class GameStateSystem extends System {
         gameState.bossSpawned = false
         gameState.playerHits = 0
 
-        // Remove all existing enemies
-        const enemies = this.world.getEntitiesWithComponents(['enemy'])
-        for (const enemy of enemies) {
-            this.world.removeEntity(enemy.id)
+        // Get all entities BEFORE removing any (to avoid iterator issues)
+        const allEntities = Array.from(this.world.getAllEntities())
+
+        // Remove all entities except the game state entity
+        for (const entity of allEntities) {
+            // Skip the game state entity itself
+            if (entity === this.gameStateEntity) {
+                continue
+            }
+
+            // Clean up mesh if exists to prevent memory leaks
+            const renderable =
+                entity.getComponent<RenderableComponent>('renderable')
+            if (renderable?.mesh) {
+                // Remove from scene
+                if (renderable.mesh.parent) {
+                    renderable.mesh.parent.remove(renderable.mesh)
+                }
+
+                // Dispose geometry and materials if it's a Mesh
+                if (renderable.mesh instanceof Mesh) {
+                    if (renderable.mesh.geometry) {
+                        renderable.mesh.geometry.dispose()
+                    }
+                    if (renderable.mesh.material) {
+                        if (Array.isArray(renderable.mesh.material)) {
+                            for (const material of renderable.mesh.material) {
+                                material.dispose()
+                            }
+                        } else {
+                            renderable.mesh.material.dispose()
+                        }
+                    }
+                }
+
+                renderable.mesh = undefined
+            }
+
+            // Remove entity from world
+            this.world.removeEntity(entity.id)
         }
 
-        console.log('🎮 Game restarted - Wave 1 beginning')
+        console.log('🎮 Game restart cleanup complete - Wave 1 beginning')
+
+        // Recreate the player entity fresh
+        if (this.gameWorld) {
+            this.gameWorld.restartPlayer()
+        } else {
+            console.warn(
+                '⚠️ GameWorld reference not set - player may not be recreated properly',
+            )
+        }
     }
 
     // Method to get current configuration (useful for debugging)

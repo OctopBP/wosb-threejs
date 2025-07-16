@@ -96,6 +96,7 @@ export class GameWorld {
 
         // Connect systems that need references to each other
         this.gameStateSystem.setLevelingSystem(this.levelingSystem)
+        this.gameStateSystem.setGameWorld(this)
         this.newShipOfferUISystem.setGameStateSystem(this.gameStateSystem)
         this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
 
@@ -315,5 +316,26 @@ export class GameWorld {
     cleanup(): void {
         this.world.clear()
         this.playerEntity = null
+    }
+
+    // Method to restart the player entity (recreate fresh player after game restart)
+    restartPlayer(): void {
+        // Clear any existing player reference
+        this.playerEntity = null
+
+        // Create a fresh player entity
+        this.playerEntity = createPlayerShip()
+        if (this.playerEntity) {
+            this.world.addEntity(this.playerEntity)
+
+            // Reset camera target to the new player
+            this.cameraSystem.addCameraTarget(
+                this.playerEntity.id,
+                'player',
+                10,
+            )
+
+            console.log('🎮 Player entity recreated successfully')
+        }
     }
 }
