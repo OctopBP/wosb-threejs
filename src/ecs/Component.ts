@@ -200,7 +200,7 @@ export interface CameraStateComponent extends Component {
     transitionProgress: number // 0 to 1
     transitionDuration: number
     transitionEasing: 'linear' | 'easeInOut' | 'easeIn' | 'easeOut'
-    
+
     // Screen shake state
     screenShake: {
         active: boolean
@@ -210,7 +210,7 @@ export interface CameraStateComponent extends Component {
         elapsedTime: number
         originalPosition: { x: number; y: number; z: number }
     }
-    
+
     // Zoom state
     zoom: {
         active: boolean
@@ -219,9 +219,35 @@ export interface CameraStateComponent extends Component {
         duration: number
         elapsedTime: number
     }
-    
+
     // Current camera position and target
     position: { x: number; y: number; z: number }
     target: { x: number; y: number; z: number }
     fov: number
+}
+
+export type GameState =
+    | 'enemiesWave1'
+    | 'enemiesWave2'
+    | 'bossFight'
+    | 'newShipOffer'
+
+// Game State component for managing overall game state
+export interface GameStateComponent extends Component {
+    type: 'gameState'
+    currentState: GameState
+    wave1EnemiesSpawned: number
+    wave1EnemiesDefeated: number
+    wave2EnemiesSpawned: number
+    wave2EnemiesDefeated: number
+    bossSpawned: boolean
+    playerHits: number // Track hits taken by player for boss encounter
+}
+
+// Boss tag component for boss entities
+export interface BossComponent extends Component {
+    type: 'boss'
+    bossType: 'basic' // For future expansion
+    damagePerShot: number // How much damage boss deals per shot
+    scale: number // Visual scale multiplier
 }
