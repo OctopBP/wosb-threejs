@@ -226,10 +226,16 @@ export interface CameraStateComponent extends Component {
     fov: number
 }
 
+export type GameState =
+    | 'enemiesWave1'
+    | 'enemiesWave2'
+    | 'bossFight'
+    | 'newShipOffer'
+
 // Game State component for managing overall game state
 export interface GameStateComponent extends Component {
     type: 'gameState'
-    currentState: 'enemiesWave1' | 'enemiesWave2' | 'bossFight' | 'newShipOffer'
+    currentState: GameState
     wave1EnemiesSpawned: number
     wave1EnemiesDefeated: number
     wave2EnemiesSpawned: number
