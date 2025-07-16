@@ -23,12 +23,12 @@ export interface GameStateConfig {
 // Default game state configuration
 export const defaultGameStateConfig: GameStateConfig = {
     wave1: {
-        enemyCount: 5,
+        enemyCount: 3,
         spawnDistance: 12,
         xpMultiplier: 1, // Normal XP for wave 1 enemies
     },
     wave2: {
-        enemyCount: 10,
+        enemyCount: 5,
         spawnDistance: 12,
         xpMultiplier: 1, // Normal XP for wave 2 enemies
     },
