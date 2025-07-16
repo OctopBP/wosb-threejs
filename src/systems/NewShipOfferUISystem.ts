@@ -91,7 +91,7 @@ export class NewShipOfferUISystem extends System {
         // Create subtitle text
         const subtitleText = document.createElement('p')
         subtitleText.textContent =
-            "Your current ship couldn't handle the challenge!"
+            'The boss was too powerful! Your ship needs serious upgrades to survive.'
         subtitleText.style.color = '#FFFFFF'
         subtitleText.style.fontSize = '16px'
         subtitleText.style.margin = '0 0 30px 0'

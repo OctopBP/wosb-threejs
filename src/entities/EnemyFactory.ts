@@ -1,4 +1,11 @@
 import {
+    bossMovementPreset,
+    createBossAIConfig,
+    createBossHealthConfig,
+    createBossWeaponConfig,
+    getBossVisualConfig,
+} from '../config/BossConfig'
+import {
     createEnemyAIConfig,
     createEnemyHealthConfig,
     createEnemyWeaponConfig,
@@ -96,6 +103,9 @@ export function createBossShip(
 ): Entity {
     const entity = new Entity()
 
+    // Get boss configuration
+    const bossVisualConfig = getBossVisualConfig()
+
     // Position component - spawn at specified location
     const position: PositionComponent = {
         type: 'position',
@@ -120,26 +130,16 @@ export function createBossShip(
     }
     entity.addComponent(velocity)
 
-    // Movement configuration - slower but more aggressive than regular enemies
-    const bossMovementConfig = createMovementConfig({
-        ...enemyMovementPreset,
-        maxSpeed: 5.0, // Slower than regular enemies
-        accelerationForce: 4.0,
-    })
+    // Movement configuration - use boss preset
+    const bossMovementConfig = createMovementConfig(bossMovementPreset)
     entity.addComponent(bossMovementConfig)
 
-    // Health component - much more health than regular enemies
-    const health = createEnemyHealthConfig()
-    health.maxHealth = 50 // Much stronger than regular enemies
-    health.currentHealth = health.maxHealth
+    // Health component - use boss health config
+    const health = createBossHealthConfig()
     entity.addComponent(health)
 
-    // Weapon component - more powerful weapon
-    const weapon = createEnemyWeaponConfig()
-    weapon.damage = 34 // High damage to kill player in 3 hits (assuming player has 100 health)
-    weapon.fireRate = 0.8 // Slower fire rate than regular enemies
-    weapon.range = 12 // Longer range
-    weapon.detectionRange = 15
+    // Weapon component - use boss weapon config
+    const weapon = createBossWeaponConfig()
     entity.addComponent(weapon)
 
     // Damageable component - boss can take damage
@@ -148,12 +148,12 @@ export function createBossShip(
     }
     entity.addComponent(damageable)
 
-    // Renderable component - use boss model (larger/different from regular enemies)
+    // Renderable component - use boss visual config
     const renderable: RenderableComponent = {
         type: 'renderable',
         meshId: `boss_ship_${entity.id}`,
         mesh: undefined, // Will be created by RenderSystem
-        meshType: 'enemy1', // For now use enemy model, can be changed to 'boss' later
+        meshType: bossVisualConfig.meshType as any,
         visible: true,
     }
     entity.addComponent(renderable)
@@ -164,18 +164,17 @@ export function createBossShip(
     }
     entity.addComponent(enemy)
 
-    // Boss tag component
+    // Boss tag component with scale information
     const boss: BossComponent = {
         type: 'boss',
         bossType: 'basic',
-        damagePerShot: 34, // Should kill player in 3 hits
+        damagePerShot: weapon.damage,
+        scale: bossVisualConfig.scale,
     }
     entity.addComponent(boss)
 
-    // Enemy AI component - more aggressive AI
-    const enemyAI = createEnemyAIConfig(targetId)
-    enemyAI.moveSpeed = 4.0 // Slower movement
-    enemyAI.shootingRange = 12 // Longer shooting range
+    // Enemy AI component - use boss AI config
+    const enemyAI = createBossAIConfig(targetId)
     entity.addComponent(enemyAI)
 
     return entity

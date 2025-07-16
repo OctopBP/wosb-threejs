@@ -243,4 +243,5 @@ export interface BossComponent extends Component {
     type: 'boss'
     bossType: 'basic' // For future expansion
     damagePerShot: number // How much damage boss deals per shot
+    scale: number // Visual scale multiplier
 }

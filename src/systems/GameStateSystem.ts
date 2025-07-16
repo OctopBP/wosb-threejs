@@ -119,8 +119,8 @@ export class GameStateSystem extends System {
                     // Check if it's a boss or regular enemy
                     const isBoss = deadEnemy.hasComponent('boss')
                     const xpAwarded = isBoss
-                        ? enemyXPConfig.basicEnemy * 5
-                        : enemyXPConfig.basicEnemy
+                        ? enemyXPConfig.basicEnemy * 20
+                        : enemyXPConfig.basicEnemy // Boss gives 20x XP
                     this.levelingSystem.awardXP(player.id, xpAwarded)
 
                     if (isBoss) {
