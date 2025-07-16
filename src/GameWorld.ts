@@ -1,13 +1,14 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
-import {
-    defaultGameStateConfig,
-    type GameStateConfig,
-} from './config/GameStateConfig'
+import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
+import type { GameStateConfig } from './config/GameStateConfig'
+import { defaultGameStateConfig } from './config/GameStateConfig'
 import type {
+    EnemyArrowComponent,
     HealthComponent,
     InputComponent,
     MovementConfigComponent,
     PositionComponent,
+    RangeIndicatorComponent,
     VelocityComponent,
     WeaponComponent,
 } from './ecs'
@@ -25,6 +26,7 @@ import { EnemyAISystem, GameStateSystem, NewShipOfferUISystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
+import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
@@ -32,11 +34,11 @@ import { MovementSystem } from './systems/MovementSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
+import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
-
 export class GameWorld {
     private world: World
     private inputSystem: InputSystem
@@ -56,6 +58,8 @@ export class GameWorld {
     private enemyHealthUISystem: EnemyHealthUISystem
     private newShipOfferUISystem: NewShipOfferUISystem
     private cameraSystem: CameraSystem
+    private rangeIndicatorSystem: RangeIndicatorSystem
+    private enemyArrowSystem: EnemyArrowSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -93,6 +97,8 @@ export class GameWorld {
         )
         this.newShipOfferUISystem = new NewShipOfferUISystem(this.world, canvas)
         this.cameraSystem = new CameraSystem(this.world, camera)
+        this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
+        this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.gameStateSystem.setLevelingSystem(this.levelingSystem)
@@ -130,6 +136,16 @@ export class GameWorld {
                 'player',
                 10,
             )
+
+            // Enable visual guidance for the player
+            this.enablePlayerVisualGuidance({
+                showRangeCircle: ARROW_INDICATOR_CONFIG.defaultShowRangeCircle,
+                showEnemyArrows: ARROW_INDICATOR_CONFIG.defaultShowEnemyArrows,
+                maxArrows: ARROW_INDICATOR_CONFIG.defaultMaxArrows,
+                rangeCircleColor:
+                    ARROW_INDICATOR_CONFIG.defaultRangeCircleColor,
+                arrowColor: ARROW_INDICATOR_CONFIG.defaultArrowColor,
+            })
         }
     }
 
@@ -215,6 +231,153 @@ export class GameWorld {
                 equipManualWeapon(this.playerEntity)
             } else {
                 equipAutoTargetingWeapon(this.playerEntity)
+            }
+        }
+    }
+
+    // Visual guidance methods
+    enablePlayerVisualGuidance(
+        options: {
+            showRangeCircle?: boolean
+            showEnemyArrows?: boolean
+            maxArrows?: number
+            rangeCircleColor?: number
+            arrowColor?: number
+        } = {},
+    ): void {
+        if (!this.playerEntity) return
+
+        const {
+            showRangeCircle = ARROW_INDICATOR_CONFIG.defaultShowRangeCircle,
+            showEnemyArrows = ARROW_INDICATOR_CONFIG.defaultShowEnemyArrows,
+            maxArrows = ARROW_INDICATOR_CONFIG.defaultMaxArrows,
+            rangeCircleColor = ARROW_INDICATOR_CONFIG.defaultRangeCircleColor,
+            arrowColor = ARROW_INDICATOR_CONFIG.defaultArrowColor,
+        } = options
+
+        // Add range indicator component
+        if (showRangeCircle) {
+            this.playerEntity.addComponent({
+                type: 'rangeIndicator',
+                showRangeCircle: true,
+                rangeCircleRadius: 0,
+                rangeCircleColor,
+                rangeCircleOpacity:
+                    ARROW_INDICATOR_CONFIG.defaultRangeCircleOpacity,
+            })
+        }
+
+        // Add enemy arrow component
+        if (showEnemyArrows) {
+            this.playerEntity.addComponent({
+                type: 'enemyArrow',
+                showEnemyArrows: true,
+                enemyArrows: [],
+                arrowColor,
+                arrowScale: ARROW_INDICATOR_CONFIG.defaultArrowScale,
+                maxArrows,
+            })
+        }
+    }
+
+    disablePlayerVisualGuidance(): void {
+        if (!this.playerEntity) return
+        this.playerEntity.removeComponent('rangeIndicator')
+        this.playerEntity.removeComponent('enemyArrow')
+    }
+
+    enablePlayerRangeIndicator(
+        options: {
+            rangeCircleColor?: number
+            rangeCircleOpacity?: number
+        } = {},
+    ): void {
+        if (!this.playerEntity) return
+
+        const {
+            rangeCircleColor = 0x00ff00, // Green
+            rangeCircleOpacity = 0.3,
+        } = options
+
+        this.playerEntity.addComponent({
+            type: 'rangeIndicator',
+            showRangeCircle: true,
+            rangeCircleRadius: 0,
+            rangeCircleColor,
+            rangeCircleOpacity,
+        })
+    }
+
+    disablePlayerRangeIndicator(): void {
+        if (!this.playerEntity) return
+        this.playerEntity.removeComponent('rangeIndicator')
+    }
+
+    enablePlayerEnemyArrows(
+        options: {
+            maxArrows?: number
+            arrowColor?: number
+            arrowScale?: number
+        } = {},
+    ): void {
+        if (!this.playerEntity) return
+
+        const {
+            maxArrows = ARROW_INDICATOR_CONFIG.defaultMaxArrows,
+            arrowColor = ARROW_INDICATOR_CONFIG.defaultArrowColor,
+            arrowScale = ARROW_INDICATOR_CONFIG.defaultArrowScale,
+        } = options
+
+        this.playerEntity.addComponent({
+            type: 'enemyArrow',
+            showEnemyArrows: true,
+            enemyArrows: [],
+            arrowColor,
+            arrowScale,
+            maxArrows,
+        })
+    }
+
+    disablePlayerEnemyArrows(): void {
+        if (!this.playerEntity) return
+        this.playerEntity.removeComponent('enemyArrow')
+    }
+
+    updatePlayerVisualGuidance(options: {
+        showRangeCircle?: boolean
+        showEnemyArrows?: boolean
+        maxArrows?: number
+        rangeCircleColor?: number
+        arrowColor?: number
+    }): void {
+        if (!this.playerEntity) return
+
+        // Update range indicator if exists
+        const rangeIndicator =
+            this.playerEntity.getComponent<RangeIndicatorComponent>(
+                'rangeIndicator',
+            )
+        if (rangeIndicator) {
+            if (options.showRangeCircle !== undefined) {
+                rangeIndicator.showRangeCircle = options.showRangeCircle
+            }
+            if (options.rangeCircleColor !== undefined) {
+                rangeIndicator.rangeCircleColor = options.rangeCircleColor
+            }
+        }
+
+        // Update enemy arrow component if exists
+        const enemyArrow =
+            this.playerEntity.getComponent<EnemyArrowComponent>('enemyArrow')
+        if (enemyArrow) {
+            if (options.showEnemyArrows !== undefined) {
+                enemyArrow.showEnemyArrows = options.showEnemyArrows
+            }
+            if (options.maxArrows !== undefined) {
+                enemyArrow.maxArrows = options.maxArrows
+            }
+            if (options.arrowColor !== undefined) {
+                enemyArrow.arrowColor = options.arrowColor
             }
         }
     }

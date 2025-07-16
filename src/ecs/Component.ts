@@ -226,6 +226,34 @@ export interface CameraStateComponent extends Component {
     fov: number
 }
 
+// Range Indicator component for entities that need shooting range circles
+export interface RangeIndicatorComponent extends Component {
+    type: 'rangeIndicator'
+    showRangeCircle: boolean
+    rangeCircleRadius: number
+    rangeCircleMesh?: Object3D
+    // Visual settings
+    rangeCircleColor: number
+    rangeCircleOpacity: number
+}
+
+// Enemy Arrow component for entities that need directional arrows to enemies
+export interface EnemyArrowComponent extends Component {
+    type: 'enemyArrow'
+    showEnemyArrows: boolean
+    enemyArrows: Array<{
+        enemyId: number
+        arrowMesh?: Object3D
+        direction: { x: number; z: number }
+        distance: number
+    }>
+    // Visual settings
+    arrowColor: number
+    arrowScale: number
+    maxArrows: number
+}
+
+// Game state and boss components from dev branch
 export type GameState =
     | 'enemiesWave1'
     | 'enemiesWave2'
