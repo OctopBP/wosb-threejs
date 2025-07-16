@@ -1,4 +1,8 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
+import {
+    defaultGameStateConfig,
+    type GameStateConfig,
+} from './config/GameStateConfig'
 import type {
     HealthComponent,
     InputComponent,
@@ -60,6 +64,7 @@ export class GameWorld {
         private renderer: WebGLRenderer,
         private canvas: HTMLCanvasElement,
         private camera: PerspectiveCamera,
+        gameStateConfig: GameStateConfig = defaultGameStateConfig,
     ) {
         this.world = new World()
 
@@ -77,7 +82,7 @@ export class GameWorld {
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
-        this.gameStateSystem = new GameStateSystem(this.world)
+        this.gameStateSystem = new GameStateSystem(this.world, gameStateConfig)
         this.enemyAISystem = new EnemyAISystem(this.world)
         this.levelingSystem = new LevelingSystem(this.world)
         this.playerUISystem = new PlayerUISystem(this.world, camera, canvas)
@@ -138,6 +143,17 @@ export class GameWorld {
 
         // Update all systems
         this.world.update(clampedDeltaTime)
+    }
+
+    // Method to access GameStateSystem for configuration changes
+    getGameStateSystem(): GameStateSystem {
+        return this.gameStateSystem
+    }
+
+    // Method to change game difficulty
+    setGameDifficulty(config: GameStateConfig): void {
+        this.gameStateSystem.setConfig(config)
+        console.log('🎮 Game difficulty updated')
     }
 
     getPlayerEntity(): Entity | null {

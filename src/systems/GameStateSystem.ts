@@ -1,4 +1,8 @@
 import { Mesh } from 'three'
+import {
+    defaultGameStateConfig,
+    type GameStateConfig,
+} from '../config/GameStateConfig'
 import { enemyXPConfig } from '../config/LevelingConfig'
 import type {
     GameStateComponent,
@@ -7,15 +11,37 @@ import type {
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
-import { createBossShip, createEnemyShip } from '../entities/EnemyFactory'
+import {
+    BossFightState,
+    type GameStateHandler,
+    NewShipOfferState,
+    Wave1State,
+    Wave2State,
+} from './states'
 
 export class GameStateSystem extends System {
     private gameStateEntity: import('../ecs/Entity').Entity | null = null
     private levelingSystem: import('./LevelingSystem').LevelingSystem | null =
         null
+    private config: GameStateConfig
+    private stateHandlers: Map<string, GameStateHandler> = new Map()
 
-    constructor(world: World) {
+    constructor(
+        world: World,
+        config: GameStateConfig = defaultGameStateConfig,
+    ) {
         super(world, [])
+        this.config = config
+        this.initializeStateHandlers()
+    }
+
+    private initializeStateHandlers(): void {
+        this.stateHandlers = new Map([
+            ['enemiesWave1', new Wave1State()],
+            ['enemiesWave2', new Wave2State()],
+            ['bossFight', new BossFightState()],
+            ['newShipOffer', new NewShipOfferState()],
+        ])
     }
 
     // Method to set the leveling system reference
@@ -23,6 +49,12 @@ export class GameStateSystem extends System {
         levelingSystem: import('./LevelingSystem').LevelingSystem,
     ): void {
         this.levelingSystem = levelingSystem
+    }
+
+    // Method to update configuration (useful for difficulty changes)
+    setConfig(config: GameStateConfig): void {
+        this.config = config
+        console.log('🎮 Game State configuration updated')
     }
 
     init(): void {
@@ -37,19 +69,18 @@ export class GameStateSystem extends System {
         // Always clean up dead enemies and award XP
         this.cleanupDeadEnemies()
 
-        switch (gameState.currentState) {
-            case 'enemiesWave1':
-                this.handleWave1(gameState)
-                break
-            case 'enemiesWave2':
-                this.handleWave2(gameState)
-                break
-            case 'bossFight':
-                this.handleBossFight(gameState)
-                break
-            case 'newShipOffer':
-                // This state is handled by UI system
-                break
+        // Handle current state using appropriate handler
+        const stateHandler = this.stateHandlers.get(gameState.currentState)
+        if (stateHandler) {
+            const nextState = stateHandler.handle(
+                gameState,
+                this.config,
+                this.world,
+                this.levelingSystem,
+            )
+            if (nextState) {
+                gameState.currentState = nextState as any
+            }
         }
 
         // Check for player death in any combat state
@@ -116,11 +147,12 @@ export class GameStateSystem extends System {
                 const player = playerEntities[0]
 
                 for (const deadEnemy of deadEnemies) {
-                    // Check if it's a boss or regular enemy
+                    // Check if it's a boss or regular enemy and use configured XP multipliers
                     const isBoss = deadEnemy.hasComponent('boss')
-                    const xpAwarded = isBoss
-                        ? enemyXPConfig.basicEnemy * 20
-                        : enemyXPConfig.basicEnemy // Boss gives 20x XP
+                    const xpMultiplier = isBoss
+                        ? this.config.boss.xpMultiplier
+                        : 1
+                    const xpAwarded = enemyXPConfig.basicEnemy * xpMultiplier
                     this.levelingSystem.awardXP(player.id, xpAwarded)
 
                     if (isBoss) {
@@ -169,126 +201,6 @@ export class GameStateSystem extends System {
         }
     }
 
-    private handleWave1(gameState: GameStateComponent): void {
-        // Spawn 5 enemies for wave 1
-        if (gameState.wave1EnemiesSpawned < 5) {
-            this.spawnEnemyAroundPlayer()
-            gameState.wave1EnemiesSpawned++
-            console.log(
-                `🛡️ Wave 1: Spawned enemy ${gameState.wave1EnemiesSpawned}/5`,
-            )
-        }
-
-        // Check if all wave 1 enemies are defeated
-        const currentEnemies = this.world.getEntitiesWithComponents([
-            'enemy',
-            'health',
-        ])
-        const aliveEnemies = currentEnemies.filter((enemy) => {
-            const health = enemy.getComponent<HealthComponent>('health')
-            return health && !health.isDead && !enemy.hasComponent('boss')
-        })
-
-        if (gameState.wave1EnemiesSpawned === 5 && aliveEnemies.length === 0) {
-            gameState.currentState = 'enemiesWave2'
-            console.log('🎮 Game State: Wave 1 Complete! Starting Wave 2')
-        }
-    }
-
-    private handleWave2(gameState: GameStateComponent): void {
-        // Spawn 10 enemies for wave 2
-        if (gameState.wave2EnemiesSpawned < 10) {
-            this.spawnEnemyAroundPlayer()
-            gameState.wave2EnemiesSpawned++
-            console.log(
-                `🛡️ Wave 2: Spawned enemy ${gameState.wave2EnemiesSpawned}/10`,
-            )
-        }
-
-        // Check if all wave 2 enemies are defeated
-        const currentEnemies = this.world.getEntitiesWithComponents([
-            'enemy',
-            'health',
-        ])
-        const aliveEnemies = currentEnemies.filter((enemy) => {
-            const health = enemy.getComponent<HealthComponent>('health')
-            return health && !health.isDead && !enemy.hasComponent('boss')
-        })
-
-        if (gameState.wave2EnemiesSpawned === 10 && aliveEnemies.length === 0) {
-            gameState.currentState = 'bossFight'
-            console.log('🎮 Game State: Wave 2 Complete! Boss Fight Starting!')
-        }
-    }
-
-    private handleBossFight(gameState: GameStateComponent): void {
-        // Spawn boss if not already spawned
-        if (!gameState.bossSpawned) {
-            this.spawnBoss()
-            gameState.bossSpawned = true
-            console.log('💀 Boss Fight: Boss spawned!')
-        }
-    }
-
-    private spawnEnemyAroundPlayer(): void {
-        // Get player position for spawning reference
-        const playerEntities = this.world.getEntitiesWithComponents(['player'])
-        if (playerEntities.length === 0) return
-
-        const player = playerEntities[0]
-        const playerPosition =
-            player.getComponent<import('../ecs/Component').PositionComponent>(
-                'position',
-            )
-        if (!playerPosition) return
-
-        // Choose a random spawn position around the player
-        const spawnDistance = 12 // Distance from player
-        const spawnAngle = Math.random() * 2 * Math.PI
-        const spawnX = playerPosition.x + Math.cos(spawnAngle) * spawnDistance
-        const spawnZ = playerPosition.z + Math.sin(spawnAngle) * spawnDistance
-
-        // Create enemy ship
-        const enemy = createEnemyShip(
-            spawnX,
-            0.1, // Same Y level as player
-            spawnZ,
-            player.id, // Set player as target
-        )
-
-        // Add enemy to world
-        this.world.addEntity(enemy)
-    }
-
-    private spawnBoss(): void {
-        // Get player position for spawning reference
-        const playerEntities = this.world.getEntitiesWithComponents(['player'])
-        if (playerEntities.length === 0) return
-
-        const player = playerEntities[0]
-        const playerPosition =
-            player.getComponent<import('../ecs/Component').PositionComponent>(
-                'position',
-            )
-        if (!playerPosition) return
-
-        // Spawn boss at a dramatic position in front of the player
-        const spawnDistance = 15 // Distance from player
-        const spawnX = playerPosition.x
-        const spawnZ = playerPosition.z + spawnDistance // Spawn in front
-
-        // Create boss ship
-        const boss = createBossShip(
-            spawnX,
-            0.1, // Same Y level as player
-            spawnZ,
-            player.id, // Set player as target
-        )
-
-        // Add boss to world
-        this.world.addEntity(boss)
-    }
-
     private checkPlayerDeath(gameState: GameStateComponent): void {
         // Get player entity and check health
         const playerEntities = this.world.getEntitiesWithComponents([
@@ -328,5 +240,10 @@ export class GameStateSystem extends System {
         }
 
         console.log('🎮 Game restarted - Wave 1 beginning')
+    }
+
+    // Method to get current configuration (useful for debugging)
+    public getConfig(): GameStateConfig {
+        return this.config
     }
 }
