@@ -252,3 +252,30 @@ export interface EnemyArrowComponent extends Component {
     arrowScale: number
     maxArrows: number
 }
+
+// Game state and boss components from dev branch
+export type GameState =
+    | 'enemiesWave1'
+    | 'enemiesWave2'
+    | 'bossFight'
+    | 'newShipOffer'
+
+// Game State component for managing overall game state
+export interface GameStateComponent extends Component {
+    type: 'gameState'
+    currentState: GameState
+    wave1EnemiesSpawned: number
+    wave1EnemiesDefeated: number
+    wave2EnemiesSpawned: number
+    wave2EnemiesDefeated: number
+    bossSpawned: boolean
+    playerHits: number // Track hits taken by player for boss encounter
+}
+
+// Boss tag component for boss entities
+export interface BossComponent extends Component {
+    type: 'boss'
+    bossType: 'basic' // For future expansion
+    damagePerShot: number // How much damage boss deals per shot
+    scale: number // Visual scale multiplier
+}

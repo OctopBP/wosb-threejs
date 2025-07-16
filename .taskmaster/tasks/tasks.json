@@ -371,7 +371,7 @@
                 "description": "Develop a robust camera management system featuring smooth following, dramatic boss reveal sequences, screen shake, zoom transitions, mobile-optimized viewing angles, and cinematic camera movements for key moments.",
                 "details": "Design a modular camera system using a data-driven approach, allowing camera parameters (position, orientation, FOV, transition types) to be configured via external files or editor tools for rapid iteration. Implement smooth camera following using interpolation (e.g., lerp or spline-based) to track the player ship, ensuring the camera adapts to movement and maintains optimal framing on both mobile and desktop. Integrate activation rules for switching between camera modes (e.g., gameplay, boss reveal, cutscene) based on game state, supporting seamless transitions with configurable blend times. Develop screen shake and zoom effects triggered by combat events or environmental cues, with tunable intensity and duration. Add support for cinematic camera paths and dramatic reveals, using predefined splines or keyframes for boss encounters and key moments. Optimize camera angles and FOV for mobile devices, ensuring clear visibility and minimal motion sickness. Expose debug tools for testing and tuning camera behaviors in real time. Ensure the system is extensible for future gameplay scenarios.",
                 "testStrategy": "1. Play through core gameplay and verify the camera smoothly follows the player ship, maintaining optimal framing on both mobile and desktop. 2. Trigger boss encounters and confirm cinematic camera sequences activate with correct timing, transitions, and dramatic effect. 3. Test screen shake and zoom effects by simulating combat and environmental events, ensuring they are visually impactful but not disorienting. 4. Switch between camera modes (gameplay, cutscene, boss reveal) and verify seamless, configurable transitions. 5. Adjust camera parameters via configuration files or editor and confirm changes are reflected in real time. 6. Evaluate camera performance and visual clarity on a range of mobile devices, ensuring no clipping or excessive motion. 7. Use debug tools to visualize camera paths and activation states during development.",
-                "status": "pending",
+                "status": "done",
                 "dependencies": [1, 2],
                 "priority": "medium",
                 "subtasks": []
@@ -393,10 +393,56 @@
                 "description": "Develop robust player death mechanics, game over states, respawn logic (if applicable), failure handling, and comprehensive state management for all game phases within the playable ad experience.",
                 "details": "Design a modular game state manager to handle transitions between core phases: gameplay, player death, game over, respawn (if used), and victory. Implement player death detection by monitoring health or critical failure conditions, triggering immediate feedback (visual, audio, slow-motion, etc.) and disabling player input. For game over, display a clear overlay with options to restart or exit, ensuring minimal downtime and frustration. If respawn is supported, implement checkpoint or instant respawn logic, restoring the player to a safe state and resetting necessary systems. Integrate failure handling to gracefully manage edge cases (e.g., dying during tutorials or cutscenes). Ensure all state transitions are predictable and visually communicated. Coordinate with the tutorial/onboarding system to prevent conflicts during state changes. Use ECS patterns for state tracking and event-driven transitions. Consider analytics hooks for tracking deaths and restarts. Prioritize fast, fair, and satisfying feedback loops to maintain engagement in the ad context.",
                 "testStrategy": "1. Simulate player death during core gameplay and verify that the death sequence, feedback, and input disabling trigger instantly. 2. Confirm that the game over screen appears promptly, with restart/exit options functioning as intended. 3. If respawn is enabled, test that the player is restored to the correct state and gameplay resumes smoothly. 4. Trigger death during tutorial and special sequences to ensure state transitions do not break onboarding or cinematic flows. 5. Play through multiple death/restart cycles to verify minimal downtime and no progression blockers. 6. Review analytics/logs to confirm death and restart events are tracked.",
-                "status": "pending",
+                "status": "done",
                 "dependencies": [2, 3, 10],
                 "priority": "low",
-                "subtasks": []
+                "subtasks": [
+                    {
+                        "id": 1,
+                        "title": "Implement Modular Game State Manager",
+                        "description": "Design and implement a modular game state manager using ECS patterns to handle transitions between all core game phases: wave 1, wave 2, boss fight, player death, game over, respawn (if applicable), and new ship offer.",
+                        "dependencies": [],
+                        "details": "Create a dedicated GameStateManager system that tracks the current state using an enum or similar identifier. Define clear state objects or components for each phase. Implement event-driven transitions and ensure the manager can trigger state entry/exit logic. Integrate with ECS so that systems can react to state changes. Ensure the manager is decoupled from gameplay logic and can be extended for future states.",
+                        "status": "done",
+                        "testStrategy": "Unit test state transitions, verify correct state entry/exit callbacks, and simulate state changes to ensure all transitions occur as expected."
+                    },
+                    {
+                        "id": 2,
+                        "title": "Implement Enemy Wave Spawning Logic",
+                        "description": "Develop systems to spawn enemy ships for 'enemies wave 1' and 'enemies wave 2' states, with correct counts and no respawn. Ensure transitions to the next state after all enemies are destroyed.",
+                        "dependencies": [1],
+                        "details": "For each wave state, implement a WaveSpawner system that listens for state entry events. On entering 'enemies wave 1', spawn 5 enemy ships; on 'enemies wave 2', spawn 10. Track active enemies using ECS queries. When all enemies are destroyed, trigger a transition event to the next state. Ensure no respawn logic is active during these waves.",
+                        "status": "done",
+                        "testStrategy": "Test that the correct number of enemies spawn per wave, and that the state transitions only after all enemies are destroyed."
+                    },
+                    {
+                        "id": 3,
+                        "title": "Implement Boss Fight State and Boss Spawning",
+                        "description": "Create the 'boss fight' state, including spawning a powerful boss ship with unique properties (e.g., destroys player in 3 shots). Handle transition to the next state on player death.",
+                        "dependencies": [2],
+                        "details": "On entering the 'boss fight' state, use a BossSpawner system to instantiate the boss entity with specified health and attack logic. Implement boss-specific behavior and ensure the boss can defeat the player in three hits. Monitor player health and trigger a state transition to 'new ship offer' upon player death.",
+                        "status": "done",
+                        "testStrategy": "Verify boss spawns only in the correct state, has intended properties, and that player death during this fight triggers the correct transition."
+                    },
+                    {
+                        "id": 4,
+                        "title": "Implement Player Death Handling and Feedback",
+                        "description": "Detect player death in any state, trigger immediate feedback (visual, audio, slow-motion), disable player input, and initiate transition to the 'new ship offer' state.",
+                        "dependencies": [3],
+                        "details": "Monitor player health and critical failure conditions in all gameplay states. On death, trigger feedback systems (e.g., play animation, sound, slow-motion effect), disable input components, and fire an event to the GameStateManager to transition to 'new ship offer'. Ensure edge cases (e.g., death during tutorials or cutscenes) are handled gracefully, possibly by deferring death processing until safe.",
+                        "status": "done",
+                        "testStrategy": "Simulate player death in all relevant states and verify feedback, input disabling, and correct state transition. Test edge cases for robustness."
+                    },
+                    {
+                        "id": 5,
+                        "title": "Implement 'New Ship Offer' UI and State Integration",
+                        "description": "Develop the UI for the 'new ship offer' state, displaying the message 'You need better ship' and a 'Get it' button. Ensure this state is entered after player death in any phase and that UI actions trigger appropriate game flow.",
+                        "dependencies": [4],
+                        "details": "On entering the 'new ship offer' state, display a modal or overlay UI with the specified message and button. Wire the 'Get it' button to trigger the appropriate action (e.g., restart, upgrade, or exit). Ensure the UI is only active in this state and that all other gameplay input is disabled. Integrate analytics hooks to track offer displays and button clicks.",
+                        "status": "done",
+                        "testStrategy": "Test UI appearance and interactivity after player death in all phases. Verify correct disabling of gameplay input and analytics event firing."
+                    }
+                ]
             },
             {
                 "id": 12,
@@ -404,54 +450,54 @@
                 "description": "Design and implement an intimidating boss ship featuring unique visuals, boss-specific behaviors, a dramatic entrance sequence with screen warning effects, and combat mechanics that highlight player limitations, culminating in a transition to a call-to-action.",
                 "details": "1. Create a distinctive boss ship model and visual effects to ensure immediate recognition and intimidation (e.g., size, color palette, unique silhouette).\n2. Develop a dramatic entrance sequence: trigger screen-wide warning effects (flashing borders, sirens, UI overlays) and use the advanced camera system for cinematic zooms and pans as the boss enters the scene.\n3. Implement boss-specific behaviors, including multi-phase attack patterns that evolve as the boss's health decreases (e.g., new projectile types, area denial attacks, temporary invulnerability, summoning minions). Ensure clear telegraphs for major attacks (visual/sound cues) and idle periods for player counterplay[2][3][4].\n4. Integrate a prominent boss health bar and unique UI elements to communicate the encounter state and player progress[3].\n5. Design combat mechanics that demonstrate player limitations (e.g., disabling certain player abilities, introducing environmental hazards, or restricting movement during key boss attacks).\n6. Ensure the encounter transitions smoothly to a call-to-action (e.g., cutscene, next phase, or victory screen) upon boss defeat or player failure.\n7. Coordinate with the camera, UI, and state management systems for seamless integration and transitions.",
                 "testStrategy": "1. Trigger the boss encounter and verify the entrance sequence: warning effects, camera transitions, and boss appearance are synchronized and dramatic.\n2. Play through the boss fight, confirming that attack patterns change with boss health, telegraphs are clear, and player limitations are enforced at appropriate moments.\n3. Ensure the boss health bar and unique UI elements display correctly and update in real time.\n4. Test defeat and victory conditions: verify that transitions to call-to-action or game over are smooth and all relevant systems (camera, UI, state management) respond appropriately.\n5. Playtest for balance, ensuring the encounter is challenging but fair, and that all visual, audio, and gameplay cues are clear to the player.",
-                "status": "pending",
+                "status": "done",
                 "dependencies": [2, 3, 4, 8, 9, 11],
                 "priority": "high",
                 "subtasks": [
                     {
                         "id": 1,
-                        "title": "Design and Implement Distinctive Boss Ship Visuals",
-                        "description": "Create a unique and intimidating boss ship model with standout visual effects to ensure immediate recognition and a sense of threat.",
+                        "title": "Design and Implement Boss Ship Model and Visuals",
+                        "description": "Create a visually distinct and intimidating boss ship, including 3D/2D model, unique color palette, silhouette, and visual effects that immediately signal its threat level.",
                         "dependencies": [],
-                        "details": "Develop a large, visually striking boss ship using a unique silhouette, bold color palette, and intimidating visual effects (e.g., glowing elements, animated parts). Ensure the design is distinct from other ships and conveys the boss's theme and power. Integrate these assets into the game engine, ready for use in the encounter.",
-                        "status": "pending",
-                        "testStrategy": "Load the boss ship in a test scene and verify its visual impact, recognizability, and correct rendering from all camera angles."
+                        "details": "Develop the boss ship's model using your game's art pipeline. Apply a unique color scheme and silhouette to ensure instant recognition. Add intimidating visual effects such as glowing elements, animated parts, and scale the ship to be significantly larger than standard enemies. Ensure the design aligns with the boss's theme and world context.",
+                        "status": "done",
+                        "testStrategy": "Load the boss ship in a test scene and verify visual distinctiveness, intimidation factor, and correct rendering of all effects."
                     },
                     {
                         "id": 2,
-                        "title": "Develop Dramatic Boss Entrance Sequence with Cinematic Effects",
-                        "description": "Implement a dramatic entrance for the boss, including screen-wide warning effects, sirens, UI overlays, and advanced camera work for cinematic impact.",
+                        "title": "Implement Boss Spawning and Dramatic Entrance Sequence",
+                        "description": "Develop the logic to spawn the boss at the correct point in the gameplay loop, triggering a dramatic entrance with screen-wide warning effects and cinematic camera movements.",
                         "dependencies": [1],
-                        "details": "Script the boss's entrance to trigger warning effects (e.g., flashing borders, siren sounds, animated UI overlays) as the boss approaches. Use the camera system to perform cinematic zooms, pans, and shakes, emphasizing the boss's arrival. Ensure all effects are synchronized and can be triggered programmatically.",
-                        "status": "pending",
-                        "testStrategy": "Trigger the entrance sequence in isolation and during gameplay, verifying timing, visual/audio synchronization, and overall dramatic effect."
+                        "details": "Integrate boss spawning into the 'boss fight' state. When triggered, activate warning UI overlays (flashing borders, sirens), and use the camera system for cinematic zooms and pans as the boss enters. Ensure the sequence is timed for maximum dramatic impact and cannot be skipped accidentally.",
+                        "status": "done",
+                        "testStrategy": "Trigger the boss encounter in-game and verify the entrance sequence plays correctly, with all visual and camera effects synchronized."
                     },
                     {
                         "id": 3,
-                        "title": "Implement Boss Behaviors and Multi-Phase Combat Patterns",
-                        "description": "Develop boss-specific behaviors, including multi-phase attack patterns, evolving tactics, and clear telegraphs for major attacks and idle periods.",
+                        "title": "Develop Boss Behaviors and Attack/Damage Logic",
+                        "description": "Implement boss-specific behaviors, including multi-phase attack patterns, telegraphed major attacks, idle periods, and the ability to destroy the player ship in exactly 3 hits.",
                         "dependencies": [2],
-                        "details": "Define and implement multiple attack phases that evolve as the boss's health decreases (e.g., new projectile types, area denial, temporary invulnerability, summoning minions). Ensure each attack is clearly telegraphed with visual and audio cues, and include idle periods for player counterplay. Integrate state management for phase transitions and attack selection.",
-                        "status": "pending",
-                        "testStrategy": "Playtest each phase, verifying attack variety, telegraph clarity, phase transitions, and opportunities for player counterplay."
+                        "details": "Script the boss AI to use a variety of attack patterns that evolve as its health decreases. Ensure each attack is clearly telegraphed with visual/sound cues. Add idle periods for player counterplay. Implement the damage system so the boss destroys the player ship after 3 successful hits. Include temporary invulnerability and optional minion summoning as needed.",
+                        "status": "done",
+                        "testStrategy": "Playtest the boss fight, confirming attack variety, telegraphs, phase transitions, and that the player ship is destroyed after 3 hits."
                     },
                     {
                         "id": 4,
-                        "title": "Integrate Boss Health Bar and Unique Encounter UI Elements",
-                        "description": "Add a prominent boss health bar and unique UI elements to communicate encounter state and player progress.",
+                        "title": "Integrate Boss Health Bar and Encounter UI",
+                        "description": "Add a prominent boss health bar and unique UI elements to communicate the boss encounter state and player progress.",
                         "dependencies": [3],
-                        "details": "Design and implement a boss health bar that is visually distinct and clearly communicates the boss's remaining health. Add encounter-specific UI elements (e.g., phase indicators, warning icons) to inform the player of the current state. Ensure UI updates in real time and integrates with the game's existing UI framework.",
-                        "status": "pending",
-                        "testStrategy": "Test the UI during boss encounters, verifying accurate health updates, visibility, and responsiveness to phase changes."
+                        "details": "Design and implement a boss health bar that is visually distinct from standard UI. Display it prominently during the encounter. Add any additional UI elements needed to indicate boss phases, player limitations, or special attack warnings. Ensure UI updates in real time and is hidden outside the boss fight.",
+                        "status": "done",
+                        "testStrategy": "Verify the health bar and UI elements appear at the correct time, update accurately, and disappear after the encounter."
                     },
                     {
                         "id": 5,
-                        "title": "Implement Player Limitation Mechanics and Seamless Encounter Transition",
-                        "description": "Design combat mechanics that highlight player limitations during the boss fight and ensure a smooth transition to a call-to-action upon encounter completion.",
+                        "title": "Handle Encounter Resolution and Transition to New Ship Offer",
+                        "description": "Implement logic for transitioning from the boss fight to a call-to-action, such as a cutscene or offer screen, upon player defeat or boss death. Coordinate with the game state and UI systems.",
                         "dependencies": [4],
-                        "details": "Introduce mechanics that restrict player abilities or movement during key boss attacks (e.g., disabling dashes, adding environmental hazards). Ensure these limitations are clearly communicated and feel fair. Upon boss defeat or player failure, trigger a seamless transition to the next phase, cutscene, or victory screen, coordinating with camera, UI, and state management systems.",
-                        "status": "pending",
-                        "testStrategy": "Playtest the full encounter, verifying that player limitations are enforced and communicated, and that the transition to the call-to-action is smooth and bug-free."
+                        "details": "Detect boss defeat or player death. On player defeat, trigger the transition to the 'new ship offer' UI, ensuring all boss and encounter UI is cleaned up. On boss defeat, transition to the next phase or victory screen as appropriate. Coordinate with state management to ensure seamless transitions and no lingering effects from the boss encounter.",
+                        "status": "done",
+                        "testStrategy": "Test both player defeat and boss defeat scenarios, confirming correct transitions, UI cleanup, and that the new ship offer appears as intended."
                     }
                 ]
             },
@@ -614,7 +660,7 @@
         ],
         "metadata": {
             "created": "2025-07-10T07:37:31.612Z",
-            "updated": "2025-07-11T13:57:01.648Z",
+            "updated": "2025-07-16T12:11:48.368Z",
             "description": "Tasks for master context"
         }
     }
