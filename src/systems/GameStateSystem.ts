@@ -1,29 +1,29 @@
 import { Mesh } from 'three'
-import {
-    defaultGameStateConfig,
-    type GameStateConfig,
-} from '../config/GameStateConfig'
+import type { GameStateConfig } from '../config/GameStateConfig'
+import { defaultGameStateConfig } from '../config/GameStateConfig'
 import { enemyXPConfig } from '../config/LevelingConfig'
 import type {
+    GameState,
     GameStateComponent,
     HealthComponent,
     RenderableComponent,
 } from '../ecs/Component'
+import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import type { GameWorld } from '../GameWorld'
+import type { LevelingSystem } from './LevelingSystem'
+import type { GameStateHandler } from './states'
 import {
     BossFightState,
-    type GameStateHandler,
     NewShipOfferState,
     Wave1State,
     Wave2State,
 } from './states'
-
 export class GameStateSystem extends System {
-    private gameStateEntity: import('../ecs/Entity').Entity | null = null
-    private levelingSystem: import('./LevelingSystem').LevelingSystem | null =
-        null
-    private gameWorld: import('../GameWorld').GameWorld | null = null
+    private gameStateEntity: Entity | null = null
+    private levelingSystem: LevelingSystem | null = null
+    private gameWorld: GameWorld | null = null
     private config: GameStateConfig
     private stateHandlers: Map<string, GameStateHandler> = new Map()
 
@@ -46,14 +46,12 @@ export class GameStateSystem extends System {
     }
 
     // Method to set the leveling system reference (called from GameWorld constructor)
-    setLevelingSystem(
-        levelingSystem: import('./LevelingSystem').LevelingSystem,
-    ): void {
+    setLevelingSystem(levelingSystem: LevelingSystem): void {
         this.levelingSystem = levelingSystem
     }
 
     // Method to set the GameWorld reference (called from GameWorld constructor)
-    setGameWorld(gameWorld: import('../GameWorld').GameWorld): void {
+    setGameWorld(gameWorld: GameWorld): void {
         this.gameWorld = gameWorld
     }
 
@@ -85,7 +83,7 @@ export class GameStateSystem extends System {
                 this.levelingSystem,
             )
             if (nextState) {
-                gameState.currentState = nextState as any
+                gameState.currentState = nextState as GameState
             }
         }
 
