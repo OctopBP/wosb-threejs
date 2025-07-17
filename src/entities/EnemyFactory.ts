@@ -1,4 +1,11 @@
 import {
+    bossMovementPreset,
+    createBossAIConfig,
+    createBossHealthConfig,
+    createBossWeaponConfig,
+    getBossVisualConfig,
+} from '../config/BossConfig'
+import {
     createEnemyAIConfig,
     createEnemyHealthConfig,
     createEnemyWeaponConfig,
@@ -6,6 +13,7 @@ import {
 } from '../config/EnemyConfig'
 import { createMovementConfig } from '../config/MovementPresets'
 import type {
+    BossComponent,
     DamageableComponent,
     EnemyComponent,
     PositionComponent,
@@ -70,6 +78,7 @@ export function createEnemyShip(
         mesh: undefined, // Will be created by RenderSystem
         meshType: 'enemy1',
         visible: true,
+        upgrades: {},
     }
     entity.addComponent(renderable)
 
@@ -81,6 +90,93 @@ export function createEnemyShip(
 
     // Enemy AI component - use enemy AI config
     const enemyAI = createEnemyAIConfig(targetId)
+    entity.addComponent(enemyAI)
+
+    return entity
+}
+
+// Create a powerful boss ship
+export function createBossShip(
+    x: number,
+    y: number,
+    z: number,
+    targetId: number | null = null,
+): Entity {
+    const entity = new Entity()
+
+    // Get boss configuration
+    const bossVisualConfig = getBossVisualConfig()
+
+    // Position component - spawn at specified location
+    const position: PositionComponent = {
+        type: 'position',
+        x,
+        y,
+        z,
+        rotationX: 0,
+        rotationY: Math.PI, // Face towards player
+        rotationZ: 0,
+    }
+    entity.addComponent(position)
+
+    // Velocity component - no initial movement
+    const velocity: VelocityComponent = {
+        type: 'velocity',
+        dx: 0,
+        dy: 0,
+        dz: 0,
+        angularVelocityX: 0,
+        angularVelocityY: 0,
+        angularVelocityZ: 0,
+    }
+    entity.addComponent(velocity)
+
+    // Movement configuration - use boss preset
+    const bossMovementConfig = createMovementConfig(bossMovementPreset)
+    entity.addComponent(bossMovementConfig)
+
+    // Health component - use boss health config
+    const health = createBossHealthConfig()
+    entity.addComponent(health)
+
+    // Weapon component - use boss weapon config
+    const weapon = createBossWeaponConfig()
+    entity.addComponent(weapon)
+
+    // Damageable component - boss can take damage
+    const damageable: DamageableComponent = {
+        type: 'damageable',
+    }
+    entity.addComponent(damageable)
+
+    // Renderable component - use boss visual config
+    const renderable: RenderableComponent = {
+        type: 'renderable',
+        meshId: `boss_ship_${entity.id}`,
+        mesh: undefined, // Will be created by RenderSystem
+        meshType: bossVisualConfig.meshType,
+        visible: true,
+        upgrades: {},
+    }
+    entity.addComponent(renderable)
+
+    // Enemy tag component (boss is still an enemy type)
+    const enemy: EnemyComponent = {
+        type: 'enemy',
+    }
+    entity.addComponent(enemy)
+
+    // Boss tag component with scale information
+    const boss: BossComponent = {
+        type: 'boss',
+        bossType: 'basic',
+        damagePerShot: weapon.damage,
+        scale: bossVisualConfig.scale,
+    }
+    entity.addComponent(boss)
+
+    // Enemy AI component - use boss AI config
+    const enemyAI = createBossAIConfig(targetId)
     entity.addComponent(enemyAI)
 
     return entity

@@ -9,13 +9,18 @@ import {
     MeshLambertMaterial,
     SphereGeometry,
 } from 'three'
-import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
 import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
-import type { PositionComponent, RenderableComponent } from '../ecs/Component'
+import type {
+    BossComponent,
+    PositionComponent,
+    RenderableComponent,
+} from '../ecs/Component'
+import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import { getModelClone } from '../ModelPreloader'
 
 export class RenderSystem extends System {
     private scene: Scene
@@ -48,7 +53,7 @@ export class RenderSystem extends System {
             }
 
             if (!renderable.mesh) {
-                const mesh = this.createMesh(renderable)
+                const mesh = this.createMesh(renderable, entity)
                 if (mesh) {
                     renderable.mesh = mesh
                     this.scene.add(mesh)
@@ -72,20 +77,36 @@ export class RenderSystem extends System {
         }
     }
 
-    private createMesh(renderable: RenderableComponent): Object3D | null {
+    private createMesh(
+        renderable: RenderableComponent,
+        entity: Entity,
+    ): Object3D | null {
         // Check if this is a primitive mesh or a model mesh
         if (isPrimitiveModel(renderable.meshType)) {
             return this.createPrimitiveMesh(
                 renderable.meshId,
                 renderable.meshType,
+                entity,
             )
         } else {
-            return this.createModelMesh(renderable.meshId, renderable.meshType)
+            return this.createModelMesh(
+                renderable.meshId,
+                renderable.meshType,
+                entity,
+            )
         }
     }
 
-    private createPrimitiveMesh(meshId: string, meshType: string): Mesh {
+    private createPrimitiveMesh(
+        meshId: string,
+        meshType: string,
+        entity: Entity,
+    ): Mesh {
         const config = getModelConfig(meshType) as PrimitiveModelConfig
+
+        // Check if this entity is a boss for additional scaling
+        const bossComponent = entity.getComponent<BossComponent>('boss')
+        const additionalScale = bossComponent ? bossComponent.scale : 1.0
 
         let geometry: SphereGeometry | BoxGeometry
         let material: MeshLambertMaterial
@@ -112,7 +133,7 @@ export class RenderSystem extends System {
 
             const mesh = new Mesh(geometry, material)
             mesh.name = meshId
-            mesh.scale.setScalar(config.scale)
+            mesh.scale.setScalar(config.scale * additionalScale)
             mesh.castShadow = true
             mesh.receiveShadow = true
 
@@ -123,61 +144,61 @@ export class RenderSystem extends System {
             material = new MeshLambertMaterial({ color: 0x000000 }) // Black color for projectiles
             const mesh = new Mesh(geometry, material)
             mesh.name = meshId
+            mesh.scale.setScalar(additionalScale)
             mesh.castShadow = true
             mesh.receiveShadow = true
             return mesh
         }
     }
 
-    private createModelMesh(meshId: string, meshType: string): Group {
+    private createModelMesh(
+        meshId: string,
+        meshType: string,
+        entity: Entity,
+    ): Group {
         const parentGroup = new Group()
         parentGroup.name = meshId
 
         const modelConfig = getModelConfig(meshType) as ModelConfig
 
-        // Load the glTF model
-        this.gltfLoader.load(
-            `assets/models/${modelConfig.fileName}`,
-            (gltf: GLTF) => {
-                // Success callback
-                const model = gltf.scene
-                model.traverse((child) => {
-                    if (child instanceof Mesh) {
-                        child.castShadow = true
-                        child.receiveShadow = true
-                    }
-                })
+        // Check if this entity is a boss for additional scaling
+        const bossComponent = entity.getComponent<BossComponent>('boss')
+        const additionalScale = bossComponent ? bossComponent.scale : 1.0
+        const finalScale = modelConfig.scale * additionalScale
 
-                parentGroup.add(model)
-                parentGroup.scale.setScalar(modelConfig.scale)
-            },
-            (progress: ProgressEvent) => {
-                // Progress callback (optional)
-                console.log('Loading progress:', progress)
-            },
-            (error: unknown) => {
-                // Error callback - GLB loading failed
-                console.warn(
-                    `Failed to load model ${modelConfig.fileName}:`,
-                    error,
+        // Use preloaded model clone
+        const model = getModelClone(meshType)
+        if (model) {
+            model.traverse((child) => {
+                if (child instanceof Mesh) {
+                    child.castShadow = true
+                    child.receiveShadow = true
+                }
+            })
+            parentGroup.add(model)
+            parentGroup.scale.setScalar(finalScale)
+            if (bossComponent) {
+                console.log(
+                    `👾 Boss model loaded with scale: ${finalScale} (base: ${modelConfig.scale}, boss: ${additionalScale})`,
                 )
-
-                // Create a fallback primitive instead
-                const fallbackGeometry = new BoxGeometry(1, 0.5, 2)
-                const fallbackMaterial = new MeshLambertMaterial({
-                    color: 0x00ff00,
-                })
-                const fallbackMesh = new Mesh(
-                    fallbackGeometry,
-                    fallbackMaterial,
+            }
+        } else {
+            // Fallback: create a primitive
+            const fallbackGeometry = new BoxGeometry(1, 0.5, 2)
+            const fallbackMaterial = new MeshLambertMaterial({
+                color: bossComponent ? 0xff0000 : 0x00ff00, // Red for boss, green for others
+            })
+            const fallbackMesh = new Mesh(fallbackGeometry, fallbackMaterial)
+            fallbackMesh.castShadow = true
+            fallbackMesh.receiveShadow = true
+            parentGroup.add(fallbackMesh)
+            parentGroup.scale.setScalar(finalScale)
+            if (bossComponent) {
+                console.log(
+                    `👾 Boss fallback model created with scale: ${finalScale}`,
                 )
-                fallbackMesh.castShadow = true
-                fallbackMesh.receiveShadow = true
-                parentGroup.add(fallbackMesh)
-                parentGroup.scale.setScalar(modelConfig.scale)
-            },
-        )
-
+            }
+        }
         return parentGroup
     }
 

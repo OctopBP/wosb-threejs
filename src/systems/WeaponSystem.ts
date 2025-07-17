@@ -7,6 +7,7 @@ import type {
     VelocityComponent,
     WeaponComponent,
 } from '../ecs/Component'
+import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
@@ -87,7 +88,7 @@ export class WeaponSystem extends System {
         const isEnemy = entity.hasComponent('enemy')
 
         // Find the closest target based on what type of entity this is
-        let closestTarget: import('../ecs/Entity').Entity | null = null
+        let closestTarget: Entity | null = null
 
         if (isPlayer) {
             // Player targets enemies
@@ -165,12 +166,12 @@ export class WeaponSystem extends System {
         shooterPosition: PositionComponent,
         detectionRange: number,
         targetType: 'enemy' | 'player',
-    ): import('../ecs/Entity').Entity | null {
+    ): Entity | null {
         const targets = this.world.getEntitiesWithComponents([
             targetType,
             'position',
         ])
-        let closestTarget: import('../ecs/Entity').Entity | null = null
+        let closestTarget: Entity | null = null
         let closestDistance = Number.MAX_VALUE
 
         for (const target of targets) {
@@ -196,7 +197,7 @@ export class WeaponSystem extends System {
     private findClosestEnemy(
         shooterPosition: PositionComponent,
         detectionRange: number,
-    ): import('../ecs/Entity').Entity | null {
+    ): Entity | null {
         return this.findClosestTarget(shooterPosition, detectionRange, 'enemy')
     }
 
@@ -267,6 +268,7 @@ export class WeaponSystem extends System {
             mesh: undefined, // Will be created by RenderSystem using primitive
             meshType: 'bullet', // Now properly supported
             visible: true,
+            upgrades: {},
         }
         projectile.addComponent(renderable)
     }
@@ -338,6 +340,7 @@ export class WeaponSystem extends System {
             mesh: undefined, // Will be created by RenderSystem using primitive
             meshType: 'bullet', // Now properly supported
             visible: true,
+            upgrades: {},
         }
         projectile.addComponent(renderable)
     }

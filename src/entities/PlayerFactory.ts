@@ -101,6 +101,7 @@ export function createPlayerShip(
         mesh: undefined, // Will be created by RenderSystem
         meshType: 'ship',
         visible: true,
+        upgrades: {},
     }
     entity.addComponent(renderable)
 
