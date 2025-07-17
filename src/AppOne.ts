@@ -3,19 +3,22 @@
 import { GUI } from 'lil-gui'
 import {
     Color,
+    CubeTextureLoader,
     DirectionalLight,
     Fog,
     HemisphereLight,
     Mesh,
-    MeshLambertMaterial,
     PCFSoftShadowMap,
     PerspectiveCamera,
     PlaneGeometry,
     Scene,
+    ShaderMaterial,
     Vector3,
     WebGLRenderer,
 } from 'three'
 import { GameWorld } from './GameWorld'
+import waterFragmentShader from './shaders/water.frag?raw'
+import waterVertexShader from './shaders/water.vert?raw'
 
 export class AppOne {
     renderer: WebGLRenderer
@@ -23,6 +26,11 @@ export class AppOne {
     camera: PerspectiveCamera
     gameWorld: GameWorld
     gui?: GUI
+
+    // Add these for water controls
+    waterMesh?: Mesh
+    waterMaterial?: ShaderMaterial
+    waterUniforms?: any
 
     constructor(readonly canvas: HTMLCanvasElement) {
         // Create renderer
@@ -95,15 +103,68 @@ export class AppOne {
         directionalLight.shadow.camera.bottom = -25
         scene.add(directionalLight)
 
-        // Create ocean/ground plane
-        const groundGeometry = new PlaneGeometry(50, 50)
-        const groundMaterial = new MeshLambertMaterial({
-            color: new Color(0.2, 0.4, 0.8), // Blue ocean
+        // --- WATER SHADER REPLACEMENT ---
+        // Remove old ground plane code
+        // const groundGeometry = new PlaneGeometry(50, 50)
+        // const groundMaterial = new MeshLambertMaterial({
+        //     color: new Color(0.2, 0.4, 0.8), // Blue ocean
+        // })
+        // const ground = new Mesh(groundGeometry, groundMaterial)
+        // ground.rotation.x = -Math.PI / 2 // Rotate to be horizontal
+        // ground.receiveShadow = true
+        // scene.add(ground)
+
+        // Water plane
+        const waterGeometry = new PlaneGeometry(50, 50, 256, 256)
+
+        // Placeholder environment map (sky blue)
+        // In production, replace with a real cubemap
+        const envMap = new CubeTextureLoader().load([
+            '/px.png', // px
+            '/nx.png', // nx
+            '/py.png', // py
+            '/ny.png', // ny
+            '/pz.png', // pz
+            '/nz.png', // nz
+        ])
+
+        const waterUniforms = {
+            uTime: { value: 0 },
+            uWavesAmplitude: { value: 0.25 },
+            uWavesSpeed: { value: 0.15 },
+            uWavesFrequency: { value: 0.08 },
+            uWavesPersistence: { value: 0.5 },
+            uWavesLacunarity: { value: 2.0 },
+            uWavesIterations: { value: 4.0 },
+            uOpacity: { value: 0.95 },
+            uTroughColor: { value: new Color(0.1, 0.2, 0.4) },
+            uSurfaceColor: { value: new Color(0.2, 0.4, 0.8) },
+            uPeakColor: { value: new Color(0.8, 0.9, 1.0) },
+            uPeakThreshold: { value: 0.5 },
+            uPeakTransition: { value: 0.2 },
+            uTroughThreshold: { value: -0.5 },
+            uTroughTransition: { value: 0.2 },
+            uFresnelScale: { value: 1.0 },
+            uFresnelPower: { value: 2.5 },
+            uEnvironmentMap: { value: envMap },
+        }
+        const waterMaterial = new ShaderMaterial({
+            vertexShader: waterVertexShader,
+            fragmentShader: waterFragmentShader,
+            uniforms: waterUniforms,
+            transparent: true,
         })
-        const ground = new Mesh(groundGeometry, groundMaterial)
-        ground.rotation.x = -Math.PI / 2 // Rotate to be horizontal
-        ground.receiveShadow = true
-        scene.add(ground)
+
+        const water = new Mesh(waterGeometry, waterMaterial)
+        water.rotation.x = -Math.PI / 2
+        water.receiveShadow = true
+        water.name = 'Water'
+        scene.add(water)
+        // Store references for GUI
+        this.waterMesh = water
+        this.waterMaterial = waterMaterial
+        this.waterUniforms = waterUniforms
+        // --- END WATER SHADER REPLACEMENT ---
 
         // Add fog for atmosphere
         scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 10, 100)
@@ -526,6 +587,92 @@ export class AppOne {
             fogFolder.add(this.scene.fog, 'near', 1, 50, 0.1)
             fogFolder.add(this.scene.fog, 'far', 50, 200, 1)
         }
+
+        // --- WATER FOLDER ---
+        const waterFolder = this.gui.addFolder('Water')
+        if (this.waterUniforms) {
+            // Numeric uniforms
+            waterFolder
+                .add(this.waterUniforms.uWavesAmplitude, 'value', 0, 2, 0.01)
+                .name('Waves Amplitude')
+            waterFolder
+                .add(this.waterUniforms.uWavesSpeed, 'value', 0, 2, 0.01)
+                .name('Waves Speed')
+            waterFolder
+                .add(this.waterUniforms.uWavesFrequency, 'value', 0, 1, 0.001)
+                .name('Waves Frequency')
+            waterFolder
+                .add(this.waterUniforms.uWavesPersistence, 'value', 0, 1, 0.01)
+                .name('Waves Persistence')
+            waterFolder
+                .add(this.waterUniforms.uWavesLacunarity, 'value', 1, 4, 0.01)
+                .name('Waves Lacunarity')
+            waterFolder
+                .add(this.waterUniforms.uWavesIterations, 'value', 1, 8, 1)
+                .name('Waves Iterations')
+            waterFolder
+                .add(this.waterUniforms.uOpacity, 'value', 0, 1, 0.01)
+                .name('Opacity')
+            waterFolder
+                .add(this.waterUniforms.uPeakThreshold, 'value', 0, 2, 0.01)
+                .name('Peak Threshold')
+            waterFolder
+                .add(this.waterUniforms.uPeakTransition, 'value', 0, 1, 0.01)
+                .name('Peak Transition')
+            waterFolder
+                .add(this.waterUniforms.uTroughThreshold, 'value', -2, 0, 0.01)
+                .name('Trough Threshold')
+            waterFolder
+                .add(this.waterUniforms.uTroughTransition, 'value', 0, 1, 0.01)
+                .name('Trough Transition')
+            waterFolder
+                .add(this.waterUniforms.uFresnelScale, 'value', 0, 3, 0.01)
+                .name('Fresnel Scale')
+            waterFolder
+                .add(this.waterUniforms.uFresnelPower, 'value', 0, 5, 0.01)
+                .name('Fresnel Power')
+            // Color uniforms
+            waterFolder
+                .addColor(
+                    {
+                        Trough:
+                            '#' +
+                            this.waterUniforms.uTroughColor.value.getHexString(),
+                    },
+                    'Trough',
+                )
+                .name('Trough Color')
+                .onChange((v: string) => {
+                    this.waterUniforms.uTroughColor.value.set(v)
+                })
+            waterFolder
+                .addColor(
+                    {
+                        Surface:
+                            '#' +
+                            this.waterUniforms.uSurfaceColor.value.getHexString(),
+                    },
+                    'Surface',
+                )
+                .name('Surface Color')
+                .onChange((v: string) => {
+                    this.waterUniforms.uSurfaceColor.value.set(v)
+                })
+            waterFolder
+                .addColor(
+                    {
+                        Peak:
+                            '#' +
+                            this.waterUniforms.uPeakColor.value.getHexString(),
+                    },
+                    'Peak',
+                )
+                .name('Peak Color')
+                .onChange((v: string) => {
+                    this.waterUniforms.uPeakColor.value.set(v)
+                })
+        }
+        // --- END WATER FOLDER ---
     }
 
     private handleResize() {
@@ -540,6 +687,14 @@ export class AppOne {
 
     private startRenderLoop() {
         const animate = (time: number) => {
+            // Animate water shader
+            const water = this.scene.getObjectByName('Water') as
+                | Mesh
+                | undefined
+            if (water && (water.material as ShaderMaterial).uniforms?.uTime) {
+                ;(water.material as ShaderMaterial).uniforms.uTime.value =
+                    time * 0.001
+            }
             this.gameWorld.update(time)
             this.renderer.render(this.scene, this.camera)
             requestAnimationFrame(animate)
