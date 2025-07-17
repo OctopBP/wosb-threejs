@@ -36,7 +36,7 @@ export interface CameraConfig {
         bossPreview: CameraState
         cinematic: CameraState
     }
-    
+
     // Global camera settings
     global: {
         defaultFOV: number
@@ -50,7 +50,7 @@ export interface CameraConfig {
             distanceMultiplier: number
         }
     }
-    
+
     // Screen shake presets
     screenShakePresets: {
         light: {
@@ -74,7 +74,7 @@ export interface CameraConfig {
             duration: number
         }
     }
-    
+
     // Zoom presets
     zoomPresets: {
         close: {
@@ -109,8 +109,8 @@ export const defaultCameraConfig: CameraConfig = {
             screenShake: {
                 intensity: 0.1,
                 frequency: 10,
-                duration: 0.2
-            }
+                duration: 0.2,
+            },
         },
         enemyFocus: {
             name: 'enemyFocus',
@@ -121,8 +121,8 @@ export const defaultCameraConfig: CameraConfig = {
             transitionEasing: 'easeInOut',
             zoom: {
                 targetFOV: 35,
-                duration: 2.0
-            }
+                duration: 2.0,
+            },
         },
         bossPreview: {
             name: 'bossPreview',
@@ -134,12 +134,12 @@ export const defaultCameraConfig: CameraConfig = {
             screenShake: {
                 intensity: 0.3,
                 frequency: 8,
-                duration: 0.5
+                duration: 0.5,
             },
             zoom: {
                 targetFOV: 30,
-                duration: 3.0
-            }
+                duration: 3.0,
+            },
         },
         cinematic: {
             name: 'cinematic',
@@ -150,11 +150,11 @@ export const defaultCameraConfig: CameraConfig = {
             transitionEasing: 'easeInOut',
             zoom: {
                 targetFOV: 25,
-                duration: 4.0
-            }
-        }
+                duration: 4.0,
+            },
+        },
     },
-    
+
     global: {
         defaultFOV: 50,
         nearPlane: 0.1,
@@ -163,49 +163,49 @@ export const defaultCameraConfig: CameraConfig = {
         mobileAdjustments: {
             fovMultiplier: 1.1,
             heightOffset: 2,
-            distanceMultiplier: 1.2
-        }
+            distanceMultiplier: 1.2,
+        },
     },
-    
+
     screenShakePresets: {
         light: {
             intensity: 0.05,
             frequency: 15,
-            duration: 0.3
+            duration: 0.3,
         },
         medium: {
             intensity: 0.15,
             frequency: 12,
-            duration: 0.5
+            duration: 0.5,
         },
         heavy: {
             intensity: 0.25,
             frequency: 10,
-            duration: 0.8
+            duration: 0.8,
         },
         boss: {
             intensity: 0.4,
             frequency: 8,
-            duration: 1.2
-        }
+            duration: 1.2,
+        },
     },
-    
+
     zoomPresets: {
         close: {
             targetFOV: 35,
-            duration: 1.0
+            duration: 1.0,
         },
         medium: {
             targetFOV: 45,
-            duration: 1.5
+            duration: 1.5,
         },
         far: {
             targetFOV: 60,
-            duration: 1.0
+            duration: 1.0,
         },
         cinematic: {
             targetFOV: 25,
-            duration: 2.5
-        }
-    }
+            duration: 2.5,
+        },
+    },
 }

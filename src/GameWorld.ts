@@ -121,9 +121,11 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.newShipOfferUISystem) // 14. Handle new ship offer UI
-        this.world.addSystem(this.cameraSystem) // 15. Update camera system
-        this.world.addSystem(this.renderSystem) // 16. Render the results
+        this.world.addSystem(this.rangeIndicatorSystem) // 14. Update range indicator
+        this.world.addSystem(this.enemyArrowSystem) // 15. Update enemy arrows
+        this.world.addSystem(this.newShipOfferUISystem) // 16. Handle new ship offer UI
+        this.world.addSystem(this.cameraSystem) // 17. Update camera system
+        this.world.addSystem(this.renderSystem) // 18. Render the results
     }
 
     init(): void {

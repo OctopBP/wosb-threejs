@@ -131,7 +131,7 @@ export class AppOne {
 
         // Camera controls
         const cameraFolder = this.gui.addFolder('Camera')
-        
+
         // Camera state transitions
         cameraFolder
             .add(
@@ -151,9 +151,9 @@ export class AppOne {
                     cinematic: () => {
                         this.gameWorld.transitionToCameraState('cinematic')
                         console.log('🎥 Camera: Cinematic')
-                    }
+                    },
                 },
-                'playerFocus'
+                'playerFocus',
             )
             .name('Player Focus')
 
@@ -163,9 +163,9 @@ export class AppOne {
                     enemyFocus: () => {
                         this.gameWorld.transitionToCameraState('enemyFocus')
                         console.log('🎥 Camera: Enemy Focus')
-                    }
+                    },
                 },
-                'enemyFocus'
+                'enemyFocus',
             )
             .name('Enemy Focus')
 
@@ -175,9 +175,9 @@ export class AppOne {
                     bossPreview: () => {
                         this.gameWorld.transitionToCameraState('bossPreview')
                         console.log('🎥 Camera: Boss Preview')
-                    }
+                    },
                 },
-                'bossPreview'
+                'bossPreview',
             )
             .name('Boss Preview')
 
@@ -187,9 +187,9 @@ export class AppOne {
                     cinematic: () => {
                         this.gameWorld.transitionToCameraState('cinematic')
                         console.log('🎥 Camera: Cinematic')
-                    }
+                    },
                 },
-                'cinematic'
+                'cinematic',
             )
             .name('Cinematic')
 
@@ -212,9 +212,9 @@ export class AppOne {
                     bossShake: () => {
                         this.gameWorld.triggerScreenShakePreset('boss')
                         console.log('📳 Screen Shake: Boss')
-                    }
+                    },
                 },
-                'lightShake'
+                'lightShake',
             )
             .name('Light Shake')
 
@@ -224,9 +224,9 @@ export class AppOne {
                     mediumShake: () => {
                         this.gameWorld.triggerScreenShakePreset('medium')
                         console.log('📳 Screen Shake: Medium')
-                    }
+                    },
                 },
-                'mediumShake'
+                'mediumShake',
             )
             .name('Medium Shake')
 
@@ -236,9 +236,9 @@ export class AppOne {
                     heavyShake: () => {
                         this.gameWorld.triggerScreenShakePreset('heavy')
                         console.log('📳 Screen Shake: Heavy')
-                    }
+                    },
                 },
-                'heavyShake'
+                'heavyShake',
             )
             .name('Heavy Shake')
 
@@ -248,9 +248,9 @@ export class AppOne {
                     bossShake: () => {
                         this.gameWorld.triggerScreenShakePreset('boss')
                         console.log('📳 Screen Shake: Boss')
-                    }
+                    },
                 },
-                'bossShake'
+                'bossShake',
             )
             .name('Boss Shake')
 
@@ -273,9 +273,9 @@ export class AppOne {
                     cinematicZoom: () => {
                         this.gameWorld.triggerZoomPreset('cinematic')
                         console.log('🔍 Zoom: Cinematic')
-                    }
+                    },
                 },
-                'closeZoom'
+                'closeZoom',
             )
             .name('Close Zoom')
 
@@ -285,9 +285,9 @@ export class AppOne {
                     mediumZoom: () => {
                         this.gameWorld.triggerZoomPreset('medium')
                         console.log('🔍 Zoom: Medium')
-                    }
+                    },
                 },
-                'mediumZoom'
+                'mediumZoom',
             )
             .name('Medium Zoom')
 
@@ -297,9 +297,9 @@ export class AppOne {
                     farZoom: () => {
                         this.gameWorld.triggerZoomPreset('far')
                         console.log('🔍 Zoom: Far')
-                    }
+                    },
                 },
-                'farZoom'
+                'farZoom',
             )
             .name('Far Zoom')
 
@@ -309,9 +309,9 @@ export class AppOne {
                     cinematicZoom: () => {
                         this.gameWorld.triggerZoomPreset('cinematic')
                         console.log('🔍 Zoom: Cinematic')
-                    }
+                    },
                 },
-                'cinematicZoom'
+                'cinematicZoom',
             )
             .name('Cinematic Zoom')
 
@@ -326,10 +326,16 @@ export class AppOne {
         const updateCameraStatus = () => {
             const currentState = this.gameWorld.getCurrentCameraState()
             if (currentState) {
-                cameraStatus.state = currentState === 'playerFocus' ? 'Player Focus' :
-                                   currentState === 'enemyFocus' ? 'Enemy Focus' :
-                                   currentState === 'bossPreview' ? 'Boss Preview' :
-                                   currentState === 'cinematic' ? 'Cinematic' : currentState
+                cameraStatus.state =
+                    currentState === 'playerFocus'
+                        ? 'Player Focus'
+                        : currentState === 'enemyFocus'
+                          ? 'Enemy Focus'
+                          : currentState === 'bossPreview'
+                            ? 'Boss Preview'
+                            : currentState === 'cinematic'
+                              ? 'Cinematic'
+                              : currentState
             }
             cameraStatusController.updateDisplay()
         }
