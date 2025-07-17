@@ -1,38 +1,29 @@
-import { 
-    System, 
-    Emitter, 
-    Rate, 
-    Span, 
-    Position, 
-    Mass, 
-    VectorVelocity, 
-    Force, 
-    Life, 
-    Scale, 
-    Color, 
-    Alpha, 
-    Body, 
+import type { Scene, Texture } from 'three'
+import { CanvasTexture, TextureLoader, Vector3 } from 'three'
+import {
+    Alpha,
+    Body,
+    BodySprite,
+    Color,
+    Emitter,
+    Force,
+    Life,
+    Mass,
+    Position,
+    Rate,
+    Scale,
+    Span,
     SpriteRenderer,
-    BodySprite
+    System,
+    VectorVelocity,
 } from 'three-nebula'
-import { 
-    Scene, 
-    Vector3, 
-    Texture, 
-    TextureLoader, 
-    AdditiveBlending,
-    CanvasTexture,
-    SpriteMaterial,
-    Sprite
-} from 'three'
+import type { ParticleSystemConfig } from '../config/ParticleConfig'
+import { PARTICLE_PRESETS } from '../config/ParticleConfig'
 import type { ParticleComponent, PositionComponent } from '../ecs/Component'
 import type { Entity } from '../ecs/Entity'
 import { System as ECSSystem } from '../ecs/System'
 import type { World } from '../ecs/World'
-import type { ParticleSystemConfig } from '../config/ParticleConfig'
-import { PARTICLE_PRESETS } from '../config/ParticleConfig'
 import { createSmokeTexture, createSparkTexture } from '../utils/ParticleUtils'
-
 export class ParticleSystem extends ECSSystem {
     private scene: Scene
     private nebulaSystem: System
@@ -48,7 +39,7 @@ export class ParticleSystem extends ECSSystem {
         this.scene = scene
         this.nebulaSystem = new System()
         this.nebulaSystem.addRenderer(new SpriteRenderer(this.scene))
-        
+
         // Create default textures
         this.shapeTexture = this.createShapeTexture()
         this.smokeTexture = createSmokeTexture(64)
@@ -63,16 +54,16 @@ export class ParticleSystem extends ECSSystem {
         canvas.width = 64
         canvas.height = 64
         const context = canvas.getContext('2d')!
-        
+
         // Create radial gradient for soft circle
         const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32)
         gradient.addColorStop(0, 'rgba(255, 255, 255, 1)')
         gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)')
         gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
-        
+
         context.fillStyle = gradient
         context.fillRect(0, 0, 64, 64)
-        
+
         const texture = new CanvasTexture(canvas)
         return texture
     }
@@ -93,7 +84,7 @@ export class ParticleSystem extends ECSSystem {
                     resolve(texture)
                 },
                 undefined,
-                reject
+                reject,
             )
         })
     }
@@ -102,25 +93,36 @@ export class ParticleSystem extends ECSSystem {
      * Create a particle system from configuration
      */
     async createParticleSystem(
-        id: string, 
-        config: ParticleSystemConfig, 
+        id: string,
+        config: ParticleSystemConfig,
         position: Vector3,
-        presetName?: string
+        presetName?: string,
     ): Promise<Emitter> {
         const emitter = new Emitter()
 
         // Set position
         emitter.addInitialize(new Position(position))
         emitter.addInitialize(new Mass(1))
-        
+
         // Set velocity
         if (config.velocity) {
             const velSpread = config.velocitySpread || { x: 0, y: 0, z: 0 }
-            emitter.addInitialize(new VectorVelocity(
-                new Span(config.velocity.x - velSpread.x, config.velocity.x + velSpread.x),
-                new Span(config.velocity.y - velSpread.y, config.velocity.y + velSpread.y),
-                new Span(config.velocity.z - velSpread.z, config.velocity.z + velSpread.z)
-            ))
+            emitter.addInitialize(
+                new VectorVelocity(
+                    new Span(
+                        config.velocity.x - velSpread.x,
+                        config.velocity.x + velSpread.x,
+                    ),
+                    new Span(
+                        config.velocity.y - velSpread.y,
+                        config.velocity.y + velSpread.y,
+                    ),
+                    new Span(
+                        config.velocity.z - velSpread.z,
+                        config.velocity.z + velSpread.z,
+                    ),
+                ),
+            )
         }
 
         // Set life
@@ -128,18 +130,34 @@ export class ParticleSystem extends ECSSystem {
 
         // Set visual properties
         emitter.addBehaviour(new Scale(config.size.start, config.size.end))
-        emitter.addBehaviour(new Color(
-            config.color.start.r, config.color.start.g, config.color.start.b,
-            config.color.end.r, config.color.end.g, config.color.end.b
-        ))
-        emitter.addBehaviour(new Alpha(config.color.start.a, config.color.end.a))
+        emitter.addBehaviour(
+            new Color(
+                config.color.start.r,
+                config.color.start.g,
+                config.color.start.b,
+                config.color.end.r,
+                config.color.end.g,
+                config.color.end.b,
+            ),
+        )
+        emitter.addBehaviour(
+            new Alpha(config.color.start.a, config.color.end.a),
+        )
 
         // Add physics
         if (config.gravity) {
-            emitter.addBehaviour(new Force(config.gravity.x, config.gravity.y, config.gravity.z))
+            emitter.addBehaviour(
+                new Force(config.gravity.x, config.gravity.y, config.gravity.z),
+            )
         }
         if (config.acceleration) {
-            emitter.addBehaviour(new Force(config.acceleration.x, config.acceleration.y, config.acceleration.z))
+            emitter.addBehaviour(
+                new Force(
+                    config.acceleration.x,
+                    config.acceleration.y,
+                    config.acceleration.z,
+                ),
+            )
         }
 
         // Set rendering
@@ -148,25 +166,31 @@ export class ParticleSystem extends ECSSystem {
         // Set emission rate
         if (config.emissionRate) {
             // Constant emission
-            emitter.setRate(new Rate(
-                new Span(config.emissionRate, config.emissionRate),
-                new Span(0.1, 0.1)
-            ))
+            emitter.setRate(
+                new Rate(
+                    new Span(config.emissionRate, config.emissionRate),
+                    new Span(0.1, 0.1),
+                ),
+            )
         } else if (config.burstCount) {
             // Burst emission
-            emitter.setRate(new Rate(
-                new Span(config.burstCount, config.burstCount),
-                new Span(0.01, 0.01)
-            ))
+            emitter.setRate(
+                new Rate(
+                    new Span(config.burstCount, config.burstCount),
+                    new Span(0.01, 0.01),
+                ),
+            )
         }
 
         // Add position spread if specified
         if (config.positionSpread) {
-            emitter.addInitialize(new Position(
-                new Span(-config.positionSpread.x, config.positionSpread.x),
-                new Span(-config.positionSpread.y, config.positionSpread.y),
-                new Span(-config.positionSpread.z, config.positionSpread.z)
-            ))
+            emitter.addInitialize(
+                new Position(
+                    new Span(-config.positionSpread.x, config.positionSpread.x),
+                    new Span(-config.positionSpread.y, config.positionSpread.y),
+                    new Span(-config.positionSpread.z, config.positionSpread.z),
+                ),
+            )
         }
 
         this.particleSystems.set(id, emitter)
@@ -178,7 +202,11 @@ export class ParticleSystem extends ECSSystem {
     /**
      * Setup the renderer based on config
      */
-    private async setupRenderer(emitter: Emitter, config: ParticleSystemConfig, presetName?: string): Promise<void> {
+    private async setupRenderer(
+        emitter: Emitter,
+        config: ParticleSystemConfig,
+        presetName?: string,
+    ): Promise<void> {
         let texture: Texture
 
         switch (config.renderType) {
@@ -187,7 +215,11 @@ export class ParticleSystem extends ECSSystem {
                     texture = await this.loadTexture(config.texture)
                 } else {
                     // Choose texture based on preset name
-                    if (presetName?.includes('muzzle') || presetName?.includes('flash') || presetName?.includes('spark')) {
+                    if (
+                        presetName?.includes('muzzle') ||
+                        presetName?.includes('flash') ||
+                        presetName?.includes('spark')
+                    ) {
                         texture = this.sparkTexture
                     } else {
                         texture = this.smokeTexture
@@ -210,7 +242,9 @@ export class ParticleSystem extends ECSSystem {
 
             case 'shape':
             default:
-                emitter.addInitialize(new Body(new BodySprite(this.shapeTexture)))
+                emitter.addInitialize(
+                    new Body(new BodySprite(this.shapeTexture)),
+                )
                 break
         }
     }
@@ -219,9 +253,9 @@ export class ParticleSystem extends ECSSystem {
      * Create a particle effect at a specific position using a preset
      */
     createEffect(
-        presetName: string, 
-        position: Vector3, 
-        entityId?: number
+        presetName: string,
+        position: Vector3,
+        entityId?: number,
     ): string {
         const config = PARTICLE_PRESETS[presetName]
         if (!config) {
@@ -230,7 +264,7 @@ export class ParticleSystem extends ECSSystem {
         }
 
         const systemId = `${presetName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-        
+
         // Create particle entity
         let particleEntity: Entity
         if (entityId) {
@@ -245,7 +279,7 @@ export class ParticleSystem extends ECSSystem {
             systemId,
             emissionType: config.emissionRate ? 'constant' : 'burst',
             isActive: true,
-            autoRemove: config.autoRemove
+            autoRemove: config.autoRemove,
         }
         particleEntity.addComponent(particleComp)
 
@@ -258,15 +292,17 @@ export class ParticleSystem extends ECSSystem {
                 z: position.z,
                 rotationX: 0,
                 rotationY: 0,
-                rotationZ: 0
+                rotationZ: 0,
             }
             particleEntity.addComponent(positionComp)
         }
 
         // Create the actual particle system
-        this.createParticleSystem(systemId, config, position, presetName).then((emitter) => {
-            emitter.emit()
-        })
+        this.createParticleSystem(systemId, config, position, presetName).then(
+            (emitter) => {
+                emitter.emit()
+            },
+        )
 
         return systemId
     }
@@ -276,10 +312,13 @@ export class ParticleSystem extends ECSSystem {
      */
     createGunSmoke(position: Vector3, direction?: Vector3): string {
         const config = { ...PARTICLE_PRESETS.gunSmoke }
-        
+
         // Adjust velocity based on direction if provided
         if (direction) {
-            config.velocity = direction.clone().multiplyScalar(2).add(new Vector3(0, 1, 0))
+            config.velocity = direction
+                .clone()
+                .multiplyScalar(2)
+                .add(new Vector3(0, 1, 0))
         }
 
         return this.createEffect('gunSmoke', position)
@@ -290,7 +329,7 @@ export class ParticleSystem extends ECSSystem {
      */
     createMuzzleFlash(position: Vector3, direction?: Vector3): string {
         const config = { ...PARTICLE_PRESETS.muzzleFlash }
-        
+
         if (direction) {
             config.velocity = direction.clone().multiplyScalar(3)
         }
