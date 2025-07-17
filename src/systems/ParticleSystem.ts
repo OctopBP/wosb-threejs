@@ -1,49 +1,59 @@
-import type { Scene, Texture } from 'three'
-import { CanvasTexture, TextureLoader, Vector3 } from 'three'
-import {
-    Alpha,
-    Body,
-    BodySprite,
-    Color,
-    Emitter,
-    Force,
-    Life,
-    Mass,
-    Position,
-    Rate,
-    Scale,
-    Span,
-    SpriteRenderer,
-    System,
-    VectorVelocity,
-} from 'three-nebula'
-import type { ParticleSystemConfig } from '../config/ParticleConfig'
-import { PARTICLE_PRESETS } from '../config/ParticleConfig'
+import * as THREE from 'three'
+import { 
+    Scene, 
+    Vector3, 
+    Texture, 
+    TextureLoader, 
+    AdditiveBlending,
+    CanvasTexture,
+    SpriteMaterial,
+    Sprite
+} from 'three'
 import type { ParticleComponent, PositionComponent } from '../ecs/Component'
 import type { Entity } from '../ecs/Entity'
 import { System as ECSSystem } from '../ecs/System'
 import type { World } from '../ecs/World'
+import type { ParticleSystemConfig } from '../config/ParticleConfig'
+import { PARTICLE_PRESETS } from '../config/ParticleConfig'
 import { createSmokeTexture, createSparkTexture } from '../utils/ParticleUtils'
+
 export class ParticleSystem extends ECSSystem {
     private scene: Scene
-    private nebulaSystem: System
-    private particleSystems: Map<string, Emitter> = new Map()
+    private nebulaSystem: any
+    private particleSystems: Map<string, any> = new Map()
     private textureLoader: TextureLoader = new TextureLoader()
     private textureCache: Map<string, Texture> = new Map()
     private shapeTexture: CanvasTexture
     private smokeTexture: CanvasTexture
     private sparkTexture: CanvasTexture
+    private Nebula: any
 
     constructor(world: World, scene: Scene) {
         super(world, ['particle', 'position'])
         this.scene = scene
-        this.nebulaSystem = new System()
-        this.nebulaSystem.addRenderer(new SpriteRenderer(this.scene))
-
+        
+        // Make THREE available globally for three-nebula
+        if (typeof window !== 'undefined') {
+            (window as any).THREE = THREE
+        }
+        
+        // Import three-nebula dynamically
+        this.initializeNebula()
+        
         // Create default textures
         this.shapeTexture = this.createShapeTexture()
         this.smokeTexture = createSmokeTexture(64)
         this.sparkTexture = createSparkTexture(32)
+    }
+
+    private async initializeNebula() {
+        try {
+            this.Nebula = await import('three-nebula')
+            this.nebulaSystem = new this.Nebula.System()
+            this.nebulaSystem.addRenderer(new this.Nebula.SpriteRenderer(this.scene))
+        } catch (error) {
+            console.error('Failed to initialize three-nebula:', error)
+        }
     }
 
     /**
@@ -84,7 +94,7 @@ export class ParticleSystem extends ECSSystem {
                     resolve(texture)
                 },
                 undefined,
-                reject,
+                reject
             )
         })
     }
@@ -96,68 +106,46 @@ export class ParticleSystem extends ECSSystem {
         id: string,
         config: ParticleSystemConfig,
         position: Vector3,
-        presetName?: string,
-    ): Promise<Emitter> {
-        const emitter = new Emitter()
+        presetName?: string
+    ): Promise<any> {
+        if (!this.Nebula) {
+            console.warn('Nebula not initialized yet')
+            return null
+        }
+
+        const emitter = new this.Nebula.Emitter()
 
         // Set position
-        emitter.addInitialize(new Position(position))
-        emitter.addInitialize(new Mass(1))
-
+        emitter.addInitialize(new this.Nebula.Position(position))
+        emitter.addInitialize(new this.Nebula.Mass(1))
+        
         // Set velocity
         if (config.velocity) {
             const velSpread = config.velocitySpread || { x: 0, y: 0, z: 0 }
-            emitter.addInitialize(
-                new VectorVelocity(
-                    new Span(
-                        config.velocity.x - velSpread.x,
-                        config.velocity.x + velSpread.x,
-                    ),
-                    new Span(
-                        config.velocity.y - velSpread.y,
-                        config.velocity.y + velSpread.y,
-                    ),
-                    new Span(
-                        config.velocity.z - velSpread.z,
-                        config.velocity.z + velSpread.z,
-                    ),
-                ),
-            )
+            emitter.addInitialize(new this.Nebula.VectorVelocity(
+                new this.Nebula.Span(config.velocity.x - velSpread.x, config.velocity.x + velSpread.x),
+                new this.Nebula.Span(config.velocity.y - velSpread.y, config.velocity.y + velSpread.y),
+                new this.Nebula.Span(config.velocity.z - velSpread.z, config.velocity.z + velSpread.z)
+            ))
         }
 
         // Set life
-        emitter.addInitialize(new Life(config.life.min, config.life.max))
+        emitter.addInitialize(new this.Nebula.Life(config.life.min, config.life.max))
 
         // Set visual properties
-        emitter.addBehaviour(new Scale(config.size.start, config.size.end))
-        emitter.addBehaviour(
-            new Color(
-                config.color.start.r,
-                config.color.start.g,
-                config.color.start.b,
-                config.color.end.r,
-                config.color.end.g,
-                config.color.end.b,
-            ),
-        )
-        emitter.addBehaviour(
-            new Alpha(config.color.start.a, config.color.end.a),
-        )
+        emitter.addBehaviour(new this.Nebula.Scale(config.size.start, config.size.end))
+        emitter.addBehaviour(new this.Nebula.Color(
+            config.color.start.r, config.color.start.g, config.color.start.b,
+            config.color.end.r, config.color.end.g, config.color.end.b
+        ))
+        emitter.addBehaviour(new this.Nebula.Alpha(config.color.start.a, config.color.end.a))
 
         // Add physics
         if (config.gravity) {
-            emitter.addBehaviour(
-                new Force(config.gravity.x, config.gravity.y, config.gravity.z),
-            )
+            emitter.addBehaviour(new this.Nebula.Force(config.gravity.x, config.gravity.y, config.gravity.z))
         }
         if (config.acceleration) {
-            emitter.addBehaviour(
-                new Force(
-                    config.acceleration.x,
-                    config.acceleration.y,
-                    config.acceleration.z,
-                ),
-            )
+            emitter.addBehaviour(new this.Nebula.Force(config.acceleration.x, config.acceleration.y, config.acceleration.z))
         }
 
         // Set rendering
@@ -166,31 +154,25 @@ export class ParticleSystem extends ECSSystem {
         // Set emission rate
         if (config.emissionRate) {
             // Constant emission
-            emitter.setRate(
-                new Rate(
-                    new Span(config.emissionRate, config.emissionRate),
-                    new Span(0.1, 0.1),
-                ),
-            )
+            emitter.setRate(new this.Nebula.Rate(
+                new this.Nebula.Span(config.emissionRate, config.emissionRate),
+                new this.Nebula.Span(0.1, 0.1)
+            ))
         } else if (config.burstCount) {
             // Burst emission
-            emitter.setRate(
-                new Rate(
-                    new Span(config.burstCount, config.burstCount),
-                    new Span(0.01, 0.01),
-                ),
-            )
+            emitter.setRate(new this.Nebula.Rate(
+                new this.Nebula.Span(config.burstCount, config.burstCount),
+                new this.Nebula.Span(0.01, 0.01)
+            ))
         }
 
         // Add position spread if specified
         if (config.positionSpread) {
-            emitter.addInitialize(
-                new Position(
-                    new Span(-config.positionSpread.x, config.positionSpread.x),
-                    new Span(-config.positionSpread.y, config.positionSpread.y),
-                    new Span(-config.positionSpread.z, config.positionSpread.z),
-                ),
-            )
+            emitter.addInitialize(new this.Nebula.Position(
+                new this.Nebula.Span(-config.positionSpread.x, config.positionSpread.x),
+                new this.Nebula.Span(-config.positionSpread.y, config.positionSpread.y),
+                new this.Nebula.Span(-config.positionSpread.z, config.positionSpread.z)
+            ))
         }
 
         this.particleSystems.set(id, emitter)
@@ -202,11 +184,9 @@ export class ParticleSystem extends ECSSystem {
     /**
      * Setup the renderer based on config
      */
-    private async setupRenderer(
-        emitter: Emitter,
-        config: ParticleSystemConfig,
-        presetName?: string,
-    ): Promise<void> {
+    private async setupRenderer(emitter: any, config: ParticleSystemConfig, presetName?: string): Promise<void> {
+        if (!this.Nebula) return
+
         let texture: Texture
 
         switch (config.renderType) {
@@ -215,17 +195,13 @@ export class ParticleSystem extends ECSSystem {
                     texture = await this.loadTexture(config.texture)
                 } else {
                     // Choose texture based on preset name
-                    if (
-                        presetName?.includes('muzzle') ||
-                        presetName?.includes('flash') ||
-                        presetName?.includes('spark')
-                    ) {
+                    if (presetName?.includes('muzzle') || presetName?.includes('flash') || presetName?.includes('spark')) {
                         texture = this.sparkTexture
                     } else {
                         texture = this.smokeTexture
                     }
                 }
-                emitter.addInitialize(new Body(new BodySprite(texture)))
+                emitter.addInitialize(new this.Nebula.Body(new this.Nebula.BodySprite(texture)))
                 break
 
             case 'spritesheet':
@@ -233,18 +209,16 @@ export class ParticleSystem extends ECSSystem {
                     texture = await this.loadTexture(config.texture)
                     // Note: three-nebula doesn't have built-in spritesheet support
                     // This would need custom implementation or using multiple textures
-                    emitter.addInitialize(new Body(new BodySprite(texture)))
+                    emitter.addInitialize(new this.Nebula.Body(new this.Nebula.BodySprite(texture)))
                 } else {
                     texture = this.smokeTexture
-                    emitter.addInitialize(new Body(new BodySprite(texture)))
+                    emitter.addInitialize(new this.Nebula.Body(new this.Nebula.BodySprite(texture)))
                 }
                 break
 
             case 'shape':
             default:
-                emitter.addInitialize(
-                    new Body(new BodySprite(this.shapeTexture)),
-                )
+                emitter.addInitialize(new this.Nebula.Body(new this.Nebula.BodySprite(this.shapeTexture)))
                 break
         }
     }
@@ -253,10 +227,15 @@ export class ParticleSystem extends ECSSystem {
      * Create a particle effect at a specific position using a preset
      */
     createEffect(
-        presetName: string,
-        position: Vector3,
-        entityId?: number,
+        presetName: string, 
+        position: Vector3, 
+        entityId?: number
     ): string {
+        if (!this.Nebula) {
+            console.warn('Nebula not initialized yet, cannot create effect')
+            return ''
+        }
+
         const config = PARTICLE_PRESETS[presetName]
         if (!config) {
             console.warn(`Particle preset '${presetName}' not found`)
@@ -264,7 +243,7 @@ export class ParticleSystem extends ECSSystem {
         }
 
         const systemId = `${presetName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
+        
         // Create particle entity
         let particleEntity: Entity
         if (entityId) {
@@ -279,7 +258,7 @@ export class ParticleSystem extends ECSSystem {
             systemId,
             emissionType: config.emissionRate ? 'constant' : 'burst',
             isActive: true,
-            autoRemove: config.autoRemove,
+            autoRemove: config.autoRemove
         }
         particleEntity.addComponent(particleComp)
 
@@ -292,17 +271,17 @@ export class ParticleSystem extends ECSSystem {
                 z: position.z,
                 rotationX: 0,
                 rotationY: 0,
-                rotationZ: 0,
+                rotationZ: 0
             }
             particleEntity.addComponent(positionComp)
         }
 
         // Create the actual particle system
-        this.createParticleSystem(systemId, config, position, presetName).then(
-            (emitter) => {
+        this.createParticleSystem(systemId, config, position, presetName).then((emitter) => {
+            if (emitter) {
                 emitter.emit()
-            },
-        )
+            }
+        })
 
         return systemId
     }
@@ -312,13 +291,10 @@ export class ParticleSystem extends ECSSystem {
      */
     createGunSmoke(position: Vector3, direction?: Vector3): string {
         const config = { ...PARTICLE_PRESETS.gunSmoke }
-
+        
         // Adjust velocity based on direction if provided
         if (direction) {
-            config.velocity = direction
-                .clone()
-                .multiplyScalar(2)
-                .add(new Vector3(0, 1, 0))
+            config.velocity = direction.clone().multiplyScalar(2).add(new Vector3(0, 1, 0))
         }
 
         return this.createEffect('gunSmoke', position)
@@ -329,7 +305,7 @@ export class ParticleSystem extends ECSSystem {
      */
     createMuzzleFlash(position: Vector3, direction?: Vector3): string {
         const config = { ...PARTICLE_PRESETS.muzzleFlash }
-
+        
         if (direction) {
             config.velocity = direction.clone().multiplyScalar(3)
         }
