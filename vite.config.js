@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
                     manualChunks: {
                         // Separate Three.js into its own chunk for better caching
                         three: ['three'],
+                        particles: ['three-nebula'],
                         vendor: ['lil-gui'],
                     },
                 },
@@ -44,7 +45,7 @@ export default defineConfig(({ mode }) => {
         optimizeDeps: {
             // Mark three.js as external for CDN loading (optional)
             // force: true,
-            include: ['three', 'lil-gui'],
+            include: ['three', 'three-nebula', 'lil-gui'],
         },
 
         plugins: [

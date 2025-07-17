@@ -31,6 +31,7 @@ import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -60,6 +61,7 @@ export class GameWorld {
     private cameraSystem: CameraSystem
     private rangeIndicatorSystem: RangeIndicatorSystem
     private enemyArrowSystem: EnemyArrowSystem
+    private particleSystem: ParticleSystem
     private playerEntity: Entity | null = null
     private lastTime: number = 0
 
@@ -99,6 +101,7 @@ export class GameWorld {
         this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
+        this.particleSystem = new ParticleSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.gameStateSystem.setLevelingSystem(this.levelingSystem)
@@ -123,9 +126,10 @@ export class GameWorld {
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
         this.world.addSystem(this.rangeIndicatorSystem) // 14. Update range indicator
         this.world.addSystem(this.enemyArrowSystem) // 15. Update enemy arrows
-        this.world.addSystem(this.newShipOfferUISystem) // 16. Handle new ship offer UI
-        this.world.addSystem(this.cameraSystem) // 17. Update camera system
-        this.world.addSystem(this.renderSystem) // 18. Render the results
+        this.world.addSystem(this.particleSystem) // 16. Update particle effects
+        this.world.addSystem(this.newShipOfferUISystem) // 17. Handle new ship offer UI
+        this.world.addSystem(this.cameraSystem) // 18. Update camera system
+        this.world.addSystem(this.renderSystem) // 19. Render the results
     }
 
     init(): void {
@@ -167,6 +171,11 @@ export class GameWorld {
     // Method to access GameStateSystem for configuration changes
     getGameStateSystem(): GameStateSystem {
         return this.gameStateSystem
+    }
+
+    // Method to access ParticleSystem for creating effects
+    getParticleSystem(): ParticleSystem {
+        return this.particleSystem
     }
 
     // Method to change game difficulty
@@ -479,6 +488,7 @@ export class GameWorld {
     }
 
     cleanup(): void {
+        this.particleSystem.cleanup()
         this.world.clear()
         this.playerEntity = null
     }

@@ -281,3 +281,14 @@ export interface BossComponent extends Component {
     damagePerShot: number // How much damage boss deals per shot
     scale: number // Visual scale multiplier
 }
+
+// Particle component for three-nebula particle effects
+export interface ParticleComponent extends Component {
+    type: 'particle'
+    systemType: 'explosion' | 'thrust' | 'muzzleFlash' | 'impact' | 'damage' | 'death'
+    active: boolean
+    duration?: number // Optional duration for temporary effects
+    intensity?: number // Intensity multiplier (0-1)
+    autoDestroy?: boolean // Whether to automatically destroy when finished
+    startTime?: number // When the effect started (for duration tracking)
+}

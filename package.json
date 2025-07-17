@@ -34,8 +34,10 @@
         ]
     },
     "dependencies": {
-        "three": "^0.170.0",
+        "@babel/runtime": "^7.27.6",
         "@types/three": "^0.170.0",
-        "lil-gui": "^0.20.0"
+        "lil-gui": "^0.20.0",
+        "three": "^0.170.0",
+        "three-nebula": "^10.0.3"
     }
 }
