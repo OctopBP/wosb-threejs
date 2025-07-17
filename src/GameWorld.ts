@@ -39,6 +39,7 @@ import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
+import { ParticleSystem } from './systems/ParticleSystem'
 export class GameWorld {
     private world: World
     private inputSystem: InputSystem
@@ -47,6 +48,7 @@ export class GameWorld {
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
     private weaponSystem: WeaponSystem
+    private particleSystem: ParticleSystem
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
@@ -82,6 +84,7 @@ export class GameWorld {
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
+        this.particleSystem = new ParticleSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
@@ -115,17 +118,21 @@ export class GameWorld {
         this.world.addSystem(this.accelerationSystem) // 5. Apply acceleration/deceleration
         this.world.addSystem(this.movementSystem) // 6. Apply velocity to position (ships only)
         this.world.addSystem(this.weaponSystem) // 7. Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // 8. Move projectiles with gravity
-        this.world.addSystem(this.projectileSystem) // 9. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 10. Check collisions and apply damage
-        this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.rangeIndicatorSystem) // 14. Update range indicator
-        this.world.addSystem(this.enemyArrowSystem) // 15. Update enemy arrows
-        this.world.addSystem(this.newShipOfferUISystem) // 16. Handle new ship offer UI
-        this.world.addSystem(this.cameraSystem) // 17. Update camera system
-        this.world.addSystem(this.renderSystem) // 18. Render the results
+        this.world.addSystem(this.particleSystem) // 8. Update particle effects
+        this.world.addSystem(this.projectileMovementSystem) // 9. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 10. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 11. Check collisions and apply damage
+        this.world.addSystem(this.levelingSystem) // 12. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 13. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 14. Update enemy health UI
+        this.world.addSystem(this.rangeIndicatorSystem) // 15. Update range indicator
+        this.world.addSystem(this.enemyArrowSystem) // 16. Update enemy arrows
+        this.world.addSystem(this.newShipOfferUISystem) // 17. Handle new ship offer UI
+        this.world.addSystem(this.cameraSystem) // 18. Update camera system
+        this.world.addSystem(this.renderSystem) // 19. Render the results
+
+        // Connect systems that need references to each other
+        this.weaponSystem.setParticleSystem(this.particleSystem)
     }
 
     init(): void {
@@ -387,6 +394,11 @@ export class GameWorld {
     // Method to enable/disable auto-targeting weapon debug logging
     setAutoTargetingDebug(enabled: boolean): void {
         this.weaponSystem.setAutoTargetingDebug(enabled)
+    }
+
+    // Get the particle system for creating effects
+    getParticleSystem(): ParticleSystem {
+        return this.particleSystem
     }
 
     // Camera system methods

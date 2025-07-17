@@ -1,4 +1,5 @@
 import type { Scene } from 'three'
+import { Vector3 } from 'three'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
     PositionComponent,
@@ -10,14 +11,21 @@ import type {
 import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import type { ParticleSystem } from './ParticleSystem'
 
 export class WeaponSystem extends System {
     private scene: Scene
     private debugAutoTargeting: boolean = false
+    private particleSystem: ParticleSystem | null = null
 
     constructor(world: World, scene: Scene) {
         super(world, ['weapon', 'position'])
         this.scene = scene
+    }
+
+    // Set the particle system reference for creating effects
+    setParticleSystem(particleSystem: ParticleSystem): void {
+        this.particleSystem = particleSystem
     }
 
     // Method to enable/disable debug logging for auto-targeting weapons
@@ -271,6 +279,22 @@ export class WeaponSystem extends System {
             upgrades: {},
         }
         projectile.addComponent(renderable)
+
+        // Create gun smoke and muzzle flash particle effects
+        if (this.particleSystem) {
+            const gunPosition = new Vector3(
+                projectilePosition.x,
+                projectilePosition.y, 
+                projectilePosition.z
+            )
+            const direction = new Vector3(forwardX, 0, forwardZ)
+            
+            // Create gun smoke effect
+            this.particleSystem.createGunSmoke(gunPosition, direction)
+            
+            // Create muzzle flash effect
+            this.particleSystem.createMuzzleFlash(gunPosition, direction)
+        }
     }
 
     private fireProjectileToTarget(
@@ -343,5 +367,21 @@ export class WeaponSystem extends System {
             upgrades: {},
         }
         projectile.addComponent(renderable)
+
+        // Create gun smoke and muzzle flash particle effects
+        if (this.particleSystem) {
+            const gunPosition = new Vector3(
+                projectilePosition.x,
+                projectilePosition.y, 
+                projectilePosition.z
+            )
+            const direction = new Vector3(forwardX, 0, forwardZ)
+            
+            // Create gun smoke effect
+            this.particleSystem.createGunSmoke(gunPosition, direction)
+            
+            // Create muzzle flash effect
+            this.particleSystem.createMuzzleFlash(gunPosition, direction)
+        }
     }
 }

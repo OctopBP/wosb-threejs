@@ -281,3 +281,13 @@ export interface BossComponent extends Component {
     damagePerShot: number // How much damage boss deals per shot
     scale: number // Visual scale multiplier
 }
+
+// Particle component for particle effects
+export interface ParticleComponent extends Component {
+    type: 'particle'
+    systemId: string // Unique identifier for the particle system
+    emissionType: 'burst' | 'constant' // Type of emission
+    isActive: boolean // Whether the system is currently emitting
+    lifetime?: number // For burst systems, how long they should live
+    autoRemove: boolean // Whether to automatically remove the entity when system is dead
+}
