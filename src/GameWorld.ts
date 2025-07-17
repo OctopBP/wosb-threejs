@@ -38,7 +38,6 @@ import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
-import { VisualGuidanceSystem } from './systems/VisualGuidanceSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 export class GameWorld {
     private world: World
@@ -59,7 +58,6 @@ export class GameWorld {
     private enemyHealthUISystem: EnemyHealthUISystem
     private newShipOfferUISystem: NewShipOfferUISystem
     private cameraSystem: CameraSystem
-    private visualGuidanceSystem: VisualGuidanceSystem
     private rangeIndicatorSystem: RangeIndicatorSystem
     private enemyArrowSystem: EnemyArrowSystem
     private playerEntity: Entity | null = null
@@ -99,11 +97,6 @@ export class GameWorld {
         )
         this.newShipOfferUISystem = new NewShipOfferUISystem(this.world)
         this.cameraSystem = new CameraSystem(this.world, camera)
-        this.visualGuidanceSystem = new VisualGuidanceSystem(
-            this.world,
-            camera,
-            canvas,
-        )
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
 
@@ -128,10 +121,11 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.visualGuidanceSystem) // 14. Update visual guidance (arrows and range indicator)
-        this.world.addSystem(this.newShipOfferUISystem) // 15. Handle new ship offer UI
-        this.world.addSystem(this.cameraSystem) // 16. Update camera system
-        this.world.addSystem(this.renderSystem) // 17. Render the results
+        this.world.addSystem(this.rangeIndicatorSystem) // 14. Update range indicator
+        this.world.addSystem(this.enemyArrowSystem) // 15. Update enemy arrows
+        this.world.addSystem(this.newShipOfferUISystem) // 16. Handle new ship offer UI
+        this.world.addSystem(this.cameraSystem) // 17. Update camera system
+        this.world.addSystem(this.renderSystem) // 18. Render the results
     }
 
     init(): void {
