@@ -281,3 +281,71 @@ export interface BossComponent extends Component {
     damagePerShot: number // How much damage boss deals per shot
     scale: number // Visual scale multiplier
 }
+
+// Particle Emitter component for particle effects
+export interface ParticleEmitterComponent extends Component {
+    type: 'particleEmitter'
+    // Emission properties
+    isActive: boolean
+    emissionType: 'burst' | 'continuous'
+    particleCount: number // For burst, total particles. For continuous, particles per second
+    duration: number // Total emission duration (0 = infinite for continuous)
+    elapsedTime: number
+    lastEmissionTime: number
+
+    // Particle appearance
+    particleType: 'sprite' | 'spriteSheet' | 'shape'
+    texture?: string // Texture path for sprite/spriteSheet
+    spriteSheetConfig?: {
+        columns: number
+        rows: number
+        totalFrames: number
+        animationSpeed: number // frames per second
+        randomStartFrame: boolean
+    }
+    shapeConfig?: {
+        type: 'circle' | 'square' | 'triangle'
+        color: number
+        opacity: number
+    }
+
+    // Particle physics
+    startPosition: { x: number; y: number; z: number }
+    positionVariance: { x: number; y: number; z: number }
+    startVelocity: { x: number; y: number; z: number }
+    velocityVariance: { x: number; y: number; z: number }
+    acceleration: { x: number; y: number; z: number }
+
+    // Particle lifecycle
+    particleLifetime: number
+    lifetimeVariance: number
+
+    // Size properties
+    startSize: number
+    endSize: number
+    sizeVariance: number
+
+    // Color/opacity animation
+    startColor?: { r: number; g: number; b: number }
+    endColor?: { r: number; g: number; b: number }
+    startOpacity: number
+    endOpacity: number
+
+    // Active particles tracking
+    particles: ParticleInstance[]
+    maxParticles: number
+}
+
+// Individual particle instance data
+export interface ParticleInstance {
+    id: number
+    position: { x: number; y: number; z: number }
+    velocity: { x: number; y: number; z: number }
+    size: number
+    lifetime: number
+    maxLifetime: number
+    opacity: number
+    color?: { r: number; g: number; b: number }
+    spriteFrame?: number
+    mesh?: Object3D
+}
