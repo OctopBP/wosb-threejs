@@ -95,7 +95,7 @@ export class GameWorld {
             camera,
             canvas,
         )
-        this.newShipOfferUISystem = new NewShipOfferUISystem(this.world, canvas)
+        this.newShipOfferUISystem = new NewShipOfferUISystem(this.world)
         this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)

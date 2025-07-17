@@ -18,6 +18,7 @@ import type {
     PositionComponent,
     RenderableComponent,
 } from '../ecs/Component'
+import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
@@ -78,7 +79,7 @@ export class RenderSystem extends System {
 
     private createMesh(
         renderable: RenderableComponent,
-        entity: import('../ecs/Entity').Entity,
+        entity: Entity,
     ): Object3D | null {
         // Check if this is a primitive mesh or a model mesh
         if (isPrimitiveModel(renderable.meshType)) {
@@ -99,7 +100,7 @@ export class RenderSystem extends System {
     private createPrimitiveMesh(
         meshId: string,
         meshType: string,
-        entity: import('../ecs/Entity').Entity,
+        entity: Entity,
     ): Mesh {
         const config = getModelConfig(meshType) as PrimitiveModelConfig
 
@@ -153,7 +154,7 @@ export class RenderSystem extends System {
     private createModelMesh(
         meshId: string,
         meshType: string,
-        entity: import('../ecs/Entity').Entity,
+        entity: Entity,
     ): Group {
         const parentGroup = new Group()
         parentGroup.name = meshId

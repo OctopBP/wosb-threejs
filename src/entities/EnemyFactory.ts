@@ -78,6 +78,7 @@ export function createEnemyShip(
         mesh: undefined, // Will be created by RenderSystem
         meshType: 'enemy1',
         visible: true,
+        upgrades: {},
     }
     entity.addComponent(renderable)
 
@@ -153,8 +154,9 @@ export function createBossShip(
         type: 'renderable',
         meshId: `boss_ship_${entity.id}`,
         mesh: undefined, // Will be created by RenderSystem
-        meshType: bossVisualConfig.meshType as any,
+        meshType: bossVisualConfig.meshType,
         visible: true,
+        upgrades: {},
     }
     entity.addComponent(renderable)
 

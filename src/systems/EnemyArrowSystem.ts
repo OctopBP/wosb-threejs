@@ -86,7 +86,7 @@ export class EnemyArrowSystem extends System {
             .filter((item) => item !== null)
 
         // Sort by distance and take the closest ones up to maxArrows
-        enemyDistances.sort((a, b) => a?.distance - b?.distance)
+        enemyDistances.sort((a, b) => (a?.distance ?? 0) - (b?.distance ?? 0))
         const closestEnemies = enemyDistances.slice(0, enemyArrow.maxArrows)
 
         // Create arrows for closest enemies

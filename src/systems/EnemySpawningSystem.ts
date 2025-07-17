@@ -9,23 +9,21 @@ import type {
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import { createEnemyShip } from '../entities/EnemyFactory'
+import type { LevelingSystem } from './LevelingSystem'
 
 export class EnemySpawningSystem extends System {
     private lastSpawnTime: number = 0
     private spawnInterval: number = enemySpawningConfig.spawnInterval
     private maxEnemies: number = enemySpawningConfig.maxEnemies
     private spawnDistance: number = enemySpawningConfig.spawnDistance
-    private levelingSystem: import('./LevelingSystem').LevelingSystem | null =
-        null
+    private levelingSystem: LevelingSystem | null = null
 
     constructor(world: World) {
         super(world, []) // No required components for spawning system
     }
 
     // Method to set the leveling system reference
-    setLevelingSystem(
-        levelingSystem: import('./LevelingSystem').LevelingSystem,
-    ): void {
+    setLevelingSystem(levelingSystem: LevelingSystem): void {
         this.levelingSystem = levelingSystem
     }
 
@@ -100,7 +98,7 @@ export class EnemySpawningSystem extends System {
             if (playerEntities.length > 0) {
                 const player = playerEntities[0]
 
-                for (const deadEnemy of deadEnemies) {
+                for (const _ of deadEnemies) {
                     // Award XP for each enemy type (currently only basic enemies)
                     const xpAwarded = enemyXPConfig.basicEnemy
                     this.levelingSystem.awardXP(player.id, xpAwarded)

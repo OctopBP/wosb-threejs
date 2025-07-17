@@ -1,4 +1,5 @@
 import type { Object3D } from 'three'
+import type { VisualUpgradeConfig } from '../config/LevelingConfig'
 import type { ModelType } from '../config/ModelConfig'
 
 // Base Component interface for ECS system
@@ -86,6 +87,7 @@ export interface RenderableComponent extends Component {
     mesh?: Object3D
     meshType: ModelType // Now properly typed with ModelType
     visible: boolean
+    upgrades: Record<number, VisualUpgradeConfig>
 }
 
 // Player tag component

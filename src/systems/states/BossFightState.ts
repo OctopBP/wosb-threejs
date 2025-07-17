@@ -8,7 +8,6 @@ export class BossFightState extends BaseGameState {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
-        levelingSystem: import('../LevelingSystem').LevelingSystem | null,
     ): string | null {
         // Spawn boss if not already spawned
         if (!gameState.bossSpawned) {

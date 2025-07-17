@@ -1,24 +1,20 @@
 import type { GameStateComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
+import type { GameStateSystem } from './GameStateSystem'
 
 export class NewShipOfferUISystem extends System {
-    private canvas: HTMLCanvasElement
     private offerUI: HTMLElement | null = null
     private isUICreated = false
-    private gameStateSystem:
-        | import('./GameStateSystem').GameStateSystem
-        | null = null
+    private gameStateSystem: GameStateSystem | null = null
 
-    constructor(world: World, canvas: HTMLCanvasElement) {
+    constructor(world: World) {
         super(world, [])
-        this.canvas = canvas
     }
 
     // Method to set the game state system reference for restarting
-    setGameStateSystem(
-        gameStateSystem: import('./GameStateSystem').GameStateSystem,
-    ): void {
+    setGameStateSystem(gameStateSystem: GameStateSystem): void {
         this.gameStateSystem = gameStateSystem
     }
 

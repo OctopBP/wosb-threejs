@@ -80,7 +80,6 @@ export class GameStateSystem extends System {
                 gameState,
                 this.config,
                 this.world,
-                this.levelingSystem,
             )
             if (nextState) {
                 gameState.currentState = nextState as GameState

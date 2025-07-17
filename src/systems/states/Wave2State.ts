@@ -8,7 +8,6 @@ export class Wave2State extends BaseGameState {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
-        levelingSystem: import('../LevelingSystem').LevelingSystem | null,
     ): string | null {
         const waveConfig = config.wave2
 

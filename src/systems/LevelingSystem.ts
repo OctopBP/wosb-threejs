@@ -1,9 +1,9 @@
+import type { XPProgressionConfig } from '../config/LevelingConfig'
 import {
     calculateNextLevelXP,
     defaultXPProgression,
     levelUpAnimation,
     visualUpgrades,
-    type XPProgressionConfig,
 } from '../config/LevelingConfig'
 import type {
     HealthComponent,
@@ -14,6 +14,7 @@ import type {
     WeaponComponent,
     XPComponent,
 } from '../ecs/Component'
+import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
@@ -70,7 +71,7 @@ export class LevelingSystem extends System {
     }
 
     private processLevelUp(
-        entity: import('../ecs/Entity').Entity,
+        entity: Entity,
         xp: XPComponent,
         level: LevelComponent,
         levelingStats: LevelingStatsComponent,
@@ -86,7 +87,6 @@ export class LevelingSystem extends System {
             level.currentLevel < level.maxLevel
         ) {
             // Level up!
-            const oldLevel = level.currentLevel
             level.currentLevel += 1
             level.hasLeveledUp = true
             level.levelUpTime = performance.now() / 1000
@@ -123,7 +123,7 @@ export class LevelingSystem extends System {
     }
 
     private applyStatImprovements(
-        entity: import('../ecs/Entity').Entity,
+        entity: Entity,
         levelingStats: LevelingStatsComponent,
         newLevel: number,
     ): void {
@@ -168,7 +168,7 @@ export class LevelingSystem extends System {
         }
     }
 
-    private restoreHealthToMax(entity: import('../ecs/Entity').Entity): void {
+    private restoreHealthToMax(entity: Entity): void {
         const health = entity.getComponent<HealthComponent>('health')
         if (health) {
             health.currentHealth = health.maxHealth
@@ -177,10 +177,7 @@ export class LevelingSystem extends System {
         }
     }
 
-    private applyVisualUpgrades(
-        entity: import('../ecs/Entity').Entity,
-        level: number,
-    ): void {
+    private applyVisualUpgrades(entity: Entity, level: number): void {
         const renderable =
             entity.getComponent<RenderableComponent>('renderable')
         if (!renderable?.mesh) return
@@ -205,7 +202,7 @@ export class LevelingSystem extends System {
                 : renderable.mesh.material
 
             if ('color' in material && upgrade.hull.color) {
-                ;(material as any).color.setHex(
+                material.color.setHex(
                     parseInt(upgrade.hull.color.replace('#', ''), 16),
                 )
             }
@@ -213,20 +210,18 @@ export class LevelingSystem extends System {
                 'metalness' in material &&
                 upgrade.hull.metallic !== undefined
             ) {
-                ;(material as any).metalness = upgrade.hull.metallic
+                material.metalness = upgrade.hull.metallic
             }
         }
 
         // Store upgrade info on the renderable component for future reference
-        if (!(renderable as any).upgrades) {
-            ;(renderable as any).upgrades = {}
+        if (!renderable.upgrades) {
+            renderable.upgrades = {}
         }
-        ;(renderable as any).upgrades[level] = upgrade
+        renderable.upgrades[level] = upgrade
     }
 
-    private triggerLevelUpAnimation(
-        entity: import('../ecs/Entity').Entity,
-    ): void {
+    private triggerLevelUpAnimation(entity: Entity): void {
         const renderable =
             entity.getComponent<RenderableComponent>('renderable')
         if (!renderable?.mesh) return
@@ -243,26 +238,30 @@ export class LevelingSystem extends System {
                 1,
             )
 
+            if (!renderable.mesh) {
+                return
+            }
+
             if (progress < 0.5) {
                 // Scale up phase
                 const scaleProgress = progress * 2
                 const scale =
                     1 + (levelUpAnimation.scaleMultiplier - 1) * scaleProgress
-                renderable.mesh!.scale.copy(originalScale).multiplyScalar(scale)
+                renderable.mesh.scale.copy(originalScale).multiplyScalar(scale)
             } else {
                 // Scale down phase
                 const scaleProgress = (progress - 0.5) * 2
                 const scale =
                     levelUpAnimation.scaleMultiplier -
                     (levelUpAnimation.scaleMultiplier - 1) * scaleProgress
-                renderable.mesh!.scale.copy(originalScale).multiplyScalar(scale)
+                renderable.mesh.scale.copy(originalScale).multiplyScalar(scale)
             }
 
             if (progress < 1) {
                 requestAnimationFrame(animateLevelUp)
             } else {
                 // Reset to original scale
-                renderable.mesh!.scale.copy(originalScale)
+                renderable.mesh.scale.copy(originalScale)
             }
         }
 
@@ -298,9 +297,7 @@ export class LevelingSystem extends System {
     }
 
     // Helper method to get current level info for UI
-    public getLevelInfo(
-        entityId: number,
-    ): {
+    public getLevelInfo(entityId: number): {
         currentLevel: number
         maxLevel: number
         hasLeveledUp: boolean

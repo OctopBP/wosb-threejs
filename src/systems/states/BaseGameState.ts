@@ -1,5 +1,10 @@
 import type { GameStateConfig } from '../../config/GameStateConfig'
-import type { GameStateComponent } from '../../ecs/Component'
+import type {
+    GameStateComponent,
+    HealthComponent,
+    PositionComponent,
+} from '../../ecs/Component'
+import type { Entity } from '../../ecs/Entity'
 import type { World } from '../../ecs/World'
 import { createBossShip, createEnemyShip } from '../../entities/EnemyFactory'
 
@@ -16,7 +21,6 @@ export interface GameStateHandler {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
-        levelingSystem: import('../LevelingSystem').LevelingSystem | null,
     ): string | null
 }
 
@@ -25,41 +29,29 @@ export abstract class BaseGameState implements GameStateHandler {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
-        levelingSystem: import('../LevelingSystem').LevelingSystem | null,
     ): string | null
 
-    protected getPlayerEntity(
-        world: World,
-    ): import('../../ecs/Entity').Entity | null {
+    protected getPlayerEntity(world: World): Entity | null {
         const playerEntities = world.getEntitiesWithComponents(['player'])
         return playerEntities.length > 0 ? playerEntities[0] : null
     }
 
-    protected getPlayerPosition(
-        world: World,
-    ): import('../../ecs/Component').PositionComponent | null {
+    protected getPlayerPosition(world: World): PositionComponent | null {
         const player = this.getPlayerEntity(world)
         if (!player) return null
-        return (
-            player.getComponent<
-                import('../../ecs/Component').PositionComponent
-            >('position') || null
-        )
+        return player.getComponent<PositionComponent>('position') || null
     }
 
     protected getAliveEnemies(
         world: World,
         excludeBoss: boolean = false,
-    ): import('../../ecs/Entity').Entity[] {
+    ): Entity[] {
         const currentEnemies = world.getEntitiesWithComponents([
             'enemy',
             'health',
         ])
         return currentEnemies.filter((enemy) => {
-            const health =
-                enemy.getComponent<
-                    import('../../ecs/Component').HealthComponent
-                >('health')
+            const health = enemy.getComponent<HealthComponent>('health')
             if (!health || health.isDead) return false
 
             if (excludeBoss && enemy.hasComponent('boss')) return false
