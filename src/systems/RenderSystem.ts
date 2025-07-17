@@ -9,7 +9,6 @@ import {
     MeshLambertMaterial,
     SphereGeometry,
 } from 'three'
-import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
 import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
@@ -21,6 +20,7 @@ import type {
 import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import { getModelClone } from '../ModelPreloader'
 
 export class RenderSystem extends System {
     private scene: Scene
@@ -166,61 +166,39 @@ export class RenderSystem extends System {
         const additionalScale = bossComponent ? bossComponent.scale : 1.0
         const finalScale = modelConfig.scale * additionalScale
 
-        // Load the glTF model
-        this.gltfLoader.load(
-            `assets/models/${modelConfig.fileName}`,
-            (gltf: GLTF) => {
-                // Success callback
-                const model = gltf.scene
-                model.traverse((child) => {
-                    if (child instanceof Mesh) {
-                        child.castShadow = true
-                        child.receiveShadow = true
-                    }
-                })
-
-                parentGroup.add(model)
-                parentGroup.scale.setScalar(finalScale)
-
-                if (bossComponent) {
-                    console.log(
-                        `👾 Boss model loaded with scale: ${finalScale} (base: ${modelConfig.scale}, boss: ${additionalScale})`,
-                    )
+        // Use preloaded model clone
+        const model = getModelClone(meshType)
+        if (model) {
+            model.traverse((child) => {
+                if (child instanceof Mesh) {
+                    child.castShadow = true
+                    child.receiveShadow = true
                 }
-            },
-            (progress: ProgressEvent) => {
-                // Progress callback (optional)
-                console.log('Loading progress:', progress)
-            },
-            (error: unknown) => {
-                // Error callback - GLB loading failed
-                console.warn(
-                    `Failed to load model ${modelConfig.fileName}:`,
-                    error,
+            })
+            parentGroup.add(model)
+            parentGroup.scale.setScalar(finalScale)
+            if (bossComponent) {
+                console.log(
+                    `👾 Boss model loaded with scale: ${finalScale} (base: ${modelConfig.scale}, boss: ${additionalScale})`,
                 )
-
-                // Create a fallback primitive instead
-                const fallbackGeometry = new BoxGeometry(1, 0.5, 2)
-                const fallbackMaterial = new MeshLambertMaterial({
-                    color: bossComponent ? 0xff0000 : 0x00ff00, // Red for boss, green for others
-                })
-                const fallbackMesh = new Mesh(
-                    fallbackGeometry,
-                    fallbackMaterial,
+            }
+        } else {
+            // Fallback: create a primitive
+            const fallbackGeometry = new BoxGeometry(1, 0.5, 2)
+            const fallbackMaterial = new MeshLambertMaterial({
+                color: bossComponent ? 0xff0000 : 0x00ff00, // Red for boss, green for others
+            })
+            const fallbackMesh = new Mesh(fallbackGeometry, fallbackMaterial)
+            fallbackMesh.castShadow = true
+            fallbackMesh.receiveShadow = true
+            parentGroup.add(fallbackMesh)
+            parentGroup.scale.setScalar(finalScale)
+            if (bossComponent) {
+                console.log(
+                    `👾 Boss fallback model created with scale: ${finalScale}`,
                 )
-                fallbackMesh.castShadow = true
-                fallbackMesh.receiveShadow = true
-                parentGroup.add(fallbackMesh)
-                parentGroup.scale.setScalar(finalScale)
-
-                if (bossComponent) {
-                    console.log(
-                        `👾 Boss fallback model created with scale: ${finalScale}`,
-                    )
-                }
-            },
-        )
-
+            }
+        }
         return parentGroup
     }
 
