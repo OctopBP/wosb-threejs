@@ -54,7 +54,7 @@ export const basicBossHealthPreset: BossHealthConfig = {
 export const bossWeaponPreset: WeaponConfigPreset = {
     damage: 100, // Very high damage - should kill player in 1 hit if player has 100 HP
     fireRate: 0.5, // Slower fire rate to balance the high damage
-    projectileSpeed: 8.0, // Slower projectiles to give player chance to dodge
+    projectileSpeed: 18.0, // Slower projectiles to give player chance to dodge
     range: 15.0, // Long range
     projectileType: 'bullet',
     // Auto-targeting properties
