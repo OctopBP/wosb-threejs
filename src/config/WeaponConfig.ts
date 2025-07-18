@@ -13,6 +13,13 @@ export const basicCannonPreset: WeaponConfigPreset = {
     isAutoTargeting: false,
     detectionRange: 15.0, // Same as range for manual weapons
     requiresLineOfSight: false,
+    // Default shooting points for player ship (side cannons)
+    shootingPoints: [
+        { x: -1, y: 1 },  // Left front cannon
+        { x: -1, y: 0 },  // Left center cannon
+        { x: 1, y: 1 },   // Right front cannon
+        { x: 1, y: 0 }    // Right center cannon
+    ],
 }
 
 // Auto-targeting weapon configuration for player ship
@@ -26,6 +33,11 @@ export const autoTargetingCannonPreset: WeaponConfigPreset = {
     isAutoTargeting: true,
     detectionRange: 8.0, // Larger detection range than firing range
     requiresLineOfSight: false, // Simple implementation for now
+    // Default shooting points for auto-targeting ship
+    shootingPoints: [
+        { x: -0.8, y: 0.5 },  // Left cannon
+        { x: 0.8, y: 0.5 }    // Right cannon
+    ],
 }
 
 // Fast auto-targeting weapon (alternative configuration)
@@ -39,6 +51,13 @@ export const fastAutoTargetingPreset: WeaponConfigPreset = {
     isAutoTargeting: true,
     detectionRange: 18.0,
     requiresLineOfSight: false,
+    // Fast firing ship with multiple small cannons
+    shootingPoints: [
+        { x: -0.5, y: 1 },   // Left front
+        { x: 0.5, y: 1 },    // Right front
+        { x: -0.5, y: -0.5 }, // Left rear
+        { x: 0.5, y: -0.5 }  // Right rear
+    ],
 }
 
 // Projectile physics configuration

@@ -65,6 +65,11 @@ export const autoTargetingEnemyWeaponPreset: WeaponConfigPreset = {
     isAutoTargeting: true,
     detectionRange: 10.0, // Larger detection range than firing range
     requiresLineOfSight: false,
+    // Enemy ship shooting points (front-facing configuration)
+    shootingPoints: [
+        { x: -0.5, y: 0.8 },  // Left front cannon
+        { x: 0.5, y: 0.8 }    // Right front cannon
+    ],
 }
 
 // Alternative: Fast enemy auto-targeting weapon
@@ -78,6 +83,12 @@ export const fastEnemyWeaponPreset: WeaponConfigPreset = {
     isAutoTargeting: true,
     detectionRange: 16.0,
     requiresLineOfSight: false,
+    // Fast enemy with multiple cannons
+    shootingPoints: [
+        { x: -0.3, y: 0.6 },  // Left front
+        { x: 0.3, y: 0.6 },   // Right front
+        { x: 0, y: 0.2 }      // Center cannon
+    ],
 }
 
 // Legacy: Manual enemy weapon (for comparison/testing)
@@ -91,6 +102,10 @@ export const weakEnemyWeaponPreset: WeaponConfigPreset = {
     isAutoTargeting: false,
     detectionRange: 12.0,
     requiresLineOfSight: false,
+    // Simple single cannon setup
+    shootingPoints: [
+        { x: 0, y: 0.5 }  // Single front cannon
+    ],
 }
 
 // Basic enemy AI configuration
