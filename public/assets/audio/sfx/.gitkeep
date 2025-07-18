@@ -1,0 +1,18 @@
+# Sound Effects Directory
+
+Place sound effects here:
+- laser_shoot.mp3 - Laser weapon firing
+- missile_shoot.mp3 - Missile weapon firing
+- enemy_explosion.mp3 - Enemy destruction
+- projectile_hit.mp3 - Projectile impact
+- player_hit.mp3 - Player taking damage
+- engine_boost.mp3 - Ship acceleration
+- level_up.mp3 - Level up achievement
+- enemy_spawn.mp3 - Enemy appearance
+- pickup_xp.mp3 - XP collection
+
+## Recommended Specifications:
+- Format: MP3 or OGG
+- Quality: 96-128 kbps
+- Length: 0.1-2 seconds for most effects
+- Volume: Normalized, punchy and clear

@@ -1,0 +1,14 @@
+# UI Sounds Directory
+
+Place user interface sounds here:
+- button_click.mp3 - Button press feedback
+- button_hover.mp3 - Button hover feedback
+- notification.mp3 - General notifications
+- error.mp3 - Error alerts
+- success.mp3 - Success confirmations
+
+## Recommended Specifications:
+- Format: MP3
+- Quality: 96 kbps (UI sounds can be lower quality)
+- Length: 0.1-0.5 seconds
+- Volume: Subtle, non-intrusive

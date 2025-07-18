@@ -1,0 +1,12 @@
+# Music Directory
+
+Place background music files here:
+- background.mp3 - Main game background music
+- menu.mp3 - Menu/title screen music
+- battle.mp3 - Battle/action music
+
+## Recommended Specifications:
+- Format: MP3 (best compatibility)
+- Quality: 128-192 kbps
+- Length: 2-5 minutes (will loop automatically)
+- Volume: Normalized to -6dB to prevent clipping

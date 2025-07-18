@@ -10,14 +10,23 @@ import type {
 import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import type { AudioSystem } from './AudioSystem'
 
 export class WeaponSystem extends System {
     private scene: Scene
     private debugAutoTargeting: boolean = false
+    private audioSystem: AudioSystem | null = null
 
     constructor(world: World, scene: Scene) {
         super(world, ['weapon', 'position'])
         this.scene = scene
+    }
+
+    /**
+     * Set the audio system reference for playing weapon sounds
+     */
+    setAudioSystem(audioSystem: AudioSystem): void {
+        this.audioSystem = audioSystem
     }
 
     // Method to enable/disable debug logging for auto-targeting weapons
@@ -330,6 +339,12 @@ export class WeaponSystem extends System {
             upgrades: {},
         }
         projectile.addComponent(renderable)
+
+        // Add projectile to world
+        this.world.addEntity(projectile)
+
+        // Play weapon sound effect
+        this.playWeaponSound(weapon.weaponType)
     }
 
     private fireProjectileToTarget(
@@ -404,5 +419,29 @@ export class WeaponSystem extends System {
             upgrades: {},
         }
         projectile.addComponent(renderable)
+
+        // Add projectile to world
+        this.world.addEntity(projectile)
+
+        // Play weapon sound effect
+        this.playWeaponSound(weapon.weaponType)
+    }
+
+    /**
+     * Play appropriate weapon sound based on weapon type
+     */
+    private playWeaponSound(weaponType: string): void {
+        if (!this.audioSystem) return
+
+        // Map weapon types to sound effects
+        const soundMap: Record<string, string> = {
+            'laser': 'laser_shoot',
+            'missile': 'missile_shoot',
+            'cannon': 'laser_shoot', // Fallback to laser for now
+            'default': 'laser_shoot'
+        }
+
+        const soundName = soundMap[weaponType] || soundMap.default
+        this.audioSystem.playSfx(soundName)
     }
 }

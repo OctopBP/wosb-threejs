@@ -1,6 +1,7 @@
 // Export all systems
 
 export * from './AccelerationSystem'
+export * from './AudioSystem'
 export * from './CameraSystem'
 export * from './CollisionSystem'
 export * from './EnemyAISystem'

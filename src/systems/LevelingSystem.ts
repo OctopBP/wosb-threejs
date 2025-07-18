@@ -17,9 +17,11 @@ import type {
 import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import type { AudioSystem } from './AudioSystem'
 
 export class LevelingSystem extends System {
     private xpProgressionConfig: XPProgressionConfig
+    private audioSystem: AudioSystem | null = null
 
     constructor(
         world: World,
@@ -27,6 +29,13 @@ export class LevelingSystem extends System {
     ) {
         super(world, ['xp', 'level', 'levelingStats'])
         this.xpProgressionConfig = xpConfig
+    }
+
+    /**
+     * Set the audio system reference for playing leveling sounds
+     */
+    setAudioSystem(audioSystem: AudioSystem): void {
+        this.audioSystem = audioSystem
     }
 
     update(_deltaTime: number): void {
@@ -94,6 +103,9 @@ export class LevelingSystem extends System {
             console.log(
                 `🎉 LEVEL UP! Entity ${entity.id} reached level ${level.currentLevel}!`,
             )
+
+            // Play level up sound
+            this.playLevelUpSound()
 
             // Apply stat improvements
             this.applyStatImprovements(
@@ -313,5 +325,13 @@ export class LevelingSystem extends System {
             maxLevel: level.maxLevel,
             hasLeveledUp: level.hasLeveledUp,
         }
+    }
+
+    /**
+     * Play level up sound effect
+     */
+    private playLevelUpSound(): void {
+        if (!this.audioSystem) return
+        this.audioSystem.playSfx('level_up')
     }
 }
