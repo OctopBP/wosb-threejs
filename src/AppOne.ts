@@ -498,6 +498,117 @@ export class AppOne {
             )
             .name('Unified System Info')
 
+        // Debug Visualization controls
+        const debugFolder = this.gui.addFolder('Debug Visualization')
+
+        // Master debug toggle
+        const debugState = { enabled: false }
+        debugFolder
+            .add(debugState, 'enabled')
+            .name('Enable Debug Mode')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.setDebugMode(enabled)
+                console.log(
+                    `🔍 Debug Mode: ${enabled ? 'Enabled' : 'Disabled'}`,
+                )
+            })
+
+        // Individual debug toggles
+        const shootingPointsState = { enabled: false }
+        debugFolder
+            .add(shootingPointsState, 'enabled')
+            .name('Show Shooting Points')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugShootingPoints(enabled)
+                console.log(
+                    `🎯 Shooting Points: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
+        const collisionShapesState = { enabled: false }
+        debugFolder
+            .add(collisionShapesState, 'enabled')
+            .name('Show Collision Shapes')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugCollisionShapes(enabled)
+                console.log(
+                    `🟢 Collision Shapes: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
+        const weaponRangeState = { enabled: false }
+        debugFolder
+            .add(weaponRangeState, 'enabled')
+            .name('Show Weapon Range')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugWeaponRange(enabled)
+                console.log(
+                    `🔵 Weapon Range: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
+        const velocityVectorsState = { enabled: false }
+        debugFolder
+            .add(velocityVectorsState, 'enabled')
+            .name('Show Velocity Vectors')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugVelocityVectors(enabled)
+                console.log(
+                    `🟡 Velocity Vectors: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
+        // Quick toggle all debug features
+        debugFolder
+            .add(
+                {
+                    enableAll: () => {
+                        debugState.enabled = true
+                        shootingPointsState.enabled = true
+                        collisionShapesState.enabled = true
+                        weaponRangeState.enabled = true
+                        velocityVectorsState.enabled = true
+
+                        this.gameWorld.setDebugMode(true)
+                        this.gameWorld.toggleDebugShootingPoints(true)
+                        this.gameWorld.toggleDebugCollisionShapes(true)
+                        this.gameWorld.toggleDebugWeaponRange(true)
+                        this.gameWorld.toggleDebugVelocityVectors(true)
+
+                        // Update UI to reflect changes
+                        debugFolder.updateDisplay()
+                        console.log('🔍 All Debug Features Enabled')
+                    },
+                },
+                'enableAll',
+            )
+            .name('Enable All Debug')
+
+        debugFolder
+            .add(
+                {
+                    disableAll: () => {
+                        debugState.enabled = false
+                        shootingPointsState.enabled = false
+                        collisionShapesState.enabled = false
+                        weaponRangeState.enabled = false
+                        velocityVectorsState.enabled = false
+
+                        this.gameWorld.setDebugMode(false)
+                        this.gameWorld.toggleDebugShootingPoints(false)
+                        this.gameWorld.toggleDebugCollisionShapes(false)
+                        this.gameWorld.toggleDebugWeaponRange(false)
+                        this.gameWorld.toggleDebugVelocityVectors(false)
+
+                        // Update UI to reflect changes
+                        debugFolder.updateDisplay()
+                        console.log('🔍 All Debug Features Disabled')
+                    },
+                },
+                'disableAll',
+            )
+            .name('Disable All Debug')
+
         // Lighting controls
         const lightFolder = this.gui.addFolder('Lighting')
         const hemisphereLight = this.scene.children.find(

@@ -283,3 +283,13 @@ export interface BossComponent extends Component {
     damagePerShot: number // How much damage boss deals per shot
     scale: number // Visual scale multiplier
 }
+
+// Debug component for controlling debug visualizations
+export interface DebugComponent extends Component {
+    type: 'debug'
+    enabled: boolean
+    showShootingPoints: boolean
+    showCollisionShapes: boolean
+    showWeaponRange: boolean
+    showVelocityVectors: boolean
+}
