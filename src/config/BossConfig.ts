@@ -61,6 +61,14 @@ export const bossWeaponPreset: WeaponConfigPreset = {
     isAutoTargeting: true,
     detectionRange: 18.0, // Very long detection range
     requiresLineOfSight: false,
+    // Boss ship shooting points (powerful multi-cannon setup)
+    shootingPoints: [
+        { x: -1.5, y: 1.2 },  // Left outer cannon
+        { x: -0.8, y: 1.0 },  // Left inner cannon
+        { x: 0.8, y: 1.0 },   // Right inner cannon
+        { x: 1.5, y: 1.2 },   // Right outer cannon
+        { x: 0, y: 0.5 }      // Center main cannon
+    ],
 }
 
 // Boss AI configuration
