@@ -5,11 +5,13 @@ import {
     levelUpAnimation,
     visualUpgrades,
 } from '../config/LevelingConfig'
+import { getShipModelForLevel } from '../config/ModelConfig'
 import type {
     HealthComponent,
     LevelComponent,
     LevelingStatsComponent,
     MovementConfigComponent,
+    PlayerComponent,
     RenderableComponent,
     WeaponComponent,
     XPComponent,
@@ -192,7 +194,20 @@ export class LevelingSystem extends System {
     private applyVisualUpgrades(entity: Entity, level: number): void {
         const renderable =
             entity.getComponent<RenderableComponent>('renderable')
-        if (!renderable?.mesh) return
+        if (!renderable) return
+
+        // Check if this is a player entity and update ship model based on level
+        const player = entity.getComponent<PlayerComponent>('player')
+        if (player) {
+            const newShipModel = getShipModelForLevel(level)
+            if (renderable.meshType !== newShipModel) {
+                console.log(
+                    `🚢 Upgrading ship model from ${renderable.meshType} to ${newShipModel} for level ${level}`,
+                )
+                renderable.meshType = newShipModel
+                // The RenderSystem will automatically handle the mesh replacement on next update
+            }
+        }
 
         // Find the visual upgrade configuration for this level
         const upgrade = visualUpgrades.find((u) => u.level === level)
@@ -205,6 +220,7 @@ export class LevelingSystem extends System {
         // mesh manipulation or swap out model parts
         if (
             upgrade.hull &&
+            renderable.mesh &&
             'material' in renderable.mesh &&
             renderable.mesh.material
         ) {

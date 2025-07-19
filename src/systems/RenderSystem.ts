@@ -52,11 +52,23 @@ export class RenderSystem extends System {
                 continue
             }
 
-            if (!renderable.mesh) {
+            // Create mesh if not exists or if meshType has changed
+            if (
+                !renderable.mesh ||
+                renderable.mesh.userData.meshType !== renderable.meshType
+            ) {
+                // Remove old mesh if it exists
+                if (renderable.mesh) {
+                    this.scene.remove(renderable.mesh)
+                }
+
+                // Create new mesh
                 const mesh = this.createMesh(renderable, entity)
                 if (mesh) {
                     renderable.mesh = mesh
-                    this.scene.add(mesh)
+                    // Store the meshType in userData for tracking changes
+                    renderable.mesh.userData.meshType = renderable.meshType
+                    this.scene.add(renderable.mesh)
                 }
             }
 
