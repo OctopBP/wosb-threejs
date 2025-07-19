@@ -321,7 +321,7 @@ export interface DebugComponent extends Component {
 
 // Animation states for barrels
 export type BarrelAnimationState =
-    | 'dropping'
+    | 'flying'
     | 'floating'
     | 'attracting'
     | 'collecting'
@@ -339,10 +339,13 @@ export interface XPBarrelComponent extends Component {
     isBeingAttracted: boolean // Whether this barrel is being magnetically pulled to player
     attractionSpeed: number // Speed at which barrel moves toward player
 
-    // Animation properties
+    // Explosion/Arc animation properties
     animationState: BarrelAnimationState // Current animation state
-    dropStartHeight: number // Height from which barrel starts dropping
-    dropSpeed: number // Speed of dropping animation
+    startPosition: { x: number; y: number; z: number } // Where barrel started (enemy position)
+    targetPosition: { x: number; y: number; z: number } // Where barrel will land
+    flightTime: number // Total time for arc flight
+    flightProgress: number // Progress of flight (0-1)
+    arcHeight: number // Maximum height of arc trajectory
     collectAnimationProgress: number // Progress of collection animation (0-1)
     collectAnimationDuration: number // Duration of collection animation in seconds
 }

@@ -52,12 +52,11 @@ export function createXPBarrel(
     // Merge with default config
     const barrelConfig = { ...defaultBarrelConfig, ...config }
 
-    // Position component - start at drop height, will animate down to water level
-    const dropHeight = 3.0 + Math.random() * 2.0 // Random drop height between 3-5 units
+    // Position component - start at enemy position, will fly to target
     const position: PositionComponent = {
         type: 'position',
-        x,
-        y: dropHeight, // Start at drop height for animation
+        x, // Start at enemy position
+        y,
         z,
         rotationX: Math.random() * Math.PI * 2, // Random rotation for variety
         rotationY: Math.random() * Math.PI * 2,
@@ -77,6 +76,12 @@ export function createXPBarrel(
     }
     entity.addComponent(velocity)
 
+    // Calculate random target position around the enemy
+    const angle = Math.random() * Math.PI * 2 // Random direction
+    const distance = Math.random() * barrelConfig.spawnRadius // Random distance within radius
+    const targetX = x + Math.cos(angle) * distance
+    const targetZ = z + Math.sin(angle) * distance
+
     // XP Barrel component
     const xpBarrel: XPBarrelComponent = {
         type: 'xpBarrel',
@@ -90,10 +95,13 @@ export function createXPBarrel(
         isBeingAttracted: false, // Initially not being attracted
         attractionSpeed: 8.0, // Speed at which barrel moves toward player
 
-        // Animation properties
-        animationState: 'dropping', // Start with dropping animation
-        dropStartHeight: dropHeight,
-        dropSpeed: 6.0, // Speed of dropping animation
+        // Explosion/Arc animation properties
+        animationState: 'flying', // Start with flying animation
+        startPosition: { x, y, z }, // Enemy position
+        targetPosition: { x: targetX, y: 0, z: targetZ }, // Random position around enemy
+        flightTime: 1.0 + Math.random() * 0.5, // Random flight time 1.0-1.5 seconds
+        flightProgress: 0, // Start at beginning of flight
+        arcHeight: 2.0 + Math.random() * 2.0, // Random arc height 2-4 units
         collectAnimationProgress: 0,
         collectAnimationDuration: 0.5, // Collection animation takes 0.5 seconds
     }

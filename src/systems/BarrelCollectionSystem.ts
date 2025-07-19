@@ -171,8 +171,13 @@ export class BarrelCollectionSystem extends System {
         if (!xpBarrel || !position || !velocity) return
 
         switch (xpBarrel.animationState) {
-            case 'dropping':
-                this.updateDropAnimation(barrel, position, velocity, deltaTime)
+            case 'flying':
+                this.updateFlyingAnimation(
+                    barrel,
+                    position,
+                    velocity,
+                    deltaTime,
+                )
                 break
             case 'floating':
                 // Just gentle drift, no special animation
@@ -191,7 +196,7 @@ export class BarrelCollectionSystem extends System {
         }
     }
 
-    private updateDropAnimation(
+    private updateFlyingAnimation(
         barrel: Entity,
         position: PositionComponent,
         velocity: VelocityComponent,
@@ -200,13 +205,19 @@ export class BarrelCollectionSystem extends System {
         const xpBarrel = barrel.getComponent<XPBarrelComponent>('xpBarrel')
         if (!xpBarrel) return
 
-        // Apply gravity to velocity
-        velocity.dy -= xpBarrel.dropSpeed * deltaTime
+        // Update flight progress
+        xpBarrel.flightProgress += deltaTime / xpBarrel.flightTime
 
-        // Check if barrel has reached water level
-        if (position.y <= 0) {
-            position.y = 0 // Snap to water level
-            velocity.dy = 0 // Stop vertical movement
+        if (xpBarrel.flightProgress >= 1.0) {
+            // Flight complete, land at target position
+            position.x = xpBarrel.targetPosition.x
+            position.y = 0 // Water level
+            position.z = xpBarrel.targetPosition.z
+
+            // Stop movement
+            velocity.dx = 0
+            velocity.dy = 0
+            velocity.dz = 0
 
             // Transition to floating state
             xpBarrel.animationState = 'floating'
@@ -214,10 +225,29 @@ export class BarrelCollectionSystem extends System {
             // Set gentle drift velocity
             velocity.dx = (Math.random() - 0.5) * 0.2
             velocity.dz = (Math.random() - 0.5) * 0.2
-
-            // Add a small splash effect by briefly moving the barrel up and down
-            velocity.dy = 1.0 // Small upward bounce
+            return
         }
+
+        // Calculate arc trajectory position
+        const progress = xpBarrel.flightProgress
+        const easeOut = 1 - (1 - progress) ** 2 // Ease out for realistic trajectory
+
+        // Linear interpolation for X and Z
+        const startPos = xpBarrel.startPosition
+        const targetPos = xpBarrel.targetPosition
+
+        position.x = startPos.x + (targetPos.x - startPos.x) * easeOut
+        position.z = startPos.z + (targetPos.z - startPos.z) * easeOut
+
+        // Parabolic arc for Y (height)
+        // Arc peaks at 50% progress
+        const arcProgress = Math.sin(progress * Math.PI) // 0 to 1 to 0
+        position.y = startPos.y + xpBarrel.arcHeight * arcProgress
+
+        // Add spinning during flight for visual effect
+        position.rotationX += deltaTime * 3.0
+        position.rotationY += deltaTime * 2.0
+        position.rotationZ += deltaTime * 4.0
     }
 
     private startCollectionAnimation(barrel: Entity, player: Entity): void {

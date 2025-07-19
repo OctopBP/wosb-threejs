@@ -20,9 +20,12 @@ Previously, players gained XP immediately when killing enemies. Now, when enemie
   - `floatSpeed`: Speed of floating animation
   - `spawnTime`: When this barrel was spawned
   - `lifespan`: How long before barrel disappears (in seconds, 0 = infinite)
-  - `animationState`: Current animation state (dropping, floating, attracting, collecting)
-  - `dropStartHeight`: Height from which barrel starts dropping
-  - `dropSpeed`: Speed of dropping animation
+  - `animationState`: Current animation state (flying, floating, attracting, collecting)
+  - `startPosition`: 3D position where barrel starts (enemy ship center)
+  - `targetPosition`: 3D position where barrel will land
+  - `flightTime`: Total time for arc flight (1.0-1.5 seconds)
+  - `flightProgress`: Progress of flight animation (0-1)
+  - `arcHeight`: Maximum height of parabolic trajectory (2-4 units)
   - `collectAnimationProgress`: Progress of collection animation (0-1)
   - `collectAnimationDuration`: Duration of collection animation in seconds
 
@@ -51,7 +54,8 @@ Previously, players gained XP immediately when killing enemies. Now, when enemie
 #### `BarrelCollectionSystem`
 - **Purpose**: Handles barrel animations, collection logic, and XP awarding
 - **Features**:
-  - **Drop Animation**: Gravity-based falling with splash effect
+  - **Explosion Animation**: Arc-based scattering from enemy ship center
+  - **Parabolic Trajectories**: Realistic physics-based flight paths
   - **State Management**: Tracks and transitions between animation states
   - **Magnetic Attraction**: Smooth movement toward player when in range
   - **Collection Animation**: Spinning upward movement before collection
@@ -100,15 +104,18 @@ interface BarrelSpawnConfig {
 ## Visual Features
 
 ### Barrel Behavior & Animations
-- **Drop Animation**: Barrels start at 3-5 units height above water and fall with gravity (6.0 units/second) to create realistic dropping effect
-- **Water Landing**: Barrels splash onto water surface with small bounce effect when they hit water level
+- **Explosion Animation**: Barrels scatter from enemy ship center in random directions with realistic arc trajectories
+- **Arc Flight**: Each barrel follows a parabolic path with random height (2-4 units) and distance within spawn radius
+- **Flight Time**: Barrels take 1.0-1.5 seconds to complete their arc flight
+- **Spinning Effect**: Barrels spin on all axes during flight for dynamic visual effect
+- **Water Landing**: Barrels land at random positions around the enemy death location
 - **Floating State**: After landing, barrels float on water with gentle random drift
 - **Magnetic Collection**: When player enters collection range (3 units), barrels smoothly move toward the ship (8.0 units/second)
 - **Collection Animation**: Barrels spin and move upward over 0.5 seconds before being collected
 - **Scale**: Barrels are scaled to 1.5x for better visibility
 
 #### Animation States:
-1. **Dropping**: Barrel falls from spawn height to water
+1. **Flying**: Barrel follows arc trajectory from enemy center to random landing spot
 2. **Floating**: Barrel drifts gently on water surface
 3. **Attracting**: Barrel moves magnetically toward player
 4. **Collecting**: Barrel spins upward before disappearing
@@ -143,8 +150,8 @@ The BarrelCollectionSystem runs at position 12 in the update cycle, between coll
 - **Spawn Spread**: Change `spawnRadius` to control how spread out barrels are
 
 ### Visual Customization
-- **Drop Speed**: Modify `dropSpeed` for faster/slower falling animation (currently 6.0 units/second)
-- **Drop Height**: Adjust spawn height range in BarrelFactory (currently 3-5 units)
+- **Flight Time**: Modify flight time range in BarrelFactory (currently 1.0-1.5 seconds)
+- **Arc Height**: Adjust arc height range for barrel trajectories (currently 2-4 units)
 - **Model Scale**: Modify scale in ModelConfig for different barrel sizes (currently 1.5x)
 - **Drift Speed**: Change velocity values in BarrelFactory for different drift behavior
 - **Attraction Speed**: Modify `attractionSpeed` in XPBarrelComponent for faster/slower magnetic movement
