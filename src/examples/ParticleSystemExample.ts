@@ -218,17 +218,68 @@ export class ParticleSystemExamples {
             rotation: { min: 0, max: Math.PI * 2 },
             rotationSpeed: { min: -5, max: 5 },
             
-            // Sprite sheet texture
+            // Sprite sheet texture - 4x4 grid (16 frames total)
             texture: 'assets/sprites/sparkle_sheet.png',
             spriteSheet: {
-                columns: 4,
-                rows: 4,
+                columns: 4,      // 4 columns in the sprite sheet
+                rows: 4,         // 4 rows in the sprite sheet
                 animationSpeed: 8.0, // 8 frames per second
-                randomStartFrame: true
+                randomStartFrame: true // Each particle starts at a random frame
             }
         }
         
         particleSystem.createParticleSystem(sparkleConfig)
+    }
+
+    /**
+     * Creates a coin collection effect with sprite sheet animation
+     */
+    static createCoinEffect(particleSystem: ParticleSystem, position: Vector3): void {
+        const coinConfig: ParticleSystemConfig = {
+            id: 'coins',
+            position: position,
+            
+            // Emission settings - burst only
+            emissionRate: 0,
+            burstCount: 8,
+            burstInterval: -1,
+            
+            // Particle properties
+            life: { min: 1.5, max: 2.0 },
+            size: { min: 2.0, max: 3.0 },
+            speed: { min: 3.0, max: 8.0 },
+            
+            // Spawn area
+            spawnArea: {
+                type: 'point',
+                size: new Vector3(0, 0, 0)
+            },
+            
+            // Direction - upward with spread
+            direction: new Vector3(0, 1, 0),
+            directionSpread: Math.PI * 0.4,
+            
+            // Physics
+            gravity: new Vector3(0, -5.0, 0),
+            drag: 1.5,
+            
+            // Visual properties
+            startColor: new Color(0xffd700), // gold
+            endColor: new Color(0xffaa00), // orange
+            rotation: { min: 0, max: Math.PI * 2 },
+            rotationSpeed: { min: -8, max: 8 },
+            
+            // Spinning coin sprite sheet - 1x8 strip (8 frames)
+            texture: 'assets/sprites/coin_spin.png',
+            spriteSheet: {
+                columns: 8,      // 8 frames in a horizontal strip
+                rows: 1,         // Single row
+                animationSpeed: 12.0, // Fast spinning animation
+                randomStartFrame: false // All coins start synchronized
+            }
+        }
+        
+        particleSystem.createParticleSystem(coinConfig)
     }
 
     /**

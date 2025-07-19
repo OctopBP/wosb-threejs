@@ -134,14 +134,15 @@ interface ParticleSystemInstance {
     sizeSpline: LinearSpline<number>
     texture: Texture
     isActive: boolean
+    materialGroup: string // Group systems with same texture/sprite settings
 }
 
 export class ParticleSystem extends System {
     private textureLoader: TextureLoader
-    private material: ShaderMaterial
+    private materials: Map<string, ShaderMaterial>
+    private geometries: Map<string, BufferGeometry>
+    private pointsObjects: Map<string, Points>
     private camera: Camera
-    private geometry: BufferGeometry
-    private points: Points
     private particleSystems: Map<string, ParticleSystemInstance>
     private scene: Scene
 
@@ -151,45 +152,11 @@ export class ParticleSystem extends System {
         this.scene = scene
         this.textureLoader = new TextureLoader()
         this.particleSystems = new Map()
-
-        const pointMultiplier =
-            window.innerHeight /
-            (2.0 * Math.tan((0.5 * 60.0 * Math.PI) / 180.0))
-
-        this.material = new ShaderMaterial({
-            uniforms: {
-                pointMultiplier: { value: pointMultiplier },
-                diffuseTexture: {
-                    value: this.textureLoader.load(
-                        'assets/sprites/gunsmoke.png',
-                    ),
-                },
-            },
-            vertexShader: particleVertexShader,
-            fragmentShader: particleFragmentShader,
-            blending: NormalBlending,
-            depthTest: true,
-            depthWrite: false,
-            transparent: true,
-            vertexColors: true,
-        })
+        this.materials = new Map()
+        this.geometries = new Map()
+        this.pointsObjects = new Map()
 
         this.camera = camera
-
-        this.geometry = new BufferGeometry()
-        this.geometry.setAttribute(
-            'position',
-            new Float32BufferAttribute([], 3),
-        )
-        this.geometry.setAttribute('size', new Float32BufferAttribute([], 1))
-        this.geometry.setAttribute(
-            'tintColor',
-            new Float32BufferAttribute([], 4),
-        )
-        this.geometry.setAttribute('angle', new Float32BufferAttribute([], 1))
-
-        this.points = new Points(this.geometry, this.material)
-        scene.add(this.points)
 
         // Keep the original keyboard event for testing
         window.addEventListener('keydown', this.onKeyUp.bind(this))
@@ -207,6 +174,12 @@ export class ParticleSystem extends System {
     }
 
     createParticleSystem(config: ParticleSystemConfig): void {
+        // Create material group identifier based on texture and sprite sheet settings
+        const spriteKey = config.spriteSheet 
+            ? `${config.spriteSheet.columns}x${config.spriteSheet.rows}` 
+            : '1x1'
+        const materialGroup = `${config.texture}_${spriteKey}`
+
         const system: ParticleSystemInstance = {
             config,
             particles: [],
@@ -217,12 +190,62 @@ export class ParticleSystem extends System {
             sizeSpline: new LinearSpline((t, a, b) => a + t * (b - a)),
             texture: this.textureLoader.load(config.texture),
             isActive: true,
+            materialGroup: materialGroup,
         }
 
         // Setup default curves or use custom ones
         this.setupAnimationCurves(system)
 
+        // Create material and geometry for this group if they don't exist
+        this.ensureMaterialGroup(materialGroup, system)
+
         this.particleSystems.set(config.id, system)
+    }
+
+    private ensureMaterialGroup(materialGroup: string, referenceSystem: ParticleSystemInstance): void {
+        if (!this.materials.has(materialGroup)) {
+            const pointMultiplier =
+                window.innerHeight /
+                (2.0 * Math.tan((0.5 * 60.0 * Math.PI) / 180.0))
+
+            // Create material for this group
+            const material = new ShaderMaterial({
+                uniforms: {
+                    pointMultiplier: { value: pointMultiplier },
+                    diffuseTexture: { value: referenceSystem.texture },
+                    spriteColumns: { 
+                        value: referenceSystem.config.spriteSheet?.columns || 1.0 
+                    },
+                    spriteRows: { 
+                        value: referenceSystem.config.spriteSheet?.rows || 1.0 
+                    },
+                },
+                vertexShader: particleVertexShader,
+                fragmentShader: particleFragmentShader,
+                blending: NormalBlending,
+                depthTest: true,
+                depthWrite: false,
+                transparent: true,
+                vertexColors: true,
+            })
+
+            // Create geometry for this group
+            const geometry = new BufferGeometry()
+            geometry.setAttribute('position', new Float32BufferAttribute([], 3))
+            geometry.setAttribute('size', new Float32BufferAttribute([], 1))
+            geometry.setAttribute('tintColor', new Float32BufferAttribute([], 4))
+            geometry.setAttribute('angle', new Float32BufferAttribute([], 1))
+            geometry.setAttribute('frameIndex', new Float32BufferAttribute([], 1))
+
+            // Create points object and add to scene
+            const points = new Points(geometry, material)
+            this.scene.add(points)
+
+            // Store references
+            this.materials.set(materialGroup, material)
+            this.geometries.set(materialGroup, geometry)
+            this.pointsObjects.set(materialGroup, points)
+        }
     }
 
     private setupAnimationCurves(system: ParticleSystemInstance): void {
@@ -266,7 +289,26 @@ export class ParticleSystem extends System {
     }
 
     removeParticleSystem(id: string): void {
-        this.particleSystems.delete(id)
+        const system = this.particleSystems.get(id)
+        if (system) {
+            this.particleSystems.delete(id)
+            
+            // Check if any other systems use the same material group
+            const stillInUse = Array.from(this.particleSystems.values())
+                .some(s => s.materialGroup === system.materialGroup)
+            
+            // If no other systems use this material group, clean it up
+            if (!stillInUse) {
+                const points = this.pointsObjects.get(system.materialGroup)
+                if (points) {
+                    this.scene.remove(points)
+                }
+                
+                this.materials.delete(system.materialGroup)
+                this.geometries.delete(system.materialGroup)
+                this.pointsObjects.delete(system.materialGroup)
+            }
+        }
     }
 
     activateParticleSystem(id: string): void {
@@ -462,50 +504,98 @@ export class ParticleSystem extends System {
             }
         }
 
-        // Sort particles by distance for proper blending
-        const allParticles = Array.from(system.particles)
-        allParticles.sort(
-            (a, b) =>
-                this.camera.position.distanceTo(b.position) -
-                this.camera.position.distanceTo(a.position)
-        )
-        system.particles = allParticles
+        // Note: Particle sorting is now handled in updateGeometry() for better performance
     }
 
     private updateGeometry(): void {
-        const positions = []
-        const sizes = []
-        const colors = []
-        const angles = []
-
-        // Collect all particles from all systems
+        // Group systems by material group
+        const materialGroups = new Map<string, ParticleSystemInstance[]>()
+        
         for (const system of this.particleSystems.values()) {
-            for (const p of system.particles) {
+            if (!system.isActive) continue
+            
+            if (!materialGroups.has(system.materialGroup)) {
+                materialGroups.set(system.materialGroup, [])
+            }
+            materialGroups.get(system.materialGroup)!.push(system)
+        }
+
+        // Update geometry for each material group
+        for (const [materialGroup, systems] of materialGroups) {
+            const geometry = this.geometries.get(materialGroup)
+            if (!geometry) continue
+
+            const positions = []
+            const sizes = []
+            const colors = []
+            const angles = []
+            const frameIndices = []
+
+            // Collect all particles from systems in this material group
+            const allParticles: Particle[] = []
+            for (const system of systems) {
+                allParticles.push(...system.particles)
+            }
+
+            // Sort particles by distance for proper blending
+            allParticles.sort(
+                (a, b) =>
+                    this.camera.position.distanceTo(b.position) -
+                    this.camera.position.distanceTo(a.position)
+            )
+
+            // Build attribute arrays
+            for (const p of allParticles) {
                 positions.push(p.position.x, p.position.y, p.position.z)
                 colors.push(p.color.r, p.color.g, p.color.b, p.alpha)
                 sizes.push(p.currentSize)
                 angles.push(p.rotation)
+                frameIndices.push(Math.floor(p.frameIndex))
             }
+
+            // Update geometry attributes
+            geometry.setAttribute(
+                'position',
+                new Float32BufferAttribute(positions, 3),
+            )
+            geometry.setAttribute('size', new Float32BufferAttribute(sizes, 1))
+            geometry.setAttribute(
+                'tintColor',
+                new Float32BufferAttribute(colors, 4),
+            )
+            geometry.setAttribute(
+                'angle',
+                new Float32BufferAttribute(angles, 1),
+            )
+            geometry.setAttribute(
+                'frameIndex',
+                new Float32BufferAttribute(frameIndices, 1),
+            )
+
+            geometry.attributes.position.needsUpdate = true
+            geometry.attributes.size.needsUpdate = true
+            geometry.attributes.tintColor.needsUpdate = true
+            geometry.attributes.angle.needsUpdate = true
+            geometry.attributes.frameIndex.needsUpdate = true
         }
 
-        this.geometry.setAttribute(
-            'position',
-            new Float32BufferAttribute(positions, 3),
-        )
-        this.geometry.setAttribute('size', new Float32BufferAttribute(sizes, 1))
-        this.geometry.setAttribute(
-            'tintColor',
-            new Float32BufferAttribute(colors, 4),
-        )
-        this.geometry.setAttribute(
-            'angle',
-            new Float32BufferAttribute(angles, 1),
-        )
-
-        this.geometry.attributes.position.needsUpdate = true
-        this.geometry.attributes.size.needsUpdate = true
-        this.geometry.attributes.tintColor.needsUpdate = true
-        this.geometry.attributes.angle.needsUpdate = true
+        // Hide geometries that have no particles
+        for (const [materialGroup, geometry] of this.geometries) {
+            if (!materialGroups.has(materialGroup)) {
+                // No active systems for this group, clear the geometry
+                geometry.setAttribute('position', new Float32BufferAttribute([], 3))
+                geometry.setAttribute('size', new Float32BufferAttribute([], 1))
+                geometry.setAttribute('tintColor', new Float32BufferAttribute([], 4))
+                geometry.setAttribute('angle', new Float32BufferAttribute([], 1))
+                geometry.setAttribute('frameIndex', new Float32BufferAttribute([], 1))
+                
+                geometry.attributes.position.needsUpdate = true
+                geometry.attributes.size.needsUpdate = true
+                geometry.attributes.tintColor.needsUpdate = true
+                geometry.attributes.angle.needsUpdate = true
+                geometry.attributes.frameIndex.needsUpdate = true
+            }
+        }
     }
 
     // Legacy method for backwards compatibility and testing
