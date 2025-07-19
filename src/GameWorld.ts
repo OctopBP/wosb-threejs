@@ -14,6 +14,7 @@ import type {
 } from './ecs'
 import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
+import { createDebugEntity } from './entities/DebugFactory'
 import {
     createPlayerShip,
     equipAutoTargetingWeapon,
@@ -26,6 +27,7 @@ import { EnemyAISystem, GameStateSystem, NewShipOfferUISystem } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
+import { DebugSystem } from './systems/DebugSystem'
 import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
@@ -60,7 +62,9 @@ export class GameWorld {
     private cameraSystem: CameraSystem
     private rangeIndicatorSystem: RangeIndicatorSystem
     private enemyArrowSystem: EnemyArrowSystem
+    private debugSystem: DebugSystem
     private playerEntity: Entity | null = null
+    private debugEntity: Entity | null = null
     private lastTime: number = 0
 
     constructor(
@@ -99,6 +103,7 @@ export class GameWorld {
         this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
+        this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.gameStateSystem.setLevelingSystem(this.levelingSystem)
@@ -125,7 +130,8 @@ export class GameWorld {
         this.world.addSystem(this.enemyArrowSystem) // 15. Update enemy arrows
         this.world.addSystem(this.newShipOfferUISystem) // 16. Handle new ship offer UI
         this.world.addSystem(this.cameraSystem) // 17. Update camera system
-        this.world.addSystem(this.renderSystem) // 18. Render the results
+        this.world.addSystem(this.debugSystem) // 18. Render debug gizmos
+        this.world.addSystem(this.renderSystem) // 19. Render the results
     }
 
     init(): void {
@@ -138,7 +144,12 @@ export class GameWorld {
                 'player',
                 10,
             )
+        }
 
+        // Create debug entity for debug visualizations
+        this.debugEntity = createDebugEntity(this.world)
+
+        if (this.playerEntity) {
             // Enable visual guidance for the player
             this.enablePlayerVisualGuidance({
                 showRangeCircle: ARROW_INDICATOR_CONFIG.defaultShowRangeCircle,
@@ -387,6 +398,27 @@ export class GameWorld {
     // Method to enable/disable auto-targeting weapon debug logging
     setAutoTargetingDebug(enabled: boolean): void {
         this.weaponSystem.setAutoTargetingDebug(enabled)
+    }
+
+    // Debug visualization methods
+    setDebugMode(enabled: boolean): void {
+        this.debugSystem.setDebugEnabled(enabled)
+    }
+
+    toggleDebugShootingPoints(enabled: boolean): void {
+        this.debugSystem.toggleShootingPoints(enabled)
+    }
+
+    toggleDebugCollisionShapes(enabled: boolean): void {
+        this.debugSystem.toggleCollisionShapes(enabled)
+    }
+
+    toggleDebugWeaponRange(enabled: boolean): void {
+        this.debugSystem.toggleWeaponRange(enabled)
+    }
+
+    toggleDebugVelocityVectors(enabled: boolean): void {
+        this.debugSystem.toggleVelocityVectors(enabled)
     }
 
     // Camera system methods

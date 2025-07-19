@@ -3,6 +3,7 @@
 export * from './AccelerationSystem'
 export * from './CameraSystem'
 export * from './CollisionSystem'
+export * from './DebugSystem'
 export * from './EnemyAISystem'
 export * from './EnemyArrowSystem'
 export * from './EnemyHealthUISystem'
