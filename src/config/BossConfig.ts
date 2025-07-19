@@ -1,10 +1,6 @@
-import type {
-    EnemyAIComponent,
-    HealthComponent,
-    WeaponComponent,
-} from '../ecs/Component'
+import type { EnemyAIComponent, HealthComponent } from '../ecs/Component'
 import type { MovementConfigPreset } from './MovementPresets'
-import type { WeaponConfigPreset } from './WeaponConfig'
+import { createBossWeaponConfig } from './WeaponConfig'
 
 // Boss health configuration
 export interface BossHealthConfig
@@ -50,27 +46,6 @@ export const basicBossHealthPreset: BossHealthConfig = {
     maxHealth: 1000, // Much stronger than regular enemies
 }
 
-// Boss weapon configuration
-export const bossWeaponPreset: WeaponConfigPreset = {
-    damage: 100, // Very high damage - should kill player in 1 hit if player has 100 HP
-    fireRate: 0.5, // Slower fire rate to balance the high damage
-    projectileSpeed: 18.0, // Slower projectiles to give player chance to dodge
-    range: 15.0, // Long range
-    projectileType: 'bullet',
-    // Auto-targeting properties
-    isAutoTargeting: true,
-    detectionRange: 18.0, // Very long detection range
-    requiresLineOfSight: false,
-    // Boss ship shooting points (powerful multi-cannon setup)
-    shootingPoints: [
-        { x: -1.5, y: 1.2 },  // Left outer cannon
-        { x: -0.8, y: 1.0 },  // Left inner cannon
-        { x: 0.8, y: 1.0 },   // Right inner cannon
-        { x: 1.5, y: 1.2 },   // Right outer cannon
-        { x: 0, y: 0.5 }      // Center main cannon
-    ],
-}
-
 // Boss AI configuration
 export const basicBossAIPreset: BossAIConfig = {
     moveSpeed: 2.0, // Slower movement than regular enemies
@@ -96,16 +71,8 @@ export function createBossHealthConfig(
     }
 }
 
-export function createBossWeaponConfig(
-    overrides: Partial<WeaponConfigPreset> = {},
-): WeaponComponent {
-    return {
-        type: 'weapon',
-        lastShotTime: 0,
-        ...bossWeaponPreset,
-        ...overrides,
-    }
-}
+// Re-export the boss weapon config function for convenience
+export { createBossWeaponConfig }
 
 export function createBossAIConfig(
     targetId: number | null = null,

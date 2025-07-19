@@ -344,75 +344,33 @@ export class AppOne {
         setInterval(updateCameraStatus, 100)
 
         // Weapon controls
-        const weaponFolder = this.gui.addFolder('Weapons')
+        const weaponFolder = this.gui.addFolder('Weapon Controls')
 
-        // Weapon type toggle
-        weaponFolder
-            .add(
-                {
-                    toggleWeaponType: () => {
-                        this.gameWorld.togglePlayerWeaponType()
-                        console.log(
-                            `Weapon switched to: ${
-                                this.gameWorld.playerHasAutoTargetingWeapon()
-                                    ? 'Auto-Targeting'
-                                    : 'Manual'
-                            }`,
-                        )
-                    },
-                },
-                'toggleWeaponType',
-            )
-            .name('Toggle Weapon Type')
-
-        // Current weapon status display
-        const weaponStatus = { type: 'Manual' }
+        // Current weapon status display (always auto-targeting now)
+        const weaponStatus = { type: 'Auto-Targeting' }
         const weaponStatusController = weaponFolder
             .add(weaponStatus, 'type')
             .name('Current Weapon')
         weaponStatusController.disable()
 
-        // Update weapon status display
-        const updateWeaponStatus = () => {
-            weaponStatus.type = this.gameWorld.playerHasAutoTargetingWeapon()
-                ? 'Auto-Targeting'
-                : 'Manual'
-            weaponStatusController.updateDisplay()
-        }
-
-        // Update weapon status every frame (simple approach)
-        setInterval(updateWeaponStatus, 100)
-
         // Quick weapon presets
         weaponFolder
             .add(
                 {
-                    equipManual: () => {
-                        this.gameWorld.equipPlayerManualWeapon()
-                        console.log('Equipped Manual Weapon')
+                    equipStandard: () => {
+                        this.gameWorld.equipPlayerWeapon()
+                        console.log('Equipped Standard Auto-Targeting Weapon')
                     },
                 },
-                'equipManual',
+                'equipStandard',
             )
-            .name('Equip Manual Weapon')
-
-        weaponFolder
-            .add(
-                {
-                    equipAutoTargeting: () => {
-                        this.gameWorld.equipPlayerAutoTargetingWeapon()
-                        console.log('Equipped Auto-Targeting Weapon')
-                    },
-                },
-                'equipAutoTargeting',
-            )
-            .name('Equip Auto-Targeting')
+            .name('Equip Standard Weapon')
 
         weaponFolder
             .add(
                 {
                     equipFastAuto: () => {
-                        this.gameWorld.equipPlayerAutoTargetingWeapon({
+                        this.gameWorld.equipPlayerWeapon({
                             damage: 15,
                             fireRate: 2.0,
                             projectileSpeed: 15.0,
