@@ -3,13 +3,14 @@ import {
     calculateNextLevelXP,
     defaultXPProgression,
     levelUpAnimation,
-    visualUpgrades,
 } from '../config/LevelingConfig'
+import { getShipModelForLevel } from '../config/ModelConfig'
 import type {
     HealthComponent,
     LevelComponent,
     LevelingStatsComponent,
     MovementConfigComponent,
+    PlayerComponent,
     RenderableComponent,
     WeaponComponent,
     XPComponent,
@@ -192,45 +193,21 @@ export class LevelingSystem extends System {
     private applyVisualUpgrades(entity: Entity, level: number): void {
         const renderable =
             entity.getComponent<RenderableComponent>('renderable')
-        if (!renderable?.mesh) return
+        if (!renderable) return
 
-        // Find the visual upgrade configuration for this level
-        const upgrade = visualUpgrades.find((u) => u.level === level)
-        if (!upgrade) return
+        // Check if this is a player entity and update ship model based on level
+        const player = entity.getComponent<PlayerComponent>('player')
+        if (player) {
+            const newShipModel = getShipModelForLevel(level)
+            if (renderable.meshType !== newShipModel) {
+                console.log(
+                    `🚢 Upgrading ship model from ${renderable.meshType} to ${newShipModel} for level ${level}`,
+                )
+                renderable.meshType = newShipModel
+            }
+        }
 
         console.log(`🎨 Applying visual upgrades for level ${level}`)
-
-        // Apply upgrades to the mesh
-        // Note: This is a basic implementation - in a real game you'd have more sophisticated
-        // mesh manipulation or swap out model parts
-        if (
-            upgrade.hull &&
-            'material' in renderable.mesh &&
-            renderable.mesh.material
-        ) {
-            // Apply hull color and material changes
-            const material = Array.isArray(renderable.mesh.material)
-                ? renderable.mesh.material[0]
-                : renderable.mesh.material
-
-            if ('color' in material && upgrade.hull.color) {
-                material.color.setHex(
-                    parseInt(upgrade.hull.color.replace('#', ''), 16),
-                )
-            }
-            if (
-                'metalness' in material &&
-                upgrade.hull.metallic !== undefined
-            ) {
-                material.metalness = upgrade.hull.metallic
-            }
-        }
-
-        // Store upgrade info on the renderable component for future reference
-        if (!renderable.upgrades) {
-            renderable.upgrades = {}
-        }
-        renderable.upgrades[level] = upgrade
     }
 
     private triggerLevelUpAnimation(entity: Entity): void {
