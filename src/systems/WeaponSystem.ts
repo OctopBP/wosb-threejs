@@ -228,10 +228,11 @@ export class WeaponSystem extends System {
 
         for (const point of weapon.shootingPoints) {
             // Convert relative shooting point to world coordinates
+            const rotation = -shooterPosition.rotationY
             const worldX = shooterPosition.x + 
-                (point.x * Math.cos(shooterPosition.rotationY) - point.y * Math.sin(shooterPosition.rotationY))
+                (point.x * Math.cos(rotation) - point.y * Math.sin(rotation))
             const worldZ = shooterPosition.z + 
-                (point.x * Math.sin(shooterPosition.rotationY) + point.y * Math.cos(shooterPosition.rotationY))
+                (point.x * Math.sin(rotation) + point.y * Math.cos(rotation))
 
             // Calculate distance from this shooting point to the target
             const dx = targetPosition.x - worldX
@@ -255,12 +256,13 @@ export class WeaponSystem extends System {
         shooterPosition: PositionComponent,
     ): { x: number; z: number } {
         // Apply rotation transformation to relative position
+        const rotation = -shooterPosition.rotationY
         const worldX = shooterPosition.x + 
-            (shootingPoint.x * Math.cos(shooterPosition.rotationY) - 
-             shootingPoint.y * Math.sin(shooterPosition.rotationY))
+            (shootingPoint.x * Math.cos(rotation) - 
+             shootingPoint.y * Math.sin(rotation))
         const worldZ = shooterPosition.z + 
-            (shootingPoint.x * Math.sin(shooterPosition.rotationY) + 
-             shootingPoint.y * Math.cos(shooterPosition.rotationY))
+            (shootingPoint.x * Math.sin(rotation) + 
+             shootingPoint.y * Math.cos(rotation))
 
         return { x: worldX, z: worldZ }
     }
