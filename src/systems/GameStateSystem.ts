@@ -6,11 +6,17 @@ import type {
     GameState,
     GameStateComponent,
     HealthComponent,
+    PositionComponent,
     RenderableComponent,
 } from '../ecs/Component'
 import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import {
+    bossBarrelConfig,
+    defaultBarrelConfig,
+    spawnBarrelsAroundPosition,
+} from '../entities/BarrelFactory'
 import type { GameWorld } from '../GameWorld'
 import type { LevelingSystem } from './LevelingSystem'
 import type { GameStateHandler } from './states'
@@ -140,33 +146,46 @@ export class GameStateSystem extends System {
             return health?.isDead === true
         })
 
-        // Award XP for each dead enemy before removing them
-        if (deadEnemies.length > 0 && this.levelingSystem) {
-            // Find the player entity to award XP to
-            const playerEntities = this.world.getEntitiesWithComponents([
-                'player',
-            ])
-            if (playerEntities.length > 0) {
-                const player = playerEntities[0]
+        // Spawn XP barrels for each dead enemy
+        if (deadEnemies.length > 0) {
+            for (const deadEnemy of deadEnemies) {
+                // Get enemy position for barrel spawning
+                const enemyPosition =
+                    deadEnemy.getComponent<PositionComponent>('position')
+                if (!enemyPosition) continue
 
-                for (const deadEnemy of deadEnemies) {
-                    // Check if it's a boss or regular enemy and use configured XP multipliers
-                    const isBoss = deadEnemy.hasComponent('boss')
-                    const xpMultiplier = isBoss
-                        ? this.config.boss.xpMultiplier
-                        : 1
-                    const xpAwarded = enemyXPConfig.basicEnemy * xpMultiplier
-                    this.levelingSystem.awardXP(player.id, xpAwarded)
+                // Check if it's a boss or regular enemy and use appropriate barrel config
+                const isBoss = deadEnemy.hasComponent('boss')
+                const xpMultiplier = isBoss ? this.config.boss.xpMultiplier : 1
+                const totalXP = enemyXPConfig.basicEnemy * xpMultiplier
 
-                    if (isBoss) {
-                        console.log(
-                            `💀 Boss defeated! Awarded ${xpAwarded} XP to player`,
-                        )
-                    } else {
-                        console.log(
-                            `💀 Enemy defeated! Awarded ${xpAwarded} XP to player`,
-                        )
-                    }
+                // Use appropriate barrel configuration
+                const barrelConfig = isBoss
+                    ? bossBarrelConfig
+                    : defaultBarrelConfig
+
+                // Spawn barrels around the enemy's death position
+                const barrels = spawnBarrelsAroundPosition(
+                    enemyPosition.x,
+                    enemyPosition.y,
+                    enemyPosition.z,
+                    totalXP,
+                    barrelConfig,
+                )
+
+                // Add barrels to the world
+                for (const barrel of barrels) {
+                    this.world.addEntity(barrel)
+                }
+
+                if (isBoss) {
+                    console.log(
+                        `💀 Boss defeated! Spawned ${barrels.length} barrels worth ${totalXP} total XP`,
+                    )
+                } else {
+                    console.log(
+                        `💀 Enemy defeated! Spawned ${barrels.length} barrels worth ${totalXP} total XP`,
+                    )
                 }
             }
         }

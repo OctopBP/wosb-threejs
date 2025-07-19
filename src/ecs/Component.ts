@@ -318,3 +318,24 @@ export interface DebugComponent extends Component {
     showWeaponRange: boolean
     showVelocityVectors: boolean
 }
+
+// XP Barrel component for collectable barrels that award experience
+export interface XPBarrelComponent extends Component {
+    type: 'xpBarrel'
+    xpValue: number // How much XP this barrel gives when collected
+    collectionRange: number // Distance within which player can collect this barrel
+    isCollected: boolean // Whether this barrel has been collected
+    floatHeight: number // Height offset for floating animation
+    floatSpeed: number // Speed of floating animation
+    spawnTime: number // When this barrel was spawned
+    lifespan: number // How long before barrel disappears (in seconds, 0 = infinite)
+}
+
+// Collectable component for items that can be collected by the player
+export interface CollectableComponent extends Component {
+    type: 'collectable'
+    collectionRange: number // Distance within which collection occurs
+    autoCollect: boolean // Whether to collect automatically when in range
+    requiresInput: boolean // Whether player needs to press a key to collect
+    collectedBy: number[] // Entity IDs that have collected this item
+}
