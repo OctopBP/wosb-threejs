@@ -120,12 +120,12 @@ export class AppOne {
         // Placeholder environment map (sky blue)
         // In production, replace with a real cubemap
         const envMap = new CubeTextureLoader().load([
-            '/px.png', // px
-            '/nx.png', // nx
-            '/py.png', // py
-            '/ny.png', // ny
-            '/pz.png', // pz
-            '/nz.png', // nz
+            '/sky.png', // px
+            '/sky.png', // nx
+            '/sky.png', // py
+            '/sky.png', // ny
+            '/sky.png', // pz
+            '/sky.png', // nz
         ])
 
         const waterUniforms = {
