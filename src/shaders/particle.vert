@@ -19,9 +19,9 @@ void main() {
 
   vAngle = vec2(cos(angle), sin(angle));
   vColor = tintColor;
-  
+
   // Calculate sprite sheet frame UV offset
   float frameX = mod(frameIndex, spriteColumns);
   float frameY = floor(frameIndex / spriteColumns);
-  vFrameUV = vec2(frameX / spriteColumns, frameY / spriteRows);
+  vFrameUV = vec2(frameX / spriteColumns, 1.0 -(frameY / spriteRows));
 }

@@ -1,4 +1,5 @@
-import { Vector3, type Scene } from 'three'
+import type { Scene } from 'three'
+import { Vector3 } from 'three'
 import { createBulletCollision } from '../config/CollisionConfig'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
@@ -38,14 +39,13 @@ export class WeaponSystem extends System {
      */
     setParticleSystem(particleSystem: ParticleSystem): void {
         this.particleSystem = particleSystem
-        
-        // Create the gunsmoke particle system configuration
-        const gunsmokeConfig = getParticleConfig('gunsmoke', new Vector3(0, 0, 0))
-        this.particleSystem.createParticleSystem(gunsmokeConfig)
-        
-        // Create the muzzle flash particle system configuration
-        const muzzleFlashConfig = getParticleConfig('muzzleflash', new Vector3(0, 0, 0))
-        this.particleSystem.createParticleSystem(muzzleFlashConfig)
+
+        // Create the gunSmoke particle system configuration
+        const gunSmokeConfig = getParticleConfig(
+            'gunSmoke',
+            new Vector3(0, 0, 0),
+        )
+        this.particleSystem.createParticleSystem(gunSmokeConfig)
     }
 
     // Method to enable/disable debug logging for auto-targeting weapons
@@ -221,14 +221,6 @@ export class WeaponSystem extends System {
         return closestTarget
     }
 
-    // Legacy method for backward compatibility (now just calls the generic version)
-    private findClosestEnemy(
-        shooterPosition: PositionComponent,
-        detectionRange: number,
-    ): Entity | null {
-        return this.findClosestTarget(shooterPosition, detectionRange, 'enemy')
-    }
-
     private calculateDistance(
         pos1: PositionComponent,
         pos2: PositionComponent,
@@ -381,7 +373,10 @@ export class WeaponSystem extends System {
         this.playWeaponSound()
 
         // Play weapon particle effects
-        this.playWeaponParticleEffects(worldShootingPos, { x: forwardX, z: forwardZ })
+        this.playWeaponParticleEffects(worldShootingPos, {
+            x: forwardX,
+            z: forwardZ,
+        })
     }
 
     private fireProjectileToTarget(
@@ -476,7 +471,10 @@ export class WeaponSystem extends System {
         this.playWeaponSound()
 
         // Play weapon particle effects
-        this.playWeaponParticleEffects(worldShootingPos, { x: forwardX, z: forwardZ })
+        this.playWeaponParticleEffects(worldShootingPos, {
+            x: forwardX,
+            z: forwardZ,
+        })
     }
 
     /**
@@ -494,22 +492,29 @@ export class WeaponSystem extends System {
      */
     private playWeaponParticleEffects(
         worldShootingPos: { x: number; z: number },
-        direction: { x: number; z: number }
+        direction: { x: number; z: number },
     ): void {
-        if (!this.particleSystem) return
+        if (!this.particleSystem) {
+            return
+        }
 
-        // Create shooting position vector (slightly elevated for better effect)
-        const shootingPosition = new Vector3(worldShootingPos.x, 0.5, worldShootingPos.z)
-        
-        // Create direction vector (normalized)
-        const shootingDirection = new Vector3(direction.x, 0, direction.z).normalize()
+        const shootingPosition = new Vector3(
+            worldShootingPos.x,
+            0.5,
+            worldShootingPos.z,
+        )
 
-        // Update gunsmoke particle system position and direction, then burst
-        this.particleSystem.updateParticleSystemPosition('gunsmoke', shootingPosition, shootingDirection)
-        this.particleSystem.burst('gunsmoke')
+        const shootingDirection = new Vector3(
+            direction.x,
+            0,
+            direction.z,
+        ).normalize()
 
-        // Update muzzle flash particle system position and direction, then burst  
-        this.particleSystem.updateParticleSystemPosition('muzzleflash', shootingPosition, shootingDirection)
-        this.particleSystem.burst('muzzleflash')
+        this.particleSystem.updateParticleSystemPosition(
+            'gunSmoke',
+            shootingPosition,
+            shootingDirection,
+        )
+        this.particleSystem.burst('gunSmoke')
     }
 }

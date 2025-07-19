@@ -126,6 +126,7 @@ export class GameWorld {
         this.weaponSystem.setAudioSystem(this.audioSystem)
         this.weaponSystem.setParticleSystem(this.particleSystem)
         this.collisionSystem.setAudioSystem(this.audioSystem)
+        this.collisionSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)
 

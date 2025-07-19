@@ -1,4 +1,5 @@
-import { Mesh } from 'three'
+import { Mesh, Vector3 } from 'three'
+import { wreckageParticleConfig } from '../config/ParticlesConfig'
 import type {
     CollisionComponent,
     DamageableComponent,
@@ -10,9 +11,12 @@ import type {
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { AudioSystem } from './AudioSystem'
+import type { ParticleSystem } from './ParticleSystem'
 
 export class CollisionSystem extends System {
     private audioSystem: AudioSystem | null = null
+    private particleSystem: ParticleSystem | null = null
+
     constructor(world: World) {
         super(world, []) // We'll manually query for different component combinations
     }
@@ -22,6 +26,10 @@ export class CollisionSystem extends System {
      */
     setAudioSystem(audioSystem: AudioSystem): void {
         this.audioSystem = audioSystem
+    }
+
+    setParticleSystem(particleSystem: ParticleSystem): void {
+        this.particleSystem = particleSystem
     }
 
     update(_deltaTime: number): void {
@@ -79,6 +87,9 @@ export class CollisionSystem extends System {
                 ) {
                     // Apply damage
                     this.applyDamage(targetHealth, projectileComp.damage)
+
+                    // Play wreckage particle effect
+                    this.playWreckageParticleEffect(targetPos)
 
                     // Play hit sound effect
                     this.playHitSound()
@@ -145,6 +156,17 @@ export class CollisionSystem extends System {
 
     private applyDamage(health: HealthComponent, damage: number): void {
         health.currentHealth = Math.max(0, health.currentHealth - damage)
+    }
+
+    private playWreckageParticleEffect(targetPos: PositionComponent): void {
+        if (!this.particleSystem) {
+            return
+        }
+
+        this.particleSystem.createParticleSystem({
+            ...wreckageParticleConfig,
+            position: new Vector3(targetPos.x, targetPos.y, targetPos.z),
+        })
     }
 
     private removeProjectile(projectileId: number): void {

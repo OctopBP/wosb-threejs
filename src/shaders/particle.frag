@@ -9,10 +9,10 @@ varying vec2 vFrameUV;
 void main() {
   // Apply rotation to the point coordinates
   vec2 coords = (gl_PointCoord - 0.5) * mat2(vAngle.x, vAngle.y, -vAngle.y, vAngle.x) + 0.5;
-  
+
   // Calculate sprite sheet UV coordinates
   vec2 spriteSize = vec2(1.0 / spriteColumns, 1.0 / spriteRows);
-  vec2 spriteUV = vFrameUV + coords * spriteSize;
-  
+  vec2 spriteUV = vFrameUV + vec2(coords.x, 1.0 - coords.y) * spriteSize;
+
   gl_FragColor = texture2D(diffuseTexture, spriteUV) * vColor;
 }

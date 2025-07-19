@@ -9,6 +9,7 @@ import {
     TextureLoader,
     Vector3,
 } from 'three'
+import { gunSmokeParticleConfig } from '../config/ParticlesConfig'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import particleFragmentShader from '../shaders/particle.frag?raw'
@@ -74,7 +75,7 @@ export interface ParticleEmissionConfig {
     spriteSheet?: {
         columns: number
         rows: number
-        animationSpeed: number // frames per second
+        frameDuration: number
         randomStartFrame: boolean
     }
 }
@@ -351,7 +352,11 @@ export class ParticleSystem extends System {
         }
     }
 
-    updateParticleSystemPosition(systemId: string, position: Vector3, direction?: Vector3): void {
+    updateParticleSystemPosition(
+        systemId: string,
+        position: Vector3,
+        direction?: Vector3,
+    ): void {
         const system = this.particleSystems.get(systemId)
         if (system) {
             system.config.position = position.clone()
@@ -543,11 +548,13 @@ export class ParticleSystem extends System {
             }
 
             // Update sprite sheet animation
-            if (config.spriteSheet && config.spriteSheet.animationSpeed > 0) {
-                p.frameIndex += config.spriteSheet.animationSpeed * deltaTime
+            if (config.spriteSheet && config.spriteSheet.frameDuration > 0) {
                 const totalFrames =
                     config.spriteSheet.columns * config.spriteSheet.rows
-                p.frameIndex = p.frameIndex % totalFrames
+                p.frameIndex =
+                    Math.floor(
+                        (p.maxLife - p.life) / config.spriteSheet.frameDuration,
+                    ) % totalFrames
             }
         }
 
@@ -663,35 +670,7 @@ export class ParticleSystem extends System {
             console.log('Legacy AddParticles')
             // Create a simple test system if none exists
             if (!this.particleSystems.has('test')) {
-                this.createParticleSystem({
-                    id: 'test',
-                    position: new Vector3(0, 0, 0),
-                    emissionRate: 0,
-                    burstCount: 10,
-                    burstInterval: -1,
-                    life: 0.5,
-                    size: { min: 2.0, max: 3.0 },
-                    speed: { min: 5.0, max: 7.0 },
-                    spawnArea: {
-                        type: 'box',
-                        size: new Vector3(2, 2, 2),
-                    },
-                    direction: new Vector3(0, 1, 0),
-                    directionSpread: Math.PI * 0.25,
-                    gravity: new Vector3(0, -15, 0),
-                    drag: 0.1,
-                    startColor: new Color(0xffffff),
-                    endColor: new Color(0xffffff),
-                    rotation: { min: 0, max: Math.PI * 2 },
-                    rotationSpeed: { min: -2, max: 2 },
-                    texture: 'assets/sprites/gunsmoke.png',
-                    spriteSheet: {
-                        columns: 3,
-                        rows: 3,
-                        animationSpeed: 4.5,
-                        randomStartFrame: false,
-                    },
-                })
+                this.createParticleSystem(gunSmokeParticleConfig)
             }
             this.burst('test', 5)
         }
