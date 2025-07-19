@@ -20,14 +20,12 @@ Previously, players gained XP immediately when killing enemies. Now, when enemie
   - `floatSpeed`: Speed of floating animation
   - `spawnTime`: When this barrel was spawned
   - `lifespan`: How long before barrel disappears (in seconds, 0 = infinite)
-  - `animationState`: Current animation state (flying, floating, attracting, collecting)
+  - `animationState`: Current animation state (flying, floating, attracting)
   - `startPosition`: 3D position where barrel starts (enemy ship center)
   - `targetPosition`: 3D position where barrel will land
-  - `flightTime`: Total time for arc flight (1.0-1.5 seconds)
+  - `flightTime`: Total time for arc flight (configured range)
   - `flightProgress`: Progress of flight animation (0-1)
-  - `arcHeight`: Maximum height of parabolic trajectory (2-4 units)
-  - `collectAnimationProgress`: Progress of collection animation (0-1)
-  - `collectAnimationDuration`: Duration of collection animation in seconds
+  - `arcHeight`: Maximum height of parabolic trajectory (configured range)
 
 #### `CollectableComponent`
 - **Purpose**: Generic component for items that can be collected by the player
@@ -72,34 +70,54 @@ Previously, players gained XP immediately when killing enemies. Now, when enemie
 
 ## Configuration Options
 
-### Barrel Spawn Configuration
+### Barrel Configuration (`BarrelConfig.ts`)
+
+All barrel settings are now centralized in a dedicated configuration file:
 
 ```typescript
-interface BarrelSpawnConfig {
-    xpValue: number       // XP value per barrel
-    collectionRange: number // How close player needs to be to collect
-    floatSpeed: number    // Animation speed
-    lifespan: number      // How long barrels last (0 = infinite)
-    spawnCount: number    // How many barrels to spawn
-    spawnRadius: number   // Radius around death position to spawn barrels
+interface BarrelConfig {
+    // XP and spawning
+    xpPerBarrel: number
+    regularEnemyBarrelCount: number
+    bossBarrelCount: number
+    
+    // Collection behavior  
+    collectionRange: number
+    attractionSpeed: number
+    
+    // Flight animation
+    flightTimeMin: number
+    flightTimeMax: number
+    arcHeightMin: number
+    arcHeightMax: number
+    
+    // Visual effects
+    spinSpeedX: number
+    spinSpeedY: number
+    spinSpeedZ: number
+    
+    // Floating behavior
+    driftSpeedMin: number
+    driftSpeedMax: number
+    
+    // Lifespan
+    regularBarrelLifespan: number
+    bossBarrelLifespan: number
 }
 ```
 
-### Default Configurations
+### Default Configuration Values
 
-#### Regular Enemy (defaultBarrelConfig):
-- 5 barrels per enemy
-- 5 XP per barrel (25 XP total)
-- 3.0 unit collection range
-- 30 second lifespan
-- 2.0 unit spawn radius
+#### Regular Enemy Barrels:
+- 5 barrels per enemy, 5 XP each (25 XP total)
+- 3.0 unit collection range, 8.0 unit/s attraction speed
+- 1.0-1.5 second flight time, 2-4 unit arc height
+- 30 second lifespan, 2.0 unit spawn radius
 
-#### Boss Enemy (bossBarrelConfig):
-- 25 barrels per boss
-- 20 XP per barrel (500 XP total)
-- 3.0 unit collection range  
-- 60 second lifespan
-- 4.0 unit spawn radius
+#### Boss Enemy Barrels:
+- 25 barrels per boss, 20 XP each (500 XP total)
+- Same collection/flight settings as regular
+- 60 second lifespan, 4.0 unit spawn radius
 
 ## Visual Features
 
@@ -111,14 +129,13 @@ interface BarrelSpawnConfig {
 - **Water Landing**: Barrels land at random positions around the enemy death location
 - **Floating State**: After landing, barrels float on water with gentle random drift
 - **Magnetic Collection**: When player enters collection range (3 units), barrels smoothly move toward the ship (8.0 units/second)
-- **Collection Animation**: Barrels spin and move upward over 0.5 seconds before being collected
+- **Direct Collection**: Barrels are collected immediately upon contact during magnetic attraction
 - **Scale**: Barrels are scaled to 1.5x for better visibility
 
 #### Animation States:
 1. **Flying**: Barrel follows arc trajectory from enemy center to random landing spot
 2. **Floating**: Barrel drifts gently on water surface
-3. **Attracting**: Barrel moves magnetically toward player
-4. **Collecting**: Barrel spins upward before disappearing
+3. **Attracting**: Barrel moves magnetically toward player and is collected on contact
 
 ### Collection Feedback
 - Console logging when barrels are collected

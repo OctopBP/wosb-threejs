@@ -8,15 +8,12 @@ import type {
     HealthComponent,
     PositionComponent,
     RenderableComponent,
+    XPBarrelComponent,
 } from '../ecs/Component'
 import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
-import {
-    bossBarrelConfig,
-    defaultBarrelConfig,
-    spawnBarrelsAroundPosition,
-} from '../entities/BarrelFactory'
+import { spawnBarrelsAroundPosition } from '../entities/BarrelFactory'
 import type { GameWorld } from '../GameWorld'
 import type { LevelingSystem } from './LevelingSystem'
 import type { GameStateHandler } from './states'
@@ -154,29 +151,25 @@ export class GameStateSystem extends System {
                     deadEnemy.getComponent<PositionComponent>('position')
                 if (!enemyPosition) continue
 
-                // Check if it's a boss or regular enemy and use appropriate barrel config
+                // Check if it's a boss or regular enemy
                 const isBoss = deadEnemy.hasComponent('boss')
-                const xpMultiplier = isBoss ? this.config.boss.xpMultiplier : 1
-                const totalXP = enemyXPConfig.basicEnemy * xpMultiplier
-
-                // Use appropriate barrel configuration
-                const barrelConfig = isBoss
-                    ? bossBarrelConfig
-                    : defaultBarrelConfig
 
                 // Spawn barrels around the enemy's death position
                 const barrels = spawnBarrelsAroundPosition(
                     enemyPosition.x,
                     enemyPosition.y,
                     enemyPosition.z,
-                    totalXP,
-                    barrelConfig,
+                    isBoss,
                 )
 
                 // Add barrels to the world
                 for (const barrel of barrels) {
                     this.world.addEntity(barrel)
                 }
+
+                const firstBarrel =
+                    barrels[0]?.getComponent<XPBarrelComponent>('xpBarrel')
+                const totalXP = barrels.length * (firstBarrel?.xpValue || 0)
 
                 if (isBoss) {
                     console.log(

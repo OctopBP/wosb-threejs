@@ -320,11 +320,7 @@ export interface DebugComponent extends Component {
 }
 
 // Animation states for barrels
-export type BarrelAnimationState =
-    | 'flying'
-    | 'floating'
-    | 'attracting'
-    | 'collecting'
+export type BarrelAnimationState = 'flying' | 'floating' | 'attracting'
 
 // XP Barrel component for collectable barrels that award experience
 export interface XPBarrelComponent extends Component {
@@ -332,8 +328,6 @@ export interface XPBarrelComponent extends Component {
     xpValue: number // How much XP this barrel gives when collected
     collectionRange: number // Distance within which player can collect this barrel
     isCollected: boolean // Whether this barrel has been collected
-    floatHeight: number // Height offset for floating animation
-    floatSpeed: number // Speed of floating animation
     spawnTime: number // When this barrel was spawned
     lifespan: number // How long before barrel disappears (in seconds, 0 = infinite)
     isBeingAttracted: boolean // Whether this barrel is being magnetically pulled to player
@@ -346,8 +340,6 @@ export interface XPBarrelComponent extends Component {
     flightTime: number // Total time for arc flight
     flightProgress: number // Progress of flight (0-1)
     arcHeight: number // Maximum height of arc trajectory
-    collectAnimationProgress: number // Progress of collection animation (0-1)
-    collectAnimationDuration: number // Duration of collection animation in seconds
 }
 
 // Collectable component for items that can be collected by the player

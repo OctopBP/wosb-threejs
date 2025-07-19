@@ -1,3 +1,5 @@
+import type { BarrelConfig } from '../config/BarrelConfig'
+import { bossBarrelConfig, defaultBarrelConfig } from '../config/BarrelConfig'
 import type {
     BarrelAnimationState,
     CollectableComponent,
@@ -9,48 +11,14 @@ import type {
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
 
-// Configuration for barrel spawning
-export interface BarrelSpawnConfig {
-    xpValue: number // XP value per barrel
-    collectionRange: number // How close player needs to be to collect
-    floatSpeed: number // Animation speed
-    lifespan: number // How long barrels last (0 = infinite)
-    spawnCount: number // How many barrels to spawn
-    spawnRadius: number // Radius around death position to spawn barrels
-}
-
-// Default configuration for XP barrels
-export const defaultBarrelConfig: BarrelSpawnConfig = {
-    xpValue: 5, // Each barrel gives 5 XP (so 5 barrels = 25 XP like before)
-    collectionRange: 3.0, // Player needs to be within 3 units
-    floatSpeed: 2.0, // Floating animation speed
-    lifespan: 30.0, // Barrels last 30 seconds before disappearing
-    spawnCount: 5, // Spawn 5 barrels per enemy
-    spawnRadius: 2.0, // Spread barrels within 2 units of death position
-}
-
-// Boss barrel configuration (more barrels, higher XP)
-export const bossBarrelConfig: BarrelSpawnConfig = {
-    xpValue: 20, // Each barrel gives 20 XP
-    collectionRange: 3.0,
-    floatSpeed: 2.0,
-    lifespan: 60.0, // Boss barrels last longer
-    spawnCount: 25, // Boss drops 25 barrels (500 XP total, same as 20x multiplier)
-    spawnRadius: 4.0, // Larger spread for boss
-}
-
 export function createXPBarrel(
     x: number,
     y: number,
     z: number,
-    xpValue: number,
-    config: Partial<BarrelSpawnConfig> = {},
+    config: BarrelConfig = defaultBarrelConfig,
 ): Entity {
     const entity = new Entity()
     const currentTime = Date.now() / 1000 // Current time in seconds
-
-    // Merge with default config
-    const barrelConfig = { ...defaultBarrelConfig, ...config }
 
     // Position component - start at enemy position, will fly to target
     const position: PositionComponent = {
@@ -64,53 +32,53 @@ export function createXPBarrel(
     }
     entity.addComponent(position)
 
-    // Velocity component - slight random drift to simulate floating
+    // Velocity component - starts at zero, will be set during animation
     const velocity: VelocityComponent = {
         type: 'velocity',
-        dx: (Math.random() - 0.5) * 0.2, // Small random drift
+        dx: 0, // Will be set during flight animation
         dy: 0,
-        dz: (Math.random() - 0.5) * 0.2,
-        angularVelocityX: (Math.random() - 0.5) * 0.5,
-        angularVelocityY: (Math.random() - 0.5) * 0.5,
-        angularVelocityZ: (Math.random() - 0.5) * 0.5,
+        dz: 0,
+        angularVelocityX: 0,
+        angularVelocityY: 0,
+        angularVelocityZ: 0,
     }
     entity.addComponent(velocity)
 
     // Calculate random target position around the enemy
     const angle = Math.random() * Math.PI * 2 // Random direction
-    const distance = Math.random() * barrelConfig.spawnRadius // Random distance within radius
+    const distance = Math.random() * config.spawnRadius // Random distance within radius
     const targetX = x + Math.cos(angle) * distance
     const targetZ = z + Math.sin(angle) * distance
 
     // XP Barrel component
     const xpBarrel: XPBarrelComponent = {
         type: 'xpBarrel',
-        xpValue,
-        collectionRange: barrelConfig.collectionRange,
+        xpValue: config.xpPerBarrel,
+        collectionRange: config.collectionRange,
         isCollected: false,
-        floatHeight: 0, // No floating height, stay on water
-        floatSpeed: 0, // No floating animation
         spawnTime: currentTime,
-        lifespan: barrelConfig.lifespan,
+        lifespan: config.regularBarrelLifespan,
         isBeingAttracted: false, // Initially not being attracted
-        attractionSpeed: 8.0, // Speed at which barrel moves toward player
+        attractionSpeed: config.attractionSpeed,
 
         // Explosion/Arc animation properties
         animationState: 'flying', // Start with flying animation
         startPosition: { x, y, z }, // Enemy position
         targetPosition: { x: targetX, y: 0, z: targetZ }, // Random position around enemy
-        flightTime: 1.0 + Math.random() * 0.5, // Random flight time 1.0-1.5 seconds
+        flightTime:
+            config.flightTimeMin +
+            Math.random() * (config.flightTimeMax - config.flightTimeMin),
         flightProgress: 0, // Start at beginning of flight
-        arcHeight: 2.0 + Math.random() * 2.0, // Random arc height 2-4 units
-        collectAnimationProgress: 0,
-        collectAnimationDuration: 0.5, // Collection animation takes 0.5 seconds
+        arcHeight:
+            config.arcHeightMin +
+            Math.random() * (config.arcHeightMax - config.arcHeightMin),
     }
     entity.addComponent(xpBarrel)
 
     // Collectable component
     const collectable: CollectableComponent = {
         type: 'collectable',
-        collectionRange: barrelConfig.collectionRange,
+        collectionRange: config.collectionRange,
         autoCollect: true, // Automatically collect when in range
         requiresInput: false, // No input required
         collectedBy: [],
@@ -122,7 +90,7 @@ export function createXPBarrel(
         type: 'collision',
         collider: {
             shape: 'sphere',
-            radius: barrelConfig.collectionRange, // Collision radius matches collection range
+            radius: config.collectionRange, // Collision radius matches collection range
         },
         offset: { x: 0, y: 0.5, z: 0 }, // Slightly above water
     }
@@ -147,29 +115,17 @@ export function spawnBarrelsAroundPosition(
     centerX: number,
     centerY: number,
     centerZ: number,
-    totalXP: number,
-    config: BarrelSpawnConfig = defaultBarrelConfig,
+    isBoss: boolean = false,
 ): Entity[] {
     const barrels: Entity[] = []
-    const xpPerBarrel = Math.ceil(totalXP / config.spawnCount)
+    const config = isBoss ? bossBarrelConfig : defaultBarrelConfig
+    const barrelCount = isBoss
+        ? config.bossBarrelCount
+        : config.regularEnemyBarrelCount
 
-    for (let i = 0; i < config.spawnCount; i++) {
-        // Calculate random position around center within spawn radius
-        const angle =
-            (Math.PI * 2 * i) / config.spawnCount + Math.random() * 0.5
-        const distance = Math.random() * config.spawnRadius
-
-        const barrelX = centerX + Math.cos(angle) * distance
-        const barrelZ = centerZ + Math.sin(angle) * distance
-
-        // Create barrel with appropriate XP value
-        const barrel = createXPBarrel(
-            barrelX,
-            centerY,
-            barrelZ,
-            xpPerBarrel,
-            config,
-        )
+    for (let i = 0; i < barrelCount; i++) {
+        // Create barrel at enemy position - it will scatter during flight animation
+        const barrel = createXPBarrel(centerX, centerY, centerZ, config)
         barrels.push(barrel)
     }
 
