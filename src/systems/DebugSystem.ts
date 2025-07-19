@@ -146,16 +146,20 @@ export class DebugSystem extends System {
             const geometry = new SphereGeometry(0.1, 8, 6)
             const mesh = new Mesh(geometry, this.shootingPointMaterial)
 
-            // Calculate world position of shooting point
-            // Note: shootingPoints are relative to the ship's position
-            mesh.position.set(
-                position.x + point.x,
-                position.y + 0.2, // Slightly above the ship
-                position.z + point.y, // Note: point.y maps to world z
-            )
+            // Transform shooting point coordinates based on ship's rotation
+            const cos = Math.cos(position.rotationY)
+            const sin = Math.sin(position.rotationY)
 
-            // Apply ship's rotation to shooting point
-            mesh.rotation.y = position.rotationY
+            // Rotate the shooting point relative to ship's rotation
+            const rotatedX = point.x * cos - point.y * sin
+            const rotatedZ = point.x * sin + point.y * cos
+
+            // Calculate world position of shooting point
+            mesh.position.set(
+                position.x + rotatedX,
+                position.y + 0.2, // Slightly above the ship
+                position.z + rotatedZ,
+            )
 
             this.scene.add(mesh)
             this.debugGizmos.push({
