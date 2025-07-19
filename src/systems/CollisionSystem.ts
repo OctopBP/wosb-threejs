@@ -186,31 +186,23 @@ export class CollisionSystem extends System {
     }
 
     /**
-     * Play appropriate hit sound effect
+     * Play hit sound effect - using death sound for now since no separate hit sound available
      */
     private playHitSound(isPlayer: boolean): void {
         if (!this.audioSystem) return
 
-        if (isPlayer) {
-            this.audioSystem.playSfx('player_hit')
-        } else {
-            this.audioSystem.playSfx('projectile_hit')
-        }
+        // Use death sound for hits since no separate hit sound is available
+        this.audioSystem.playSfx('death', { volume: 0.5 })
     }
 
     /**
-     * Play appropriate death/explosion sound effect
+     * Play death/explosion sound effect
      */
     private playDeathSound(isPlayer: boolean): void {
         if (!this.audioSystem) return
 
-        if (isPlayer) {
-            // Player death - could play a different sound
-            this.audioSystem.playSfx('player_hit', { volume: 1.2 })
-        } else {
-            // Enemy death
-            this.audioSystem.playSfx('enemy_explosion')
-        }
+        // Use the death sound for all death events
+        this.audioSystem.playSfx('death')
     }
 
     /**

@@ -1,0 +1,11 @@
+# Sound Effects Directory
+
+Current files:
+- Shoot.ogg - Weapon firing sound (used for all weapons)
+- Death.ogg - Death/explosion sound (used for enemy deaths and hits)
+- LevelUp.ogg - Level up achievement sound
+
+## Specifications:
+- Format: OGG Vorbis
+- Short duration sound effects
+- Volume levels configured in AudioConfig.ts

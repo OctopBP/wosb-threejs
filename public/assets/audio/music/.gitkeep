@@ -1,0 +1,9 @@
+# Music Directory
+
+Current files:
+- Music.ogg - Main game background music
+
+## Specifications:
+- Format: OGG Vorbis
+- Loops automatically in the game
+- Configured for 60% volume by default

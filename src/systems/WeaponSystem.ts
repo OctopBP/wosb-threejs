@@ -456,20 +456,12 @@ export class WeaponSystem extends System {
     }
 
     /**
-     * Play appropriate weapon sound based on weapon type
+     * Play weapon shooting sound
      */
     private playWeaponSound(weaponType: string): void {
         if (!this.audioSystem) return
 
-        // Map weapon types to sound effects
-        const soundMap: Record<string, string> = {
-            laser: 'laser_shoot',
-            missile: 'missile_shoot',
-            cannon: 'laser_shoot', // Fallback to laser for now
-            default: 'laser_shoot',
-        }
-
-        const soundName = soundMap[weaponType] || soundMap.default
-        this.audioSystem.playSfx(soundName)
+        // Use the single shoot sound for all weapons
+        this.audioSystem.playSfx('shoot')
     }
 }
