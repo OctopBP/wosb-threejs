@@ -1,6 +1,6 @@
 import { Audio, AudioLoader, AudioListener, PositionalAudio } from 'three'
 import type { Camera } from 'three'
-import type { System } from '../ecs/System'
+import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
 export interface AudioConfig {
@@ -23,7 +23,7 @@ export interface AudioAssets {
     ui: Record<string, AudioAsset>
 }
 
-export class AudioSystem implements System {
+export class AudioSystem extends System {
     private audioContext: AudioContext | null = null
     private audioListener: AudioListener | null = null
     private audioLoader: AudioLoader
@@ -36,9 +36,10 @@ export class AudioSystem implements System {
     private uiVolume = 0.6
     private isInitialized = false
     private currentMusic: Audio | null = null
-    private isMuted = false
+    private audioMuted = false
 
-    constructor() {
+    constructor(world: World) {
+        super(world, []) // No required components for audio system
         this.audioLoader = new AudioLoader()
     }
 
@@ -91,7 +92,7 @@ export class AudioSystem implements System {
         for (const [category, categoryAssets] of Object.entries(this.assets)) {
             for (const [name, asset] of Object.entries(categoryAssets)) {
                 const key = `${category}:${name}`
-                loadPromises.push(this.loadSingleAsset(key, asset))
+                loadPromises.push(this.loadSingleAsset(key, asset as AudioAsset))
             }
         }
 
@@ -216,7 +217,7 @@ export class AudioSystem implements System {
             return null
         }
 
-        if (this.isMuted) {
+        if (this.audioMuted) {
             return null
         }
 
@@ -322,7 +323,7 @@ export class AudioSystem implements System {
      * Mute/unmute all audio
      */
     setMuted(muted: boolean): void {
-        this.isMuted = muted
+        this.audioMuted = muted
         
         if (muted) {
             // Stop all currently playing audio
@@ -348,7 +349,7 @@ export class AudioSystem implements System {
     getMusicVolume(): number { return this.musicVolume }
     getSfxVolume(): number { return this.sfxVolume }
     getUIVolume(): number { return this.uiVolume }
-    isMuted(): boolean { return this.isMuted }
+    isMuted(): boolean { return this.audioMuted }
 
     /**
      * Stop all audio
@@ -383,7 +384,7 @@ export class AudioSystem implements System {
     /**
      * System interface methods
      */
-    update(world: World, deltaTime: number): void {
+    update(deltaTime: number): void {
         // Audio system doesn't need regular updates, but we could add
         // fade-in/fade-out effects, audio parameter animations, etc. here
     }

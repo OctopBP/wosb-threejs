@@ -105,7 +105,7 @@ export class GameWorld {
         this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
-        this.audioSystem = new AudioSystem()
+        this.audioSystem = new AudioSystem(this.world)
         this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other

@@ -359,8 +359,8 @@ export class WeaponSystem extends System {
         const collision = createBulletCollision()
         projectile.addComponent(collision)
 
-        this.playWeaponSound(weapon.weaponType)
         // Play weapon sound effect
+        this.playWeaponSound()
     }
 
     private fireProjectileToTarget(
@@ -452,13 +452,13 @@ export class WeaponSystem extends System {
         projectile.addComponent(collision)
 
         // Play weapon sound effect
-        this.playWeaponSound(weapon.weaponType)
+        this.playWeaponSound()
     }
 
     /**
      * Play weapon shooting sound
      */
-    private playWeaponSound(weaponType: string): void {
+    private playWeaponSound(): void {
         if (!this.audioSystem) return
 
         // Use the single shoot sound for all weapons
