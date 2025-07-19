@@ -1,13 +1,11 @@
+import type { Object3D, Scene } from 'three'
 import {
     BufferGeometry,
-    CircleGeometry,
     LineBasicMaterial,
     LineSegments,
     Mesh,
     MeshBasicMaterial,
-    type Object3D,
     RingGeometry,
-    type Scene,
     SphereGeometry,
     Vector3,
     WireframeGeometry,
@@ -147,8 +145,8 @@ export class DebugSystem extends System {
             const mesh = new Mesh(geometry, this.shootingPointMaterial)
 
             // Transform shooting point coordinates based on ship's rotation
-            const cos = Math.cos(position.rotationY)
-            const sin = Math.sin(position.rotationY)
+            const cos = Math.cos(-position.rotationY)
+            const sin = Math.sin(-position.rotationY)
 
             // Rotate the shooting point relative to ship's rotation
             const rotatedX = point.x * cos - point.y * sin
