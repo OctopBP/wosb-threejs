@@ -228,7 +228,6 @@ export class WeaponSystem extends System {
 
         for (const point of weapon.shootingPoints) {
             // Convert relative shooting point to world coordinates
-            // Fix rotation direction by negating the angle
             const rotation = -shooterPosition.rotationY
             const worldX = shooterPosition.x + 
                 (point.x * Math.cos(rotation) - point.y * Math.sin(rotation))
@@ -257,7 +256,6 @@ export class WeaponSystem extends System {
         shooterPosition: PositionComponent,
     ): { x: number; z: number } {
         // Apply rotation transformation to relative position
-        // Fix rotation direction by negating the angle
         const rotation = -shooterPosition.rotationY
         const worldX = shooterPosition.x + 
             (shootingPoint.x * Math.cos(rotation) - 
