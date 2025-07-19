@@ -1,4 +1,4 @@
-import type { Camera, Scene } from 'three'
+import type { Camera, Scene, Texture } from 'three'
 import {
     BufferGeometry,
     Color,
@@ -6,7 +6,6 @@ import {
     NormalBlending,
     Points,
     ShaderMaterial,
-    Texture,
     TextureLoader,
     Vector3,
 } from 'three'
@@ -14,7 +13,6 @@ import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import particleFragmentShader from '../shaders/particle.frag?raw'
 import particleVertexShader from '../shaders/particle.vert?raw'
-
 export type Particle = {
     position: Vector3
     life: number
@@ -31,37 +29,46 @@ export type Particle = {
     acceleration: Vector3
 }
 
+type ValueOrRange = number | { min: number; max: number }
+
+function getValueFromValueOrRange(value: ValueOrRange): number {
+    if (typeof value === 'number') {
+        return value
+    }
+    return Math.random() * (value.max - value.min) + value.min
+}
+
 export interface ParticleEmissionConfig {
     // Emission settings
     emissionRate: number // particles per second
     burstCount: number // particles per burst
     burstInterval: number // seconds between bursts (-1 for no bursts)
-    
+
     // Particle properties
-    life: { min: number; max: number }
-    size: { min: number; max: number }
-    speed: { min: number; max: number }
-    
+    life: ValueOrRange
+    size: ValueOrRange
+    speed: ValueOrRange
+
     // Spawn area
     spawnArea: {
         type: 'box' | 'sphere' | 'point'
         size: Vector3 // for box: width/height/depth, for sphere: radius in x
     }
-    
+
     // Direction
     direction: Vector3
     directionSpread: number // angle in radians
-    
+
     // Physics
     gravity: Vector3
     drag: number
-    
+
     // Visual properties
     startColor: Color
     endColor: Color
-    rotation: { min: number; max: number }
-    rotationSpeed: { min: number; max: number }
-    
+    rotation: ValueOrRange
+    rotationSpeed: ValueOrRange
+
     // Texture settings
     texture: string
     spriteSheet?: {
@@ -75,7 +82,7 @@ export interface ParticleEmissionConfig {
 export interface ParticleSystemConfig extends ParticleEmissionConfig {
     id: string
     position: Vector3
-    
+
     // Animation curves for particle properties over lifetime
     sizeOverTime?: Array<{ time: number; value: number }>
     alphaOverTime?: Array<{ time: number; value: number }>
@@ -175,8 +182,8 @@ export class ParticleSystem extends System {
 
     createParticleSystem(config: ParticleSystemConfig): void {
         // Create material group identifier based on texture and sprite sheet settings
-        const spriteKey = config.spriteSheet 
-            ? `${config.spriteSheet.columns}x${config.spriteSheet.rows}` 
+        const spriteKey = config.spriteSheet
+            ? `${config.spriteSheet.columns}x${config.spriteSheet.rows}`
             : '1x1'
         const materialGroup = `${config.texture}_${spriteKey}`
 
@@ -202,7 +209,10 @@ export class ParticleSystem extends System {
         this.particleSystems.set(config.id, system)
     }
 
-    private ensureMaterialGroup(materialGroup: string, referenceSystem: ParticleSystemInstance): void {
+    private ensureMaterialGroup(
+        materialGroup: string,
+        referenceSystem: ParticleSystemInstance,
+    ): void {
         if (!this.materials.has(materialGroup)) {
             const pointMultiplier =
                 window.innerHeight /
@@ -213,11 +223,12 @@ export class ParticleSystem extends System {
                 uniforms: {
                     pointMultiplier: { value: pointMultiplier },
                     diffuseTexture: { value: referenceSystem.texture },
-                    spriteColumns: { 
-                        value: referenceSystem.config.spriteSheet?.columns || 1.0 
+                    spriteColumns: {
+                        value:
+                            referenceSystem.config.spriteSheet?.columns || 1.0,
                     },
-                    spriteRows: { 
-                        value: referenceSystem.config.spriteSheet?.rows || 1.0 
+                    spriteRows: {
+                        value: referenceSystem.config.spriteSheet?.rows || 1.0,
                     },
                 },
                 vertexShader: particleVertexShader,
@@ -233,9 +244,15 @@ export class ParticleSystem extends System {
             const geometry = new BufferGeometry()
             geometry.setAttribute('position', new Float32BufferAttribute([], 3))
             geometry.setAttribute('size', new Float32BufferAttribute([], 1))
-            geometry.setAttribute('tintColor', new Float32BufferAttribute([], 4))
+            geometry.setAttribute(
+                'tintColor',
+                new Float32BufferAttribute([], 4),
+            )
             geometry.setAttribute('angle', new Float32BufferAttribute([], 1))
-            geometry.setAttribute('frameIndex', new Float32BufferAttribute([], 1))
+            geometry.setAttribute(
+                'frameIndex',
+                new Float32BufferAttribute([], 1),
+            )
 
             // Create points object and add to scene
             const points = new Points(geometry, material)
@@ -292,18 +309,19 @@ export class ParticleSystem extends System {
         const system = this.particleSystems.get(id)
         if (system) {
             this.particleSystems.delete(id)
-            
+
             // Check if any other systems use the same material group
-            const stillInUse = Array.from(this.particleSystems.values())
-                .some(s => s.materialGroup === system.materialGroup)
-            
+            const stillInUse = Array.from(this.particleSystems.values()).some(
+                (s) => s.materialGroup === system.materialGroup,
+            )
+
             // If no other systems use this material group, clean it up
             if (!stillInUse) {
                 const points = this.pointsObjects.get(system.materialGroup)
                 if (points) {
                     this.scene.remove(points)
                 }
-                
+
                 this.materials.delete(system.materialGroup)
                 this.geometries.delete(system.materialGroup)
                 this.pointsObjects.delete(system.materialGroup)
@@ -333,11 +351,16 @@ export class ParticleSystem extends System {
         }
     }
 
-    private updateParticleSystem(system: ParticleSystemInstance, deltaTime: number): void {
+    private updateParticleSystem(
+        system: ParticleSystemInstance,
+        deltaTime: number,
+    ): void {
         // Handle emission over time
         if (system.config.emissionRate > 0) {
             system.timeToSpawn += deltaTime
-            const particlesToSpawn = Math.floor(system.timeToSpawn * system.config.emissionRate)
+            const particlesToSpawn = Math.floor(
+                system.timeToSpawn * system.config.emissionRate,
+            )
             system.timeToSpawn -= particlesToSpawn / system.config.emissionRate
             this.addParticles(system, particlesToSpawn)
         }
@@ -359,25 +382,29 @@ export class ParticleSystem extends System {
         const config = system.config
 
         for (let i = 0; i < count; i++) {
-            const life = Math.random() * (config.life.max - config.life.min) + config.life.min
-            const size = Math.random() * (config.size.max - config.size.min) + config.size.min
-            const speed = Math.random() * (config.speed.max - config.speed.min) + config.speed.min
+            const life = getValueFromValueOrRange(config.life)
+            const size = getValueFromValueOrRange(config.size)
+            const speed = getValueFromValueOrRange(config.speed)
 
             // Generate spawn position
             const spawnPos = this.generateSpawnPosition(config)
             spawnPos.add(config.position)
 
             // Generate velocity direction
-            const velocity = this.generateVelocityDirection(config).multiplyScalar(speed)
+            const velocity =
+                this.generateVelocityDirection(config).multiplyScalar(speed)
 
             // Generate rotation
-            const rotation = Math.random() * (config.rotation.max - config.rotation.min) + config.rotation.min
-            const rotationSpeed = Math.random() * (config.rotationSpeed.max - config.rotationSpeed.min) + config.rotationSpeed.min
+            const rotation = getValueFromValueOrRange(config.rotation)
+            const rotationSpeed = getValueFromValueOrRange(config.rotationSpeed)
 
             // Generate frame index for sprite sheets
             let frameIndex = 0
-            if (config.spriteSheet && config.spriteSheet.randomStartFrame) {
-                frameIndex = Math.floor(Math.random() * (config.spriteSheet.columns * config.spriteSheet.rows))
+            if (config.spriteSheet?.randomStartFrame) {
+                frameIndex = Math.floor(
+                    Math.random() *
+                        (config.spriteSheet.columns * config.spriteSheet.rows),
+                )
             }
 
             const particle: Particle = {
@@ -410,10 +437,10 @@ export class ParticleSystem extends System {
                 pos.set(
                     (Math.random() - 0.5) * config.spawnArea.size.x,
                     (Math.random() - 0.5) * config.spawnArea.size.y,
-                    (Math.random() - 0.5) * config.spawnArea.size.z
+                    (Math.random() - 0.5) * config.spawnArea.size.z,
                 )
                 break
-            case 'sphere':
+            case 'sphere': {
                 const radius = config.spawnArea.size.x
                 const theta = Math.random() * Math.PI * 2
                 const phi = Math.acos(2 * Math.random() - 1)
@@ -421,9 +448,10 @@ export class ParticleSystem extends System {
                 pos.set(
                     r * Math.sin(phi) * Math.cos(theta),
                     r * Math.sin(phi) * Math.sin(theta),
-                    r * Math.cos(phi)
+                    r * Math.cos(phi),
                 )
                 break
+            }
         }
 
         return pos
@@ -440,7 +468,10 @@ export class ParticleSystem extends System {
             const phi = Math.random() * config.directionSpread
 
             // Create perpendicular vectors for the cone
-            const up = Math.abs(direction.y) < 0.9 ? new Vector3(0, 1, 0) : new Vector3(1, 0, 0)
+            const up =
+                Math.abs(direction.y) < 0.9
+                    ? new Vector3(0, 1, 0)
+                    : new Vector3(1, 0, 0)
             const right = new Vector3().crossVectors(direction, up).normalize()
             const newUp = new Vector3().crossVectors(right, direction)
 
@@ -448,7 +479,7 @@ export class ParticleSystem extends System {
             const spreadDirection = new Vector3(
                 Math.sin(phi) * Math.cos(theta),
                 Math.sin(phi) * Math.sin(theta),
-                Math.cos(phi)
+                Math.cos(phi),
             )
 
             // Transform to world space
@@ -463,7 +494,10 @@ export class ParticleSystem extends System {
         return direction
     }
 
-    private updateParticles(system: ParticleSystemInstance, deltaTime: number): void {
+    private updateParticles(
+        system: ParticleSystemInstance,
+        deltaTime: number,
+    ): void {
         const config = system.config
 
         // Update particle life
@@ -492,14 +526,17 @@ export class ParticleSystem extends System {
 
             // Apply drag
             if (config.drag > 0) {
-                const drag = p.velocity.clone().multiplyScalar(deltaTime * config.drag)
+                const drag = p.velocity
+                    .clone()
+                    .multiplyScalar(deltaTime * config.drag)
                 p.velocity.sub(drag)
             }
 
             // Update sprite sheet animation
             if (config.spriteSheet && config.spriteSheet.animationSpeed > 0) {
                 p.frameIndex += config.spriteSheet.animationSpeed * deltaTime
-                const totalFrames = config.spriteSheet.columns * config.spriteSheet.rows
+                const totalFrames =
+                    config.spriteSheet.columns * config.spriteSheet.rows
                 p.frameIndex = p.frameIndex % totalFrames
             }
         }
@@ -510,14 +547,14 @@ export class ParticleSystem extends System {
     private updateGeometry(): void {
         // Group systems by material group
         const materialGroups = new Map<string, ParticleSystemInstance[]>()
-        
+
         for (const system of this.particleSystems.values()) {
             if (!system.isActive) continue
-            
+
             if (!materialGroups.has(system.materialGroup)) {
                 materialGroups.set(system.materialGroup, [])
             }
-            materialGroups.get(system.materialGroup)!.push(system)
+            materialGroups.get(system.materialGroup)?.push(system)
         }
 
         // Update geometry for each material group
@@ -541,7 +578,7 @@ export class ParticleSystem extends System {
             allParticles.sort(
                 (a, b) =>
                     this.camera.position.distanceTo(b.position) -
-                    this.camera.position.distanceTo(a.position)
+                    this.camera.position.distanceTo(a.position),
             )
 
             // Build attribute arrays
@@ -583,12 +620,24 @@ export class ParticleSystem extends System {
         for (const [materialGroup, geometry] of this.geometries) {
             if (!materialGroups.has(materialGroup)) {
                 // No active systems for this group, clear the geometry
-                geometry.setAttribute('position', new Float32BufferAttribute([], 3))
+                geometry.setAttribute(
+                    'position',
+                    new Float32BufferAttribute([], 3),
+                )
                 geometry.setAttribute('size', new Float32BufferAttribute([], 1))
-                geometry.setAttribute('tintColor', new Float32BufferAttribute([], 4))
-                geometry.setAttribute('angle', new Float32BufferAttribute([], 1))
-                geometry.setAttribute('frameIndex', new Float32BufferAttribute([], 1))
-                
+                geometry.setAttribute(
+                    'tintColor',
+                    new Float32BufferAttribute([], 4),
+                )
+                geometry.setAttribute(
+                    'angle',
+                    new Float32BufferAttribute([], 1),
+                )
+                geometry.setAttribute(
+                    'frameIndex',
+                    new Float32BufferAttribute([], 1),
+                )
+
                 geometry.attributes.position.needsUpdate = true
                 geometry.attributes.size.needsUpdate = true
                 geometry.attributes.tintColor.needsUpdate = true
@@ -607,25 +656,31 @@ export class ParticleSystem extends System {
                 this.createParticleSystem({
                     id: 'test',
                     position: new Vector3(0, 0, 0),
-                    emissionRate: 5.0,
+                    emissionRate: 0,
                     burstCount: 10,
                     burstInterval: -1,
-                    life: { min: 1.0, max: 3.0 },
-                    size: { min: 2.0, max: 6.0 },
-                    speed: { min: 5.0, max: 15.0 },
+                    life: 0.5,
+                    size: { min: 2.0, max: 3.0 },
+                    speed: { min: 5.0, max: 7.0 },
                     spawnArea: {
                         type: 'box',
-                        size: new Vector3(2, 2, 2)
+                        size: new Vector3(2, 2, 2),
                     },
                     direction: new Vector3(0, 1, 0),
                     directionSpread: Math.PI * 0.25,
                     gravity: new Vector3(0, -15, 0),
                     drag: 0.1,
-                    startColor: new Color(0xffff80),
-                    endColor: new Color(0xff8080),
+                    startColor: new Color(0xffffff),
+                    endColor: new Color(0xffffff),
                     rotation: { min: 0, max: Math.PI * 2 },
                     rotationSpeed: { min: -2, max: 2 },
-                    texture: 'assets/sprites/gunsmoke.png'
+                    texture: 'assets/sprites/gunsmoke.png',
+                    spriteSheet: {
+                        columns: 3,
+                        rows: 3,
+                        animationSpeed: 4.5,
+                        randomStartFrame: false,
+                    },
                 })
             }
             this.burst('test', 5)
@@ -633,13 +688,15 @@ export class ParticleSystem extends System {
     }
 
     // Utility methods for managing particle systems
-    getParticleSystemInfo(id: string): { particleCount: number; isActive: boolean } | null {
+    getParticleSystemInfo(
+        id: string,
+    ): { particleCount: number; isActive: boolean } | null {
         const system = this.particleSystems.get(id)
         if (!system) return null
-        
+
         return {
             particleCount: system.particles.length,
-            isActive: system.isActive
+            isActive: system.isActive,
         }
     }
 

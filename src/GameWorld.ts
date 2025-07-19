@@ -38,7 +38,7 @@ import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
-import { PartialeSystem } from './systems/ParticleSystem'
+import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -70,7 +70,7 @@ export class GameWorld {
     private enemyArrowSystem: EnemyArrowSystem
     private audioSystem: AudioSystem
     private audioUISystem: AudioUISystem
-    private particleSystem: PartialeSystem
+    private particleSystem: ParticleSystem
     private debugSystem: DebugSystem
     private playerEntity: Entity | null = null
     private debugEntity: Entity | null = null
@@ -115,7 +115,7 @@ export class GameWorld {
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
         this.audioSystem = new AudioSystem(this.world)
         this.audioUISystem = new AudioUISystem(this.world)
-        this.particleSystem = new PartialeSystem(this.world, scene, camera)
+        this.particleSystem = new ParticleSystem(this.world, scene, camera)
         this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other
