@@ -30,6 +30,11 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
             fileName: 'boss.glb',
             scale: 0.5,
         },
+        island: {
+            kind: 'model',
+            fileName: 'islands_exp_test.glb',
+            scale: 1.0,
+        },
         bullet: {
             kind: 'primitive',
             scale: 0.75,
