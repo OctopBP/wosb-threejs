@@ -352,19 +352,7 @@ export class ParticleSystem extends System {
         }
     }
 
-    updateParticleSystemPosition(
-        systemId: string,
-        position: Vector3,
-        direction?: Vector3,
-    ): void {
-        const system = this.particleSystems.get(systemId)
-        if (system) {
-            system.config.position = position.clone()
-            if (direction) {
-                system.config.direction = direction.clone().normalize()
-            }
-        }
-    }
+
 
     private updateParticleSystem(
         system: ParticleSystemInstance,

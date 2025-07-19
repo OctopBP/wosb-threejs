@@ -39,13 +39,7 @@ export class WeaponSystem extends System {
      */
     setParticleSystem(particleSystem: ParticleSystem): void {
         this.particleSystem = particleSystem
-
-        // Create the gunSmoke particle system configuration
-        const gunSmokeConfig = getParticleConfig(
-            'gunSmoke',
-            new Vector3(0, 0, 0),
-        )
-        this.particleSystem.createParticleSystem(gunSmokeConfig)
+        // Note: We no longer pre-create particle systems, they are created per shot
     }
 
     // Method to enable/disable debug logging for auto-targeting weapons
@@ -232,21 +226,24 @@ export class WeaponSystem extends System {
 
     /**
      * Find the closest shooting point to the target
+     * Returns both the shooting point and its index
      */
     private findClosestShootingPoint(
         weapon: WeaponComponent,
         shooterPosition: PositionComponent,
         targetPosition: PositionComponent,
-    ): { x: number; y: number } {
+    ): { point: { x: number; y: number }, index: number } {
         if (!weapon.shootingPoints || weapon.shootingPoints.length === 0) {
             // Fallback to center of ship if no shooting points defined
-            return { x: 0, y: 0 }
+            return { point: { x: 0, y: 0 }, index: 0 }
         }
 
         let closestPoint = weapon.shootingPoints[0]
+        let closestIndex = 0
         let closestDistance = Number.MAX_VALUE
 
-        for (const point of weapon.shootingPoints) {
+        for (let i = 0; i < weapon.shootingPoints.length; i++) {
+            const point = weapon.shootingPoints[i]
             // Convert relative shooting point to world coordinates
             const rotation = -shooterPosition.rotationY
             const worldX =
@@ -264,10 +261,11 @@ export class WeaponSystem extends System {
             if (distance < closestDistance) {
                 closestDistance = distance
                 closestPoint = point
+                closestIndex = i
             }
         }
 
-        return closestPoint
+        return { point: closestPoint, index: closestIndex }
     }
 
     /**
@@ -304,9 +302,10 @@ export class WeaponSystem extends System {
         const forwardZ = Math.cos(shooterPosition.rotationY)
 
         // Use first shooting point for manual aiming (or center if none defined)
+        const shootingPointIndex = 0
         const shootingPoint =
             weapon.shootingPoints && weapon.shootingPoints.length > 0
-                ? weapon.shootingPoints[0]
+                ? weapon.shootingPoints[shootingPointIndex]
                 : { x: 0, y: 0 }
 
         // Get world position of the shooting point
@@ -373,10 +372,7 @@ export class WeaponSystem extends System {
         this.playWeaponSound()
 
         // Play weapon particle effects
-        this.playWeaponParticleEffects(worldShootingPos, {
-            x: forwardX,
-            z: forwardZ,
-        })
+        this.playWeaponParticleEffects(shooterId, shootingPointIndex, worldShootingPos, { x: forwardX, z: forwardZ })
     }
 
     private fireProjectileToTarget(
@@ -389,7 +385,7 @@ export class WeaponSystem extends System {
         const projectile = this.world.createEntity()
 
         // Find the closest shooting point to the target
-        const shootingPoint = this.findClosestShootingPoint(
+        const { point: shootingPoint, index: shootingPointIndex } = this.findClosestShootingPoint(
             weapon,
             shooterPosition,
             targetPosition,
@@ -471,10 +467,7 @@ export class WeaponSystem extends System {
         this.playWeaponSound()
 
         // Play weapon particle effects
-        this.playWeaponParticleEffects(worldShootingPos, {
-            x: forwardX,
-            z: forwardZ,
-        })
+        this.playWeaponParticleEffects(shooterId, shootingPointIndex, worldShootingPos, { x: forwardX, z: forwardZ })
     }
 
     /**
@@ -489,8 +482,11 @@ export class WeaponSystem extends System {
 
     /**
      * Play weapon particle effects at the shooting position
+     * Creates unique particle systems for each shot to allow multiple simultaneous effects
      */
     private playWeaponParticleEffects(
+        shooterId: number,
+        shootingPointIndex: number,
         worldShootingPos: { x: number; z: number },
         direction: { x: number; z: number },
     ): void {
@@ -503,18 +499,37 @@ export class WeaponSystem extends System {
             0.5,
             worldShootingPos.z,
         )
+        
+        // Create direction vector (normalized)
+        const shootingDirection = new Vector3(direction.x, 0, direction.z).normalize()
 
-        const shootingDirection = new Vector3(
-            direction.x,
-            0,
-            direction.z,
-        ).normalize()
+        // Generate unique IDs for this shot's particle systems
+        // Include shooting point index to ensure different cannons don't conflict
+        const timestamp = Date.now()
+        const randomSuffix = Math.floor(Math.random() * 1000) // Add randomness for rapid fire
+        const gunsmokeId = `gunsmoke_${shooterId}_${shootingPointIndex}_${timestamp}_${randomSuffix}`
+        const muzzleFlashId = `muzzleflash_${shooterId}_${shootingPointIndex}_${timestamp}_${randomSuffix}`
 
-        this.particleSystem.updateParticleSystemPosition(
-            'gunSmoke',
-            shootingPosition,
-            shootingDirection,
-        )
-        this.particleSystem.burst('gunSmoke')
+        // Create gunsmoke particle system for this shot
+        const gunsmokeConfig = getParticleConfig('gunsmoke', shootingPosition, shootingDirection)
+        gunsmokeConfig.id = gunsmokeId
+        this.particleSystem.createParticleSystem(gunsmokeConfig)
+        this.particleSystem.burst(gunsmokeId)
+
+        // Create muzzle flash particle system for this shot
+        const muzzleFlashConfig = getParticleConfig('muzzleflash', shootingPosition, shootingDirection)
+        muzzleFlashConfig.id = muzzleFlashId
+        this.particleSystem.createParticleSystem(muzzleFlashConfig)
+        this.particleSystem.burst(muzzleFlashId)
+
+        // Schedule cleanup of these particle systems after their particles would have died
+        // Gunsmoke lives 0.8-1.5 seconds, muzzle flash lives 0.05-0.15 seconds
+        setTimeout(() => {
+            this.particleSystem?.removeParticleSystem(gunsmokeId)
+        }, 2000) // Clean up gunsmoke after 2 seconds
+
+        setTimeout(() => {
+            this.particleSystem?.removeParticleSystem(muzzleFlashId)
+        }, 500) // Clean up muzzle flash after 0.5 seconds
     }
 }
