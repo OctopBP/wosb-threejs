@@ -1,5 +1,5 @@
-import { Audio, AudioLoader, AudioListener, PositionalAudio } from 'three'
 import type { Camera } from 'three'
+import { Audio, AudioListener, AudioLoader, PositionalAudio } from 'three'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
@@ -52,8 +52,10 @@ export class AudioSystem extends System {
 
         try {
             // Create AudioContext
-            this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-            
+            this.audioContext = new (
+                window.AudioContext || (window as any).webkitAudioContext
+            )()
+
             // Create AudioListener and attach to camera
             this.audioListener = new AudioListener()
             camera.add(this.audioListener)
@@ -82,7 +84,9 @@ export class AudioSystem extends System {
      */
     async loadAssets(): Promise<void> {
         if (!this.isInitialized) {
-            console.warn('Audio system not initialized. Call initialize() first.')
+            console.warn(
+                'Audio system not initialized. Call initialize() first.',
+            )
             return
         }
 
@@ -92,7 +96,9 @@ export class AudioSystem extends System {
         for (const [category, categoryAssets] of Object.entries(this.assets)) {
             for (const [name, asset] of Object.entries(categoryAssets)) {
                 const key = `${category}:${name}`
-                loadPromises.push(this.loadSingleAsset(key, asset as AudioAsset))
+                loadPromises.push(
+                    this.loadSingleAsset(key, asset as AudioAsset),
+                )
             }
         }
 
@@ -104,7 +110,10 @@ export class AudioSystem extends System {
         }
     }
 
-    private async loadSingleAsset(key: string, asset: AudioAsset): Promise<void> {
+    private async loadSingleAsset(
+        key: string,
+        asset: AudioAsset,
+    ): Promise<void> {
         return new Promise((resolve, reject) => {
             this.audioLoader.load(
                 asset.url,
@@ -113,13 +122,11 @@ export class AudioSystem extends System {
                     asset.buffer = buffer
                     resolve()
                 },
-                (progress) => {
-                    // Optional: track loading progress
-                },
+                (_) => {},
                 (error) => {
                     console.error(`Failed to load audio asset ${key}:`, error)
                     reject(error)
-                }
+                },
             )
         })
     }
@@ -143,7 +150,7 @@ export class AudioSystem extends System {
      */
     playMusic(name: string, config?: Partial<AudioConfig>): Audio | null {
         // Stop current music if playing
-        if (this.currentMusic && this.currentMusic.isPlaying) {
+        if (this.currentMusic?.isPlaying) {
             this.stopMusic()
         }
 
@@ -158,7 +165,7 @@ export class AudioSystem extends System {
      * Stop the currently playing music
      */
     stopMusic(): void {
-        if (this.currentMusic && this.currentMusic.isPlaying) {
+        if (this.currentMusic?.isPlaying) {
             this.currentMusic.stop()
             this.currentMusic = null
         }
@@ -168,7 +175,7 @@ export class AudioSystem extends System {
      * Pause the currently playing music
      */
     pauseMusic(): void {
-        if (this.currentMusic && this.currentMusic.isPlaying) {
+        if (this.currentMusic?.isPlaying) {
             this.currentMusic.pause()
         }
     }
@@ -185,7 +192,12 @@ export class AudioSystem extends System {
     /**
      * Create a positional audio source (3D positioned audio)
      */
-    createPositionalAudio(category: 'sfx' | 'ui', name: string, maxDistance = 50, refDistance = 1): PositionalAudio | null {
+    createPositionalAudio(
+        category: 'sfx' | 'ui',
+        name: string,
+        maxDistance = 50,
+        refDistance = 1,
+    ): PositionalAudio | null {
         if (!this.isInitialized || !this.audioListener) {
             console.warn('Audio system not initialized')
             return null
@@ -193,7 +205,7 @@ export class AudioSystem extends System {
 
         const key = `${category}:${name}`
         const buffer = this.loadedBuffers.get(key)
-        
+
         if (!buffer) {
             console.warn(`Audio buffer not found: ${key}`)
             return null
@@ -203,7 +215,7 @@ export class AudioSystem extends System {
         positionalAudio.setBuffer(buffer)
         positionalAudio.setMaxDistance(maxDistance)
         positionalAudio.setRefDistance(refDistance)
-        
+
         // Apply volume based on category
         const volume = this.getCategoryVolume(category)
         positionalAudio.setVolume(volume * this.masterVolume)
@@ -211,7 +223,11 @@ export class AudioSystem extends System {
         return positionalAudio
     }
 
-    private playAudio(category: 'music' | 'sfx' | 'ui', name: string, config?: Partial<AudioConfig>): Audio | null {
+    private playAudio(
+        category: 'music' | 'sfx' | 'ui',
+        name: string,
+        config?: Partial<AudioConfig>,
+    ): Audio | null {
         if (!this.isInitialized || !this.audioListener) {
             console.warn('Audio system not initialized')
             return null
@@ -223,7 +239,7 @@ export class AudioSystem extends System {
 
         const key = `${category}:${name}`
         const buffer = this.loadedBuffers.get(key)
-        
+
         if (!buffer) {
             console.warn(`Audio buffer not found: ${key}`)
             return null
@@ -236,14 +252,14 @@ export class AudioSystem extends System {
             loop: false,
             autoplay: true,
             ...asset?.config,
-            ...config
+            ...config,
         }
 
         // Create audio instance
         const audio = new Audio(this.audioListener)
         audio.setBuffer(buffer)
         audio.setLoop(finalConfig.loop)
-        
+
         // Apply volume based on category
         const categoryVolume = this.getCategoryVolume(category)
         audio.setVolume(finalConfig.volume * categoryVolume * this.masterVolume)
@@ -268,10 +284,14 @@ export class AudioSystem extends System {
 
     private getCategoryVolume(category: 'music' | 'sfx' | 'ui'): number {
         switch (category) {
-            case 'music': return this.musicVolume
-            case 'sfx': return this.sfxVolume
-            case 'ui': return this.uiVolume
-            default: return 1.0
+            case 'music':
+                return this.musicVolume
+            case 'sfx':
+                return this.sfxVolume
+            case 'ui':
+                return this.uiVolume
+            default:
+                return 1.0
         }
     }
 
@@ -304,14 +324,16 @@ export class AudioSystem extends System {
         // Update all playing audio
         for (const [key, audio] of this.playingAudio) {
             const [category] = key.split(':')
-            const categoryVolume = this.getCategoryVolume(category as 'music' | 'sfx' | 'ui')
+            const categoryVolume = this.getCategoryVolume(
+                category as 'music' | 'sfx' | 'ui',
+            )
             audio.setVolume(categoryVolume * this.masterVolume)
         }
     }
 
     private updateCategoryVolume(category: 'sfx' | 'ui'): void {
         const categoryVolume = this.getCategoryVolume(category)
-        
+
         for (const [key, audio] of this.playingAudio) {
             if (key.startsWith(`${category}:`)) {
                 audio.setVolume(categoryVolume * this.masterVolume)
@@ -324,7 +346,7 @@ export class AudioSystem extends System {
      */
     setMuted(muted: boolean): void {
         this.audioMuted = muted
-        
+
         if (muted) {
             // Stop all currently playing audio
             for (const audio of this.playingAudio.values()) {
@@ -345,11 +367,21 @@ export class AudioSystem extends System {
     /**
      * Get volume levels
      */
-    getMasterVolume(): number { return this.masterVolume }
-    getMusicVolume(): number { return this.musicVolume }
-    getSfxVolume(): number { return this.sfxVolume }
-    getUIVolume(): number { return this.uiVolume }
-    isMuted(): boolean { return this.audioMuted }
+    getMasterVolume(): number {
+        return this.masterVolume
+    }
+    getMusicVolume(): number {
+        return this.musicVolume
+    }
+    getSfxVolume(): number {
+        return this.sfxVolume
+    }
+    getUIVolume(): number {
+        return this.uiVolume
+    }
+    isMuted(): boolean {
+        return this.audioMuted
+    }
 
     /**
      * Stop all audio
@@ -377,21 +409,15 @@ export class AudioSystem extends System {
             initialized: this.isInitialized,
             assetsLoaded: this.loadedBuffers.size,
             currentlyPlaying: this.playingAudio.size,
-            musicPlaying: this.currentMusic?.isPlaying || false
+            musicPlaying: this.currentMusic?.isPlaying || false,
         }
     }
 
-    /**
-     * System interface methods
-     */
-    update(deltaTime: number): void {
-        // Audio system doesn't need regular updates, but we could add
-        // fade-in/fade-out effects, audio parameter animations, etc. here
-    }
+    update(_deltaTime: number): void {}
 
     destroy(): void {
         this.stopAll()
-        
+
         if (this.audioListener) {
             // Remove from camera
             if (this.audioListener.parent) {

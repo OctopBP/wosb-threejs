@@ -81,7 +81,7 @@ export class CollisionSystem extends System {
                     this.applyDamage(targetHealth, projectileComp.damage)
 
                     // Play hit sound effect
-                    this.playHitSound(target.id === this.getPlayerEntityId())
+                    this.playHitSound()
 
                     // Mark projectile for removal
                     if (!projectilesToRemove.includes(projectile.id)) {
@@ -92,9 +92,7 @@ export class CollisionSystem extends System {
                     if (targetHealth.currentHealth <= 0) {
                         targetHealth.isDead = true
                         // Play death/explosion sound
-                        this.playDeathSound(
-                            target.id === this.getPlayerEntityId(),
-                        )
+                        this.playDeathSound()
                     }
 
                     break // Projectile can only hit one target
@@ -188,7 +186,7 @@ export class CollisionSystem extends System {
     /**
      * Play hit sound effect - using death sound for now since no separate hit sound available
      */
-    private playHitSound(isPlayer: boolean): void {
+    private playHitSound(): void {
         if (!this.audioSystem) return
 
         // Use death sound for hits since no separate hit sound is available
@@ -198,26 +196,10 @@ export class CollisionSystem extends System {
     /**
      * Play death/explosion sound effect
      */
-    private playDeathSound(isPlayer: boolean): void {
+    private playDeathSound(): void {
         if (!this.audioSystem) return
 
         // Use the death sound for all death events
         this.audioSystem.playSfx('death')
-    }
-
-    /**
-     * Get the player entity ID - this is a simplified approach
-     * In a more complex system, you might want to track this differently
-     */
-    private getPlayerEntityId(): number {
-        // This is a simple approach - find the entity with player-specific components
-        // You might want to implement a more robust player tracking system
-        const playerEntities = this.world.getEntitiesWithComponents([
-            'input', // Assuming only the player has input component
-            'health',
-            'position',
-        ])
-
-        return playerEntities.length > 0 ? playerEntities[0].id : -1
     }
 }
