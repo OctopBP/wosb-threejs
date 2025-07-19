@@ -1,4 +1,5 @@
 import type { Scene } from 'three'
+import { createBulletCollision } from '../config/CollisionConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
     PositionComponent,
@@ -229,9 +230,11 @@ export class WeaponSystem extends System {
         for (const point of weapon.shootingPoints) {
             // Convert relative shooting point to world coordinates
             const rotation = -shooterPosition.rotationY
-            const worldX = shooterPosition.x + 
+            const worldX =
+                shooterPosition.x +
                 (point.x * Math.cos(rotation) - point.y * Math.sin(rotation))
-            const worldZ = shooterPosition.z + 
+            const worldZ =
+                shooterPosition.z +
                 (point.x * Math.sin(rotation) + point.y * Math.cos(rotation))
 
             // Calculate distance from this shooting point to the target
@@ -257,12 +260,14 @@ export class WeaponSystem extends System {
     ): { x: number; z: number } {
         // Apply rotation transformation to relative position
         const rotation = -shooterPosition.rotationY
-        const worldX = shooterPosition.x + 
-            (shootingPoint.x * Math.cos(rotation) - 
-             shootingPoint.y * Math.sin(rotation))
-        const worldZ = shooterPosition.z + 
-            (shootingPoint.x * Math.sin(rotation) + 
-             shootingPoint.y * Math.cos(rotation))
+        const worldX =
+            shooterPosition.x +
+            (shootingPoint.x * Math.cos(rotation) -
+                shootingPoint.y * Math.sin(rotation))
+        const worldZ =
+            shooterPosition.z +
+            (shootingPoint.x * Math.sin(rotation) +
+                shootingPoint.y * Math.cos(rotation))
 
         return { x: worldX, z: worldZ }
     }
@@ -280,19 +285,27 @@ export class WeaponSystem extends System {
         const forwardZ = Math.cos(shooterPosition.rotationY)
 
         // Use first shooting point for manual aiming (or center if none defined)
-        const shootingPoint = weapon.shootingPoints && weapon.shootingPoints.length > 0 
-            ? weapon.shootingPoints[0] 
-            : { x: 0, y: 0 }
+        const shootingPoint =
+            weapon.shootingPoints && weapon.shootingPoints.length > 0
+                ? weapon.shootingPoints[0]
+                : { x: 0, y: 0 }
 
         // Get world position of the shooting point
-        const worldShootingPos = this.getWorldShootingPosition(shootingPoint, shooterPosition)
+        const worldShootingPos = this.getWorldShootingPosition(
+            shootingPoint,
+            shooterPosition,
+        )
 
         // Position component - start slightly in front of and above shooting point
         const projectilePosition: PositionComponent = {
             type: 'position',
-            x: worldShootingPos.x + forwardX * projectilePhysicsConfig.forwardOffset,
+            x:
+                worldShootingPos.x +
+                forwardX * projectilePhysicsConfig.forwardOffset,
             y: shooterPosition.y + projectilePhysicsConfig.heightOffset,
-            z: worldShootingPos.z + forwardZ * projectilePhysicsConfig.forwardOffset,
+            z:
+                worldShootingPos.z +
+                forwardZ * projectilePhysicsConfig.forwardOffset,
             rotationX: 0,
             rotationY: shooterPosition.rotationY,
             rotationZ: 0,
@@ -332,6 +345,10 @@ export class WeaponSystem extends System {
             upgrades: {},
         }
         projectile.addComponent(renderable)
+
+        // Collision component - sphere collider for bullet
+        const collision = createBulletCollision()
+        projectile.addComponent(collision)
     }
 
     private fireProjectileToTarget(
@@ -344,10 +361,17 @@ export class WeaponSystem extends System {
         const projectile = this.world.createEntity()
 
         // Find the closest shooting point to the target
-        const shootingPoint = this.findClosestShootingPoint(weapon, shooterPosition, targetPosition)
-        
+        const shootingPoint = this.findClosestShootingPoint(
+            weapon,
+            shooterPosition,
+            targetPosition,
+        )
+
         // Get world position of the chosen shooting point
-        const worldShootingPos = this.getWorldShootingPosition(shootingPoint, shooterPosition)
+        const worldShootingPos = this.getWorldShootingPosition(
+            shootingPoint,
+            shooterPosition,
+        )
 
         // Calculate direction from shooting point to target
         const dx = targetPosition.x - worldShootingPos.x
@@ -364,9 +388,13 @@ export class WeaponSystem extends System {
         // Position component - start slightly in front of and above shooting point
         const projectilePosition: PositionComponent = {
             type: 'position',
-            x: worldShootingPos.x + forwardX * projectilePhysicsConfig.forwardOffset,
+            x:
+                worldShootingPos.x +
+                forwardX * projectilePhysicsConfig.forwardOffset,
             y: shooterPosition.y + projectilePhysicsConfig.heightOffset,
-            z: worldShootingPos.z + forwardZ * projectilePhysicsConfig.forwardOffset,
+            z:
+                worldShootingPos.z +
+                forwardZ * projectilePhysicsConfig.forwardOffset,
             rotationX: 0,
             rotationY: targetAngle, // Point projectile toward target
             rotationZ: 0,
@@ -406,5 +434,9 @@ export class WeaponSystem extends System {
             upgrades: {},
         }
         projectile.addComponent(renderable)
+
+        // Collision component - sphere collider for bullet
+        const collision = createBulletCollision()
+        projectile.addComponent(collision)
     }
 }

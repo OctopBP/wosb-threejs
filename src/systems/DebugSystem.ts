@@ -1,5 +1,6 @@
 import type { Object3D, Scene } from 'three'
 import {
+    BoxGeometry,
     BufferGeometry,
     LineBasicMaterial,
     LineSegments,
@@ -11,9 +12,9 @@ import {
     WireframeGeometry,
 } from 'three'
 import type {
+    CollisionComponent,
     DebugComponent,
     PositionComponent,
-    RenderableComponent,
     VelocityComponent,
     WeaponComponent,
 } from '../ecs/Component'
@@ -92,17 +93,17 @@ export class DebugSystem extends System {
             // Render shooting points for entities with weapons
             if (debugComponent.showShootingPoints) {
                 const weapon = entity.getComponent<WeaponComponent>('weapon')
-                if (weapon && weapon.shootingPoints) {
+                if (weapon?.shootingPoints) {
                     this.renderShootingPoints(entity.id, position, weapon)
                 }
             }
 
-            // Render collision shapes for entities with renderable components
+            // Render collision shapes for entities with collision components
             if (debugComponent.showCollisionShapes) {
-                const renderable =
-                    entity.getComponent<RenderableComponent>('renderable')
-                if (renderable) {
-                    this.renderCollisionShape(entity.id, position)
+                const collision =
+                    entity.getComponent<CollisionComponent>('collision')
+                if (collision) {
+                    this.renderCollisionShape(entity.id, position, collision)
                 }
             }
 
@@ -171,26 +172,70 @@ export class DebugSystem extends System {
     private renderCollisionShape(
         entityId: number,
         position: PositionComponent,
+        collision: CollisionComponent,
     ): void {
-        // Create a sphere wireframe to represent collision boundaries
-        // Using the same collision radius as CollisionSystem
-        const geometry = new SphereGeometry(0.8, 16, 12)
-        const wireframe = new WireframeGeometry(geometry)
-        const mesh = new LineSegments(wireframe, this.collisionShapeMaterial)
+        // Apply offset if specified
+        const offsetX = collision.offset?.x || 0
+        const offsetY = collision.offset?.y || 0
+        const offsetZ = collision.offset?.z || 0
 
-        mesh.position.set(position.x, position.y, position.z)
-        mesh.rotation.set(
-            position.rotationX,
-            position.rotationY,
-            position.rotationZ,
-        )
+        if (collision.collider.shape === 'sphere') {
+            // Create a sphere wireframe to represent collision boundaries
+            const radius = collision.collider.radius
+            const geometry = new SphereGeometry(radius, 16, 12)
+            const wireframe = new WireframeGeometry(geometry)
+            const mesh = new LineSegments(
+                wireframe,
+                this.collisionShapeMaterial,
+            )
 
-        this.scene.add(mesh)
-        this.debugGizmos.push({
-            mesh,
-            entityId,
-            type: 'collisionShape',
-        })
+            mesh.position.set(
+                position.x + offsetX,
+                position.y + offsetY,
+                position.z + offsetZ,
+            )
+            mesh.rotation.set(
+                position.rotationX,
+                position.rotationY,
+                position.rotationZ,
+            )
+
+            this.scene.add(mesh)
+            this.debugGizmos.push({
+                mesh,
+                entityId,
+                type: 'collisionShape',
+            })
+        } else {
+            // Create a box wireframe to represent collision boundaries
+            const width = collision.collider.width
+            const height = collision.collider.height
+            const depth = collision.collider.depth
+            const geometry = new BoxGeometry(width, height, depth)
+            const wireframe = new WireframeGeometry(geometry)
+            const mesh = new LineSegments(
+                wireframe,
+                this.collisionShapeMaterial,
+            )
+
+            mesh.position.set(
+                position.x + offsetX,
+                position.y + offsetY,
+                position.z + offsetZ,
+            )
+            mesh.rotation.set(
+                position.rotationX,
+                position.rotationY,
+                position.rotationZ,
+            )
+
+            this.scene.add(mesh)
+            this.debugGizmos.push({
+                mesh,
+                entityId,
+                type: 'collisionShape',
+            })
+        }
     }
 
     private renderWeaponRange(

@@ -130,6 +130,31 @@ export interface ProjectileComponent extends Component {
     currentLifetime: number
 }
 
+// Collision shape types using discriminated unions
+export type BoxCollider = {
+    shape: 'box'
+    width: number
+    height: number
+    depth: number
+}
+
+export type SphereCollider = {
+    shape: 'sphere'
+    radius: number
+}
+
+// Collision component for configurable collision shapes
+export interface CollisionComponent extends Component {
+    type: 'collision'
+    collider: BoxCollider | SphereCollider
+    // Optional offset from entity position
+    offset?: {
+        x: number
+        y: number
+        z: number
+    }
+}
+
 // Damageable component for entities that can receive damage
 export interface DamageableComponent extends Component {
     type: 'damageable'

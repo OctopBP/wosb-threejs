@@ -1,3 +1,4 @@
+import { createPlayerShipCollision } from '../config/CollisionConfig'
 import {
     createLevelComponent,
     createLevelingStatsComponent,
@@ -93,6 +94,10 @@ export function createPlayerShip(
         type: 'damageable',
     }
     entity.addComponent(damageable)
+
+    // Collision component - box collider for ship
+    const collision = createPlayerShipCollision({ x: 0, y: 0.5, z: 0 })
+    entity.addComponent(collision)
 
     // Renderable component - use ship GLTF model
     const renderable: RenderableComponent = {
