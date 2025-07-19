@@ -124,6 +124,7 @@ export class GameWorld {
         this.newShipOfferUISystem.setGameStateSystem(this.gameStateSystem)
         this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
         this.weaponSystem.setAudioSystem(this.audioSystem)
+        this.weaponSystem.setParticleSystem(this.particleSystem)
         this.collisionSystem.setAudioSystem(this.audioSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)

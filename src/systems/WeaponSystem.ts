@@ -1,5 +1,6 @@
-import type { Scene } from 'three'
+import { Vector3, type Scene } from 'three'
 import { createBulletCollision } from '../config/CollisionConfig'
+import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
     PositionComponent,
@@ -12,11 +13,13 @@ import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { AudioSystem } from './AudioSystem'
+import type { ParticleSystem } from './ParticleSystem'
 
 export class WeaponSystem extends System {
     private scene: Scene
     private debugAutoTargeting: boolean = false
     private audioSystem: AudioSystem | null = null
+    private particleSystem: ParticleSystem | null = null
 
     constructor(world: World, scene: Scene) {
         super(world, ['weapon', 'position'])
@@ -28,6 +31,21 @@ export class WeaponSystem extends System {
      */
     setAudioSystem(audioSystem: AudioSystem): void {
         this.audioSystem = audioSystem
+    }
+
+    /**
+     * Set the particle system reference for playing weapon particle effects
+     */
+    setParticleSystem(particleSystem: ParticleSystem): void {
+        this.particleSystem = particleSystem
+        
+        // Create the gunsmoke particle system configuration
+        const gunsmokeConfig = getParticleConfig('gunsmoke', new Vector3(0, 0, 0))
+        this.particleSystem.createParticleSystem(gunsmokeConfig)
+        
+        // Create the muzzle flash particle system configuration
+        const muzzleFlashConfig = getParticleConfig('muzzleflash', new Vector3(0, 0, 0))
+        this.particleSystem.createParticleSystem(muzzleFlashConfig)
     }
 
     // Method to enable/disable debug logging for auto-targeting weapons
@@ -361,6 +379,9 @@ export class WeaponSystem extends System {
 
         // Play weapon sound effect
         this.playWeaponSound()
+
+        // Play weapon particle effects
+        this.playWeaponParticleEffects(worldShootingPos, { x: forwardX, z: forwardZ })
     }
 
     private fireProjectileToTarget(
@@ -453,6 +474,9 @@ export class WeaponSystem extends System {
 
         // Play weapon sound effect
         this.playWeaponSound()
+
+        // Play weapon particle effects
+        this.playWeaponParticleEffects(worldShootingPos, { x: forwardX, z: forwardZ })
     }
 
     /**
@@ -463,5 +487,29 @@ export class WeaponSystem extends System {
 
         // Use the single shoot sound for all weapons
         this.audioSystem.playSfx('shoot')
+    }
+
+    /**
+     * Play weapon particle effects at the shooting position
+     */
+    private playWeaponParticleEffects(
+        worldShootingPos: { x: number; z: number },
+        direction: { x: number; z: number }
+    ): void {
+        if (!this.particleSystem) return
+
+        // Create shooting position vector (slightly elevated for better effect)
+        const shootingPosition = new Vector3(worldShootingPos.x, 0.5, worldShootingPos.z)
+        
+        // Create direction vector (normalized)
+        const shootingDirection = new Vector3(direction.x, 0, direction.z).normalize()
+
+        // Update gunsmoke particle system position and direction, then burst
+        this.particleSystem.updateParticleSystemPosition('gunsmoke', shootingPosition, shootingDirection)
+        this.particleSystem.burst('gunsmoke')
+
+        // Update muzzle flash particle system position and direction, then burst  
+        this.particleSystem.updateParticleSystemPosition('muzzleflash', shootingPosition, shootingDirection)
+        this.particleSystem.burst('muzzleflash')
     }
 }
