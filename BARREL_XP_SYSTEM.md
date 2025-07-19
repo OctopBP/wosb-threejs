@@ -20,6 +20,11 @@ Previously, players gained XP immediately when killing enemies. Now, when enemie
   - `floatSpeed`: Speed of floating animation
   - `spawnTime`: When this barrel was spawned
   - `lifespan`: How long before barrel disappears (in seconds, 0 = infinite)
+  - `animationState`: Current animation state (dropping, floating, attracting, collecting)
+  - `dropStartHeight`: Height from which barrel starts dropping
+  - `dropSpeed`: Speed of dropping animation
+  - `collectAnimationProgress`: Progress of collection animation (0-1)
+  - `collectAnimationDuration`: Duration of collection animation in seconds
 
 #### `CollectableComponent`
 - **Purpose**: Generic component for items that can be collected by the player
@@ -44,12 +49,15 @@ Previously, players gained XP immediately when killing enemies. Now, when enemie
 ### 3. System Added
 
 #### `BarrelCollectionSystem`
-- **Purpose**: Handles barrel collection, floating animation, and XP awarding
+- **Purpose**: Handles barrel animations, collection logic, and XP awarding
 - **Features**:
-  - Range-based collection detection
-  - Smooth floating animation using sine waves
-  - Automatic barrel cleanup after collection or expiration
-  - XP awarding through the existing LevelingSystem
+  - **Drop Animation**: Gravity-based falling with splash effect
+  - **State Management**: Tracks and transitions between animation states
+  - **Magnetic Attraction**: Smooth movement toward player when in range
+  - **Collection Animation**: Spinning upward movement before collection
+  - **Range-based Detection**: Automatic collection when player is close enough
+  - **Cleanup**: Automatic barrel removal after collection or expiration
+  - **XP Integration**: Awards XP through existing LevelingSystem
 
 ### 4. Model Configuration
 
@@ -91,12 +99,19 @@ interface BarrelSpawnConfig {
 
 ## Visual Features
 
-### Barrel Behavior
-- **Static Positioning**: Barrels remain at water level (y=0) without floating animation
-- **Magnetic Collection**: When player enters collection range (3 units), barrels are magnetically attracted to the ship
-- **Smooth Movement**: Barrels move toward player at configurable speed (8.0 units/second)
+### Barrel Behavior & Animations
+- **Drop Animation**: Barrels start at 3-5 units height above water and fall with gravity (6.0 units/second) to create realistic dropping effect
+- **Water Landing**: Barrels splash onto water surface with small bounce effect when they hit water level
+- **Floating State**: After landing, barrels float on water with gentle random drift
+- **Magnetic Collection**: When player enters collection range (3 units), barrels smoothly move toward the ship (8.0 units/second)
+- **Collection Animation**: Barrels spin and move upward over 0.5 seconds before being collected
 - **Scale**: Barrels are scaled to 1.5x for better visibility
-- **Drift**: Small random drift velocity when not being attracted
+
+#### Animation States:
+1. **Dropping**: Barrel falls from spawn height to water
+2. **Floating**: Barrel drifts gently on water surface
+3. **Attracting**: Barrel moves magnetically toward player
+4. **Collecting**: Barrel spins upward before disappearing
 
 ### Collection Feedback
 - Console logging when barrels are collected
@@ -128,11 +143,13 @@ The BarrelCollectionSystem runs at position 12 in the update cycle, between coll
 - **Spawn Spread**: Change `spawnRadius` to control how spread out barrels are
 
 ### Visual Customization
-- **Float Speed**: Adjust `floatSpeed` for faster/slower bobbing animation
+- **Drop Speed**: Modify `dropSpeed` for faster/slower falling animation (currently 6.0 units/second)
+- **Drop Height**: Adjust spawn height range in BarrelFactory (currently 3-5 units)
 - **Model Scale**: Modify scale in ModelConfig for different barrel sizes (currently 1.5x)
 - **Drift Speed**: Change velocity values in BarrelFactory for different drift behavior
 - **Attraction Speed**: Modify `attractionSpeed` in XPBarrelComponent for faster/slower magnetic movement
 - **Collection Distance**: Adjust the final collection distance (currently 1.0 unit) for immediate vs delayed pickup
+- **Collection Animation**: Modify `collectAnimationDuration` for longer/shorter collection animations
 
 ## Future Enhancements
 

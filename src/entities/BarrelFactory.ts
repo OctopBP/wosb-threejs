@@ -1,4 +1,5 @@
 import type {
+    BarrelAnimationState,
     CollectableComponent,
     CollisionComponent,
     PositionComponent,
@@ -51,11 +52,12 @@ export function createXPBarrel(
     // Merge with default config
     const barrelConfig = { ...defaultBarrelConfig, ...config }
 
-    // Position component - spawn at water level (y = 0) with some randomness
+    // Position component - start at drop height, will animate down to water level
+    const dropHeight = 3.0 + Math.random() * 2.0 // Random drop height between 3-5 units
     const position: PositionComponent = {
         type: 'position',
         x,
-        y: 0, // Always spawn at water level
+        y: dropHeight, // Start at drop height for animation
         z,
         rotationX: Math.random() * Math.PI * 2, // Random rotation for variety
         rotationY: Math.random() * Math.PI * 2,
@@ -87,6 +89,13 @@ export function createXPBarrel(
         lifespan: barrelConfig.lifespan,
         isBeingAttracted: false, // Initially not being attracted
         attractionSpeed: 8.0, // Speed at which barrel moves toward player
+
+        // Animation properties
+        animationState: 'dropping', // Start with dropping animation
+        dropStartHeight: dropHeight,
+        dropSpeed: 6.0, // Speed of dropping animation
+        collectAnimationProgress: 0,
+        collectAnimationDuration: 0.5, // Collection animation takes 0.5 seconds
     }
     entity.addComponent(xpBarrel)
 

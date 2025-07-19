@@ -319,6 +319,13 @@ export interface DebugComponent extends Component {
     showVelocityVectors: boolean
 }
 
+// Animation states for barrels
+export type BarrelAnimationState =
+    | 'dropping'
+    | 'floating'
+    | 'attracting'
+    | 'collecting'
+
 // XP Barrel component for collectable barrels that award experience
 export interface XPBarrelComponent extends Component {
     type: 'xpBarrel'
@@ -331,6 +338,13 @@ export interface XPBarrelComponent extends Component {
     lifespan: number // How long before barrel disappears (in seconds, 0 = infinite)
     isBeingAttracted: boolean // Whether this barrel is being magnetically pulled to player
     attractionSpeed: number // Speed at which barrel moves toward player
+
+    // Animation properties
+    animationState: BarrelAnimationState // Current animation state
+    dropStartHeight: number // Height from which barrel starts dropping
+    dropSpeed: number // Speed of dropping animation
+    collectAnimationProgress: number // Progress of collection animation (0-1)
+    collectAnimationDuration: number // Duration of collection animation in seconds
 }
 
 // Collectable component for items that can be collected by the player

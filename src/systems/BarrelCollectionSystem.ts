@@ -1,5 +1,6 @@
 import { Mesh } from 'three'
 import type {
+    BarrelAnimationState,
     CollectableComponent,
     PositionComponent,
     RenderableComponent,
@@ -67,38 +68,49 @@ export class BarrelCollectionSystem extends System {
                 continue
             }
 
-            // Check if player is in collection range
-            const distanceToPlayer = this.getDistanceToPlayer(
-                playerPosition,
-                barrelPosition,
-            )
+            // Handle animation states
+            this.updateBarrelAnimation(barrel, deltaTime, currentTime)
 
-            if (distanceToPlayer <= xpBarrel.collectionRange) {
-                if (!xpBarrel.isBeingAttracted) {
-                    // Start magnetic attraction
-                    xpBarrel.isBeingAttracted = true
-                }
-
-                // Apply magnetic movement toward player
-                this.applyMagneticMovement(
-                    barrel,
+            // Only handle collection logic if barrel is floating or attracting
+            if (
+                xpBarrel.animationState === 'floating' ||
+                xpBarrel.animationState === 'attracting'
+            ) {
+                // Check if player is in collection range
+                const distanceToPlayer = this.getDistanceToPlayer(
                     playerPosition,
                     barrelPosition,
-                    barrelVelocity,
-                    deltaTime,
                 )
 
-                // Check if close enough to collect (smaller distance than collection range)
-                if (distanceToPlayer <= 1.0) {
-                    this.collectBarrel(barrel, player)
-                }
-            } else {
-                // Reset attraction if player moves out of range
-                if (xpBarrel.isBeingAttracted) {
-                    xpBarrel.isBeingAttracted = false
-                    // Reset velocity to gentle drift
-                    barrelVelocity.dx = (Math.random() - 0.5) * 0.2
-                    barrelVelocity.dz = (Math.random() - 0.5) * 0.2
+                if (distanceToPlayer <= xpBarrel.collectionRange) {
+                    if (xpBarrel.animationState === 'floating') {
+                        // Start magnetic attraction
+                        xpBarrel.animationState = 'attracting'
+                        xpBarrel.isBeingAttracted = true
+                    }
+
+                    // Apply magnetic movement toward player
+                    this.applyMagneticMovement(
+                        barrel,
+                        playerPosition,
+                        barrelPosition,
+                        barrelVelocity,
+                        deltaTime,
+                    )
+
+                    // Check if close enough to collect (smaller distance than collection range)
+                    if (distanceToPlayer <= 1.0) {
+                        this.startCollectionAnimation(barrel, player)
+                    }
+                } else {
+                    // Reset attraction if player moves out of range
+                    if (xpBarrel.animationState === 'attracting') {
+                        xpBarrel.animationState = 'floating'
+                        xpBarrel.isBeingAttracted = false
+                        // Reset velocity to gentle drift
+                        barrelVelocity.dx = (Math.random() - 0.5) * 0.2
+                        barrelVelocity.dz = (Math.random() - 0.5) * 0.2
+                    }
                 }
             }
         }
@@ -145,6 +157,120 @@ export class BarrelCollectionSystem extends System {
         barrelVelocity.dx = normalizedDx * attractionForce
         barrelVelocity.dy = normalizedDy * attractionForce
         barrelVelocity.dz = normalizedDz * attractionForce
+    }
+
+    private updateBarrelAnimation(
+        barrel: Entity,
+        deltaTime: number,
+        currentTime: number,
+    ): void {
+        const xpBarrel = barrel.getComponent<XPBarrelComponent>('xpBarrel')
+        const position = barrel.getComponent<PositionComponent>('position')
+        const velocity = barrel.getComponent<VelocityComponent>('velocity')
+
+        if (!xpBarrel || !position || !velocity) return
+
+        switch (xpBarrel.animationState) {
+            case 'dropping':
+                this.updateDropAnimation(barrel, position, velocity, deltaTime)
+                break
+            case 'floating':
+                // Just gentle drift, no special animation
+                break
+            case 'attracting':
+                // Magnetic movement handled in main loop
+                break
+            case 'collecting':
+                this.updateCollectionAnimation(
+                    barrel,
+                    position,
+                    deltaTime,
+                    currentTime,
+                )
+                break
+        }
+    }
+
+    private updateDropAnimation(
+        barrel: Entity,
+        position: PositionComponent,
+        velocity: VelocityComponent,
+        deltaTime: number,
+    ): void {
+        const xpBarrel = barrel.getComponent<XPBarrelComponent>('xpBarrel')
+        if (!xpBarrel) return
+
+        // Apply gravity to velocity
+        velocity.dy -= xpBarrel.dropSpeed * deltaTime
+
+        // Check if barrel has reached water level
+        if (position.y <= 0) {
+            position.y = 0 // Snap to water level
+            velocity.dy = 0 // Stop vertical movement
+
+            // Transition to floating state
+            xpBarrel.animationState = 'floating'
+
+            // Set gentle drift velocity
+            velocity.dx = (Math.random() - 0.5) * 0.2
+            velocity.dz = (Math.random() - 0.5) * 0.2
+
+            // Add a small splash effect by briefly moving the barrel up and down
+            velocity.dy = 1.0 // Small upward bounce
+        }
+    }
+
+    private startCollectionAnimation(barrel: Entity, player: Entity): void {
+        const xpBarrel = barrel.getComponent<XPBarrelComponent>('xpBarrel')
+        if (!xpBarrel) return
+
+        // Start collection animation
+        xpBarrel.animationState = 'collecting'
+        xpBarrel.collectAnimationProgress = 0
+
+        // Stop all movement during collection
+        const velocity = barrel.getComponent<VelocityComponent>('velocity')
+        if (velocity) {
+            velocity.dx = 0
+            velocity.dy = 0
+            velocity.dz = 0
+        }
+    }
+
+    private updateCollectionAnimation(
+        barrel: Entity,
+        position: PositionComponent,
+        deltaTime: number,
+        currentTime: number,
+    ): void {
+        const xpBarrel = barrel.getComponent<XPBarrelComponent>('xpBarrel')
+        if (!xpBarrel) return
+
+        // Update animation progress
+        xpBarrel.collectAnimationProgress +=
+            deltaTime / xpBarrel.collectAnimationDuration
+
+        if (xpBarrel.collectAnimationProgress >= 1.0) {
+            // Animation complete, actually collect the barrel
+            const players = this.world.getEntitiesWithComponents(['player'])
+            if (players.length > 0) {
+                this.collectBarrel(barrel, players[0])
+            }
+            return
+        }
+
+        // Animate barrel moving up and scaling down
+        const progress = xpBarrel.collectAnimationProgress
+        const easeOut = 1 - (1 - progress) ** 3 // Ease out curve
+
+        // Move barrel up during collection
+        position.y = easeOut * 2.0 // Move up to 2 units high
+
+        // Add spinning effect
+        position.rotationY += deltaTime * 10.0 // Fast spin during collection
+
+        // Scale could be handled in render system based on animation progress
+        // For now, we just animate position and rotation
     }
 
     private collectBarrel(barrel: Entity, player: Entity): void {
