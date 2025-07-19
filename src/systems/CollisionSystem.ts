@@ -9,10 +9,19 @@ import type {
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import type { AudioSystem } from './AudioSystem'
 
 export class CollisionSystem extends System {
+    private audioSystem: AudioSystem | null = null
     constructor(world: World) {
         super(world, []) // We'll manually query for different component combinations
+    }
+
+    /**
+     * Set the audio system reference for playing collision sounds
+     */
+    setAudioSystem(audioSystem: AudioSystem): void {
+        this.audioSystem = audioSystem
     }
 
     update(_deltaTime: number): void {
@@ -71,6 +80,9 @@ export class CollisionSystem extends System {
                     // Apply damage
                     this.applyDamage(targetHealth, projectileComp.damage)
 
+                    // Play hit sound effect
+                    this.playHitSound(target.id === this.getPlayerEntityId())
+
                     // Mark projectile for removal
                     if (!projectilesToRemove.includes(projectile.id)) {
                         projectilesToRemove.push(projectile.id)
@@ -79,7 +91,10 @@ export class CollisionSystem extends System {
                     // Check if target died
                     if (targetHealth.currentHealth <= 0) {
                         targetHealth.isDead = true
-                        // Could trigger death effects here in the future
+                        // Play death/explosion sound
+                        this.playDeathSound(
+                            target.id === this.getPlayerEntityId(),
+                        )
                     }
 
                     break // Projectile can only hit one target
@@ -168,5 +183,41 @@ export class CollisionSystem extends System {
             // Remove entity from world
             this.world.removeEntity(projectileId)
         }
+    }
+
+    /**
+     * Play hit sound effect - using death sound for now since no separate hit sound available
+     */
+    private playHitSound(isPlayer: boolean): void {
+        if (!this.audioSystem) return
+
+        // Use death sound for hits since no separate hit sound is available
+        this.audioSystem.playSfx('death', { volume: 0.5 })
+    }
+
+    /**
+     * Play death/explosion sound effect
+     */
+    private playDeathSound(isPlayer: boolean): void {
+        if (!this.audioSystem) return
+
+        // Use the death sound for all death events
+        this.audioSystem.playSfx('death')
+    }
+
+    /**
+     * Get the player entity ID - this is a simplified approach
+     * In a more complex system, you might want to track this differently
+     */
+    private getPlayerEntityId(): number {
+        // This is a simple approach - find the entity with player-specific components
+        // You might want to implement a more robust player tracking system
+        const playerEntities = this.world.getEntitiesWithComponents([
+            'input', // Assuming only the player has input component
+            'health',
+            'position',
+        ])
+
+        return playerEntities.length > 0 ? playerEntities[0].id : -1
     }
 }

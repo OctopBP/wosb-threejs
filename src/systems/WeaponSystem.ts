@@ -11,14 +11,23 @@ import type {
 import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import type { AudioSystem } from './AudioSystem'
 
 export class WeaponSystem extends System {
     private scene: Scene
     private debugAutoTargeting: boolean = false
+    private audioSystem: AudioSystem | null = null
 
     constructor(world: World, scene: Scene) {
         super(world, ['weapon', 'position'])
         this.scene = scene
+    }
+
+    /**
+     * Set the audio system reference for playing weapon sounds
+     */
+    setAudioSystem(audioSystem: AudioSystem): void {
+        this.audioSystem = audioSystem
     }
 
     // Method to enable/disable debug logging for auto-targeting weapons
@@ -349,6 +358,9 @@ export class WeaponSystem extends System {
         // Collision component - sphere collider for bullet
         const collision = createBulletCollision()
         projectile.addComponent(collision)
+
+        // Play weapon sound effect
+        this.playWeaponSound()
     }
 
     private fireProjectileToTarget(
@@ -438,5 +450,18 @@ export class WeaponSystem extends System {
         // Collision component - sphere collider for bullet
         const collision = createBulletCollision()
         projectile.addComponent(collision)
+
+        // Play weapon sound effect
+        this.playWeaponSound()
+    }
+
+    /**
+     * Play weapon shooting sound
+     */
+    private playWeaponSound(): void {
+        if (!this.audioSystem) return
+
+        // Use the single shoot sound for all weapons
+        this.audioSystem.playSfx('shoot')
     }
 }
