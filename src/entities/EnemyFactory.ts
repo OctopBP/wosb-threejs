@@ -6,6 +6,10 @@ import {
     getBossVisualConfig,
 } from '../config/BossConfig'
 import {
+    createBossShipCollision,
+    createEnemyShipCollision,
+} from '../config/CollisionConfig'
+import {
     createEnemyAIConfig,
     createEnemyHealthConfig,
     createEnemyWeaponConfig,
@@ -70,6 +74,10 @@ export function createEnemyShip(
         type: 'damageable',
     }
     entity.addComponent(damageable)
+
+    // Collision component - box collider for enemy ship
+    const collision = createEnemyShipCollision({ x: 0, y: 0.5, z: 0 })
+    entity.addComponent(collision)
 
     // Renderable component - use ship model (different from player if available)
     const renderable: RenderableComponent = {
@@ -148,6 +156,10 @@ export function createBossShip(
         type: 'damageable',
     }
     entity.addComponent(damageable)
+
+    // Collision component - box collider for boss ship (larger than regular enemies)
+    const collision = createBossShipCollision({ x: 0, y: 1, z: 0 })
+    entity.addComponent(collision)
 
     // Renderable component - use boss visual config
     const renderable: RenderableComponent = {

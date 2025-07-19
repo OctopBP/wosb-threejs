@@ -1,5 +1,6 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
+import { audioAssets, defaultAudioSettings } from './config/AudioConfig'
 import type { GameStateConfig } from './config/GameStateConfig'
 import { defaultGameStateConfig } from './config/GameStateConfig'
 import type {
@@ -14,11 +15,10 @@ import type {
 } from './ecs'
 import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
+import { createDebugEntity } from './entities/DebugFactory'
 import {
     createPlayerShip,
-    equipAutoTargetingWeapon,
-    equipManualWeapon,
-    hasAutoTargetingWeapon,
+    equipPlayerWeapon,
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
@@ -27,6 +27,7 @@ import { AccelerationSystem } from './systems/AccelerationSystem'
 import { AudioSystem } from './systems/AudioSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
+import { DebugSystem } from './systems/DebugSystem'
 import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
@@ -40,7 +41,6 @@ import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
-import { audioAssets, defaultAudioSettings } from './config/AudioConfig'
 export class GameWorld {
     private world: World
     private inputSystem: InputSystem
@@ -63,7 +63,9 @@ export class GameWorld {
     private rangeIndicatorSystem: RangeIndicatorSystem
     private enemyArrowSystem: EnemyArrowSystem
     private audioSystem: AudioSystem
+    private debugSystem: DebugSystem
     private playerEntity: Entity | null = null
+    private debugEntity: Entity | null = null
     private lastTime: number = 0
     private audioInitialized = false
 
@@ -104,6 +106,7 @@ export class GameWorld {
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
         this.audioSystem = new AudioSystem()
+        this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.gameStateSystem.setLevelingSystem(this.levelingSystem)
@@ -137,6 +140,7 @@ export class GameWorld {
         this.world.addSystem(this.enemyArrowSystem) // 16. Update enemy arrows
         this.world.addSystem(this.newShipOfferUISystem) // 17. Handle new ship offer UI
         this.world.addSystem(this.cameraSystem) // 18. Update camera system
+        this.world.addSystem(this.debugSystem) // 18. Render debug gizmos
         this.world.addSystem(this.renderSystem) // 19. Render the results
     }
 
@@ -150,7 +154,12 @@ export class GameWorld {
                 'player',
                 10,
             )
+        }
 
+        // Create debug entity for debug visualizations
+        this.debugEntity = createDebugEntity(this.world)
+
+        if (this.playerEntity) {
             // Enable visual guidance for the player
             this.enablePlayerVisualGuidance({
                 showRangeCircle: ARROW_INDICATOR_CONFIG.defaultShowRangeCircle,
@@ -213,40 +222,18 @@ export class GameWorld {
         }
     }
 
-    // Method to equip player with auto-targeting weapon
-    equipPlayerAutoTargetingWeapon(
+    // Method to equip player with weapon (auto-targeting only)
+    equipPlayerWeapon(
         overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
     ): void {
         if (this.playerEntity) {
-            equipAutoTargetingWeapon(this.playerEntity, overrides)
+            equipPlayerWeapon(this.playerEntity, overrides)
         }
     }
 
-    // Method to equip player with manual weapon
-    equipPlayerManualWeapon(
-        overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
-    ): void {
-        if (this.playerEntity) {
-            equipManualWeapon(this.playerEntity, overrides)
-        }
-    }
-
-    // Method to check if player has auto-targeting weapon
+    // Method to check if player has auto-targeting weapon (always true now)
     playerHasAutoTargetingWeapon(): boolean {
-        return this.playerEntity
-            ? hasAutoTargetingWeapon(this.playerEntity)
-            : false
-    }
-
-    // Method to toggle between weapon types
-    togglePlayerWeaponType(): void {
-        if (this.playerEntity) {
-            if (hasAutoTargetingWeapon(this.playerEntity)) {
-                equipManualWeapon(this.playerEntity)
-            } else {
-                equipAutoTargetingWeapon(this.playerEntity)
-            }
-        }
+        return true // All player weapons are auto-targeting now
     }
 
     // Visual guidance methods
@@ -401,6 +388,27 @@ export class GameWorld {
         this.weaponSystem.setAutoTargetingDebug(enabled)
     }
 
+    // Debug visualization methods
+    setDebugMode(enabled: boolean): void {
+        this.debugSystem.setDebugEnabled(enabled)
+    }
+
+    toggleDebugShootingPoints(enabled: boolean): void {
+        this.debugSystem.toggleShootingPoints(enabled)
+    }
+
+    toggleDebugCollisionShapes(enabled: boolean): void {
+        this.debugSystem.toggleCollisionShapes(enabled)
+    }
+
+    toggleDebugWeaponRange(enabled: boolean): void {
+        this.debugSystem.toggleWeaponRange(enabled)
+    }
+
+    toggleDebugVelocityVectors(enabled: boolean): void {
+        this.debugSystem.toggleVelocityVectors(enabled)
+    }
+
     // Camera system methods
     transitionToCameraState(stateName: string, duration?: number): void {
         this.cameraSystem.transitionToState(stateName, duration)
@@ -545,12 +553,12 @@ export class GameWorld {
                 await this.audioSystem.initialize(this.camera)
                 await this.audioSystem.loadAssets()
                 this.audioInitialized = true
-                
+
                 // Start background music when ready
                 this.audioSystem.playMusic('background')
-                
+
                 console.log('🎵 Audio system initialized and ready')
-                
+
                 // Remove event listeners
                 document.removeEventListener('click', initializeAudio)
                 document.removeEventListener('keydown', initializeAudio)

@@ -1,3 +1,4 @@
+import { createPlayerShipCollision } from '../config/CollisionConfig'
 import {
     createLevelComponent,
     createLevelingStatsComponent,
@@ -5,10 +6,7 @@ import {
 } from '../config/LevelingConfig'
 import type { MovementConfigPreset } from '../config/MovementPresets'
 import { createMovementConfig } from '../config/MovementPresets'
-import {
-    createAutoTargetingWeaponConfig,
-    createWeaponConfig,
-} from '../config/WeaponConfig'
+import { createPlayerWeaponConfig } from '../config/WeaponConfig'
 import type {
     DamageableComponent,
     HealthComponent,
@@ -84,8 +82,8 @@ export function createPlayerShip(
     }
     entity.addComponent(health)
 
-    // Weapon component - player has a basic cannon
-    const weapon = createWeaponConfig()
+    // Weapon component - player has auto-targeting weapon
+    const weapon = createPlayerWeaponConfig()
     entity.addComponent(weapon)
 
     // Damageable component - player can take damage
@@ -93,6 +91,10 @@ export function createPlayerShip(
         type: 'damageable',
     }
     entity.addComponent(damageable)
+
+    // Collision component - box collider for ship
+    const collision = createPlayerShipCollision({ x: 0, y: 0.5, z: 0 })
+    entity.addComponent(collision)
 
     // Renderable component - use ship GLTF model
     const renderable: RenderableComponent = {
@@ -147,32 +149,14 @@ export function updateWeaponConfig(
     }
 }
 
-// New function to equip player with auto-targeting weapon
-export function equipAutoTargetingWeapon(
+// Function to equip player with weapon (auto-targeting only)
+export function equipPlayerWeapon(
     entity: Entity,
     overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
 ): void {
-    const newWeapon = createAutoTargetingWeaponConfig(overrides)
+    const newWeapon = createPlayerWeaponConfig(overrides)
 
     // Remove existing weapon and add new one
     entity.removeComponent('weapon')
     entity.addComponent(newWeapon)
-}
-
-// New function to equip player with manual weapon
-export function equipManualWeapon(
-    entity: Entity,
-    overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
-): void {
-    const newWeapon = createWeaponConfig(overrides)
-
-    // Remove existing weapon and add new one
-    entity.removeComponent('weapon')
-    entity.addComponent(newWeapon)
-}
-
-// Helper function to check if player has auto-targeting weapon
-export function hasAutoTargetingWeapon(entity: Entity): boolean {
-    const weapon = entity.getComponent<WeaponComponent>('weapon')
-    return weapon?.isAutoTargeting ?? false
 }

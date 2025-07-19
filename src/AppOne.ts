@@ -344,75 +344,33 @@ export class AppOne {
         setInterval(updateCameraStatus, 100)
 
         // Weapon controls
-        const weaponFolder = this.gui.addFolder('Weapons')
+        const weaponFolder = this.gui.addFolder('Weapon Controls')
 
-        // Weapon type toggle
-        weaponFolder
-            .add(
-                {
-                    toggleWeaponType: () => {
-                        this.gameWorld.togglePlayerWeaponType()
-                        console.log(
-                            `Weapon switched to: ${
-                                this.gameWorld.playerHasAutoTargetingWeapon()
-                                    ? 'Auto-Targeting'
-                                    : 'Manual'
-                            }`,
-                        )
-                    },
-                },
-                'toggleWeaponType',
-            )
-            .name('Toggle Weapon Type')
-
-        // Current weapon status display
-        const weaponStatus = { type: 'Manual' }
+        // Current weapon status display (always auto-targeting now)
+        const weaponStatus = { type: 'Auto-Targeting' }
         const weaponStatusController = weaponFolder
             .add(weaponStatus, 'type')
             .name('Current Weapon')
         weaponStatusController.disable()
 
-        // Update weapon status display
-        const updateWeaponStatus = () => {
-            weaponStatus.type = this.gameWorld.playerHasAutoTargetingWeapon()
-                ? 'Auto-Targeting'
-                : 'Manual'
-            weaponStatusController.updateDisplay()
-        }
-
-        // Update weapon status every frame (simple approach)
-        setInterval(updateWeaponStatus, 100)
-
         // Quick weapon presets
         weaponFolder
             .add(
                 {
-                    equipManual: () => {
-                        this.gameWorld.equipPlayerManualWeapon()
-                        console.log('Equipped Manual Weapon')
+                    equipStandard: () => {
+                        this.gameWorld.equipPlayerWeapon()
+                        console.log('Equipped Standard Auto-Targeting Weapon')
                     },
                 },
-                'equipManual',
+                'equipStandard',
             )
-            .name('Equip Manual Weapon')
-
-        weaponFolder
-            .add(
-                {
-                    equipAutoTargeting: () => {
-                        this.gameWorld.equipPlayerAutoTargetingWeapon()
-                        console.log('Equipped Auto-Targeting Weapon')
-                    },
-                },
-                'equipAutoTargeting',
-            )
-            .name('Equip Auto-Targeting')
+            .name('Equip Standard Weapon')
 
         weaponFolder
             .add(
                 {
                     equipFastAuto: () => {
-                        this.gameWorld.equipPlayerAutoTargetingWeapon({
+                        this.gameWorld.equipPlayerWeapon({
                             damage: 15,
                             fireRate: 2.0,
                             projectileSpeed: 15.0,
@@ -497,6 +455,125 @@ export class AppOne {
                 'unifiedSystemInfo',
             )
             .name('Unified System Info')
+
+        // Debug Visualization controls
+        const debugFolder = this.gui.addFolder('Debug Visualization')
+
+        // Master debug toggle
+        const debugState = { enabled: false }
+        const debugController = debugFolder
+            .add(debugState, 'enabled')
+            .name('Enable Debug Mode')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.setDebugMode(enabled)
+                console.log(
+                    `🔍 Debug Mode: ${enabled ? 'Enabled' : 'Disabled'}`,
+                )
+            })
+
+        // Individual debug toggles
+        const shootingPointsState = { enabled: false }
+        const shootingPointsController = debugFolder
+            .add(shootingPointsState, 'enabled')
+            .name('Show Shooting Points')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugShootingPoints(enabled)
+                console.log(
+                    `🎯 Shooting Points: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
+        const collisionShapesState = { enabled: false }
+        const collisionShapesController = debugFolder
+            .add(collisionShapesState, 'enabled')
+            .name('Show Collision Shapes')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugCollisionShapes(enabled)
+                console.log(
+                    `🟢 Collision Shapes: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
+        const weaponRangeState = { enabled: false }
+        const weaponRangeController = debugFolder
+            .add(weaponRangeState, 'enabled')
+            .name('Show Weapon Range')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugWeaponRange(enabled)
+                console.log(
+                    `🔵 Weapon Range: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
+        const velocityVectorsState = { enabled: false }
+        const velocityVectorsController = debugFolder
+            .add(velocityVectorsState, 'enabled')
+            .name('Show Velocity Vectors')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugVelocityVectors(enabled)
+                console.log(
+                    `🟡 Velocity Vectors: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
+        // Quick toggle all debug features
+        debugFolder
+            .add(
+                {
+                    enableAll: () => {
+                        debugState.enabled = true
+                        shootingPointsState.enabled = true
+                        collisionShapesState.enabled = true
+                        weaponRangeState.enabled = true
+                        velocityVectorsState.enabled = true
+
+                        this.gameWorld.setDebugMode(true)
+                        this.gameWorld.toggleDebugShootingPoints(true)
+                        this.gameWorld.toggleDebugCollisionShapes(true)
+                        this.gameWorld.toggleDebugWeaponRange(true)
+                        this.gameWorld.toggleDebugVelocityVectors(true)
+
+                        // Update UI to reflect changes
+                        debugController.updateDisplay()
+                        shootingPointsController.updateDisplay()
+                        collisionShapesController.updateDisplay()
+                        weaponRangeController.updateDisplay()
+                        velocityVectorsController.updateDisplay()
+                        console.log('🔍 All Debug Features Enabled')
+                    },
+                },
+                'enableAll',
+            )
+            .name('Enable All Debug')
+
+        debugFolder
+            .add(
+                {
+                    disableAll: () => {
+                        debugState.enabled = false
+                        shootingPointsState.enabled = false
+                        collisionShapesState.enabled = false
+                        weaponRangeState.enabled = false
+                        velocityVectorsState.enabled = false
+
+                        this.gameWorld.setDebugMode(false)
+                        this.gameWorld.toggleDebugShootingPoints(false)
+                        this.gameWorld.toggleDebugCollisionShapes(false)
+                        this.gameWorld.toggleDebugWeaponRange(false)
+                        this.gameWorld.toggleDebugVelocityVectors(false)
+
+                        // Update UI to reflect changes
+                        debugController.updateDisplay()
+                        shootingPointsController.updateDisplay()
+                        collisionShapesController.updateDisplay()
+                        weaponRangeController.updateDisplay()
+                        velocityVectorsController.updateDisplay()
+                        console.log('🔍 All Debug Features Disabled')
+                    },
+                },
+                'disableAll',
+            )
+            .name('Disable All Debug')
 
         // Lighting controls
         const lightFolder = this.gui.addFolder('Lighting')

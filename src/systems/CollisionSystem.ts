@@ -1,5 +1,6 @@
 import { Mesh } from 'three'
 import type {
+    CollisionComponent,
     DamageableComponent,
     HealthComponent,
     PositionComponent,
@@ -11,9 +12,7 @@ import type { World } from '../ecs/World'
 import type { AudioSystem } from './AudioSystem'
 
 export class CollisionSystem extends System {
-    private readonly collisionRadius = 0.8 // Adjusted for sphere projectiles hitting box obstacles
     private audioSystem: AudioSystem | null = null
-
     constructor(world: World) {
         super(world, []) // We'll manually query for different component combinations
     }
@@ -34,6 +33,7 @@ export class CollisionSystem extends System {
             'damageable',
             'health',
             'position',
+            'collision',
         ])
 
         const projectilesToRemove: number[] = []
@@ -57,12 +57,26 @@ export class CollisionSystem extends System {
                     target.getComponent<HealthComponent>('health')
                 const targetDamageable =
                     target.getComponent<DamageableComponent>('damageable')
+                const targetCollision =
+                    target.getComponent<CollisionComponent>('collision')
 
-                if (!targetPos || !targetHealth || !targetDamageable) continue
+                if (
+                    !targetPos ||
+                    !targetHealth ||
+                    !targetDamageable ||
+                    !targetCollision
+                )
+                    continue
                 if (targetHealth.isDead) continue
 
-                // Check collision using simple distance check
-                if (this.checkCollision(projectilePos, targetPos)) {
+                // Check collision using configurable collision shapes
+                if (
+                    this.checkCollision(
+                        projectilePos,
+                        targetPos,
+                        targetCollision,
+                    )
+                ) {
                     // Apply damage
                     this.applyDamage(targetHealth, projectileComp.damage)
 
@@ -78,7 +92,9 @@ export class CollisionSystem extends System {
                     if (targetHealth.currentHealth <= 0) {
                         targetHealth.isDead = true
                         // Play death/explosion sound
-                        this.playDeathSound(target.id === this.getPlayerEntityId())
+                        this.playDeathSound(
+                            target.id === this.getPlayerEntityId(),
+                        )
                     }
 
                     break // Projectile can only hit one target
@@ -95,13 +111,38 @@ export class CollisionSystem extends System {
     private checkCollision(
         projectilePos: PositionComponent,
         targetPos: PositionComponent,
+        targetCollision: CollisionComponent,
     ): boolean {
-        const dx = projectilePos.x - targetPos.x
-        const dy = projectilePos.y - targetPos.y
-        const dz = projectilePos.z - targetPos.z
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+        // Apply offset if specified
+        const offsetX = targetCollision.offset?.x || 0
+        const offsetY = targetCollision.offset?.y || 0
+        const offsetZ = targetCollision.offset?.z || 0
 
-        return distance <= this.collisionRadius
+        const targetX = targetPos.x + offsetX
+        const targetY = targetPos.y + offsetY
+        const targetZ = targetPos.z + offsetZ
+
+        if (targetCollision.collider.shape === 'sphere') {
+            // Sphere collision
+            const radius = targetCollision.collider.radius
+            const dx = projectilePos.x - targetX
+            const dy = projectilePos.y - targetY
+            const dz = projectilePos.z - targetZ
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+            return distance <= radius
+        } else {
+            // Box collision
+            const halfWidth = targetCollision.collider.width / 2
+            const halfHeight = targetCollision.collider.height / 2
+            const halfDepth = targetCollision.collider.depth / 2
+
+            const dx = Math.abs(projectilePos.x - targetX)
+            const dy = Math.abs(projectilePos.y - targetY)
+            const dz = Math.abs(projectilePos.z - targetZ)
+
+            return dx <= halfWidth && dy <= halfHeight && dz <= halfDepth
+        }
     }
 
     private applyDamage(health: HealthComponent, damage: number): void {
@@ -182,9 +223,9 @@ export class CollisionSystem extends System {
         const playerEntities = this.world.getEntitiesWithComponents([
             'input', // Assuming only the player has input component
             'health',
-            'position'
+            'position',
         ])
-        
+
         return playerEntities.length > 0 ? playerEntities[0].id : -1
     }
 }
