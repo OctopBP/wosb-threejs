@@ -503,7 +503,7 @@ export class AppOne {
 
         // Master debug toggle
         const debugState = { enabled: false }
-        debugFolder
+        const debugController = debugFolder
             .add(debugState, 'enabled')
             .name('Enable Debug Mode')
             .onChange((enabled: boolean) => {
@@ -515,7 +515,7 @@ export class AppOne {
 
         // Individual debug toggles
         const shootingPointsState = { enabled: false }
-        debugFolder
+        const shootingPointsController = debugFolder
             .add(shootingPointsState, 'enabled')
             .name('Show Shooting Points')
             .onChange((enabled: boolean) => {
@@ -526,7 +526,7 @@ export class AppOne {
             })
 
         const collisionShapesState = { enabled: false }
-        debugFolder
+        const collisionShapesController = debugFolder
             .add(collisionShapesState, 'enabled')
             .name('Show Collision Shapes')
             .onChange((enabled: boolean) => {
@@ -537,7 +537,7 @@ export class AppOne {
             })
 
         const weaponRangeState = { enabled: false }
-        debugFolder
+        const weaponRangeController = debugFolder
             .add(weaponRangeState, 'enabled')
             .name('Show Weapon Range')
             .onChange((enabled: boolean) => {
@@ -548,7 +548,7 @@ export class AppOne {
             })
 
         const velocityVectorsState = { enabled: false }
-        debugFolder
+        const velocityVectorsController = debugFolder
             .add(velocityVectorsState, 'enabled')
             .name('Show Velocity Vectors')
             .onChange((enabled: boolean) => {
@@ -576,7 +576,11 @@ export class AppOne {
                         this.gameWorld.toggleDebugVelocityVectors(true)
 
                         // Update UI to reflect changes
-                        debugFolder.updateDisplay()
+                        debugController.updateDisplay()
+                        shootingPointsController.updateDisplay()
+                        collisionShapesController.updateDisplay()
+                        weaponRangeController.updateDisplay()
+                        velocityVectorsController.updateDisplay()
                         console.log('🔍 All Debug Features Enabled')
                     },
                 },
@@ -601,7 +605,11 @@ export class AppOne {
                         this.gameWorld.toggleDebugVelocityVectors(false)
 
                         // Update UI to reflect changes
-                        debugFolder.updateDisplay()
+                        debugController.updateDisplay()
+                        shootingPointsController.updateDisplay()
+                        collisionShapesController.updateDisplay()
+                        weaponRangeController.updateDisplay()
+                        velocityVectorsController.updateDisplay()
                         console.log('🔍 All Debug Features Disabled')
                     },
                 },
