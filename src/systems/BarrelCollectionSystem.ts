@@ -3,6 +3,7 @@ import type {
     CollectableComponent,
     PositionComponent,
     RenderableComponent,
+    VelocityComponent,
     XPBarrelComponent,
 } from '../ecs/Component'
 import type { Entity } from '../ecs/Entity'
@@ -14,7 +15,7 @@ export class BarrelCollectionSystem extends System {
     private levelingSystem: LevelingSystem | null = null
 
     constructor(world: World) {
-        super(world, ['xpBarrel', 'collectable', 'position'])
+        super(world, ['xpBarrel', 'collectable', 'position', 'velocity'])
     }
 
     // Method to set the leveling system reference
@@ -28,6 +29,7 @@ export class BarrelCollectionSystem extends System {
             'xpBarrel',
             'collectable',
             'position',
+            'velocity',
         ])
         const players = this.world.getEntitiesWithComponents([
             'player',
@@ -47,8 +49,11 @@ export class BarrelCollectionSystem extends System {
                 barrel.getComponent<CollectableComponent>('collectable')
             const barrelPosition =
                 barrel.getComponent<PositionComponent>('position')
+            const barrelVelocity =
+                barrel.getComponent<VelocityComponent>('velocity')
 
-            if (!xpBarrel || !collectable || !barrelPosition) continue
+            if (!xpBarrel || !collectable || !barrelPosition || !barrelVelocity)
+                continue
 
             // Skip if already collected
             if (xpBarrel.isCollected) continue
@@ -62,18 +67,39 @@ export class BarrelCollectionSystem extends System {
                 continue
             }
 
-            // Update floating animation
-            this.updateFloatingAnimation(barrel, deltaTime)
-
             // Check if player is in collection range
-            if (
-                this.isPlayerInRange(
+            const distanceToPlayer = this.getDistanceToPlayer(
+                playerPosition,
+                barrelPosition,
+            )
+
+            if (distanceToPlayer <= xpBarrel.collectionRange) {
+                if (!xpBarrel.isBeingAttracted) {
+                    // Start magnetic attraction
+                    xpBarrel.isBeingAttracted = true
+                }
+
+                // Apply magnetic movement toward player
+                this.applyMagneticMovement(
+                    barrel,
                     playerPosition,
                     barrelPosition,
-                    xpBarrel.collectionRange,
+                    barrelVelocity,
+                    deltaTime,
                 )
-            ) {
-                this.collectBarrel(barrel, player)
+
+                // Check if close enough to collect (smaller distance than collection range)
+                if (distanceToPlayer <= 1.0) {
+                    this.collectBarrel(barrel, player)
+                }
+            } else {
+                // Reset attraction if player moves out of range
+                if (xpBarrel.isBeingAttracted) {
+                    xpBarrel.isBeingAttracted = false
+                    // Reset velocity to gentle drift
+                    barrelVelocity.dx = (Math.random() - 0.5) * 0.2
+                    barrelVelocity.dz = (Math.random() - 0.5) * 0.2
+                }
             }
         }
 
@@ -81,33 +107,44 @@ export class BarrelCollectionSystem extends System {
         this.cleanupCollectedBarrels()
     }
 
-    private isPlayerInRange(
+    private getDistanceToPlayer(
         playerPos: PositionComponent,
         barrelPos: PositionComponent,
-        range: number,
-    ): boolean {
+    ): number {
         const dx = playerPos.x - barrelPos.x
         const dy = playerPos.y - barrelPos.y
         const dz = playerPos.z - barrelPos.z
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
-        return distance <= range
+        return Math.sqrt(dx * dx + dy * dy + dz * dz)
     }
 
-    private updateFloatingAnimation(barrel: Entity, deltaTime: number): void {
+    private applyMagneticMovement(
+        barrel: Entity,
+        playerPos: PositionComponent,
+        barrelPos: PositionComponent,
+        barrelVelocity: VelocityComponent,
+        deltaTime: number,
+    ): void {
         const xpBarrel = barrel.getComponent<XPBarrelComponent>('xpBarrel')
-        const position = barrel.getComponent<PositionComponent>('position')
+        if (!xpBarrel) return
 
-        if (!xpBarrel || !position) return
+        // Calculate direction to player
+        const dx = playerPos.x - barrelPos.x
+        const dy = playerPos.y - barrelPos.y
+        const dz = playerPos.z - barrelPos.z
 
-        // Update floating height using sine wave
-        const currentTime = Date.now() / 1000
-        const floatOffset =
-            Math.sin((currentTime - xpBarrel.spawnTime) * xpBarrel.floatSpeed) *
-            0.2
-        position.y = xpBarrel.floatHeight + floatOffset
+        // Normalize direction
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+        if (distance === 0) return
 
-        // Gentle rotation for visual appeal
-        position.rotationY += deltaTime * 0.5
+        const normalizedDx = dx / distance
+        const normalizedDy = dy / distance
+        const normalizedDz = dz / distance
+
+        // Apply magnetic velocity toward player
+        const attractionForce = xpBarrel.attractionSpeed * deltaTime
+        barrelVelocity.dx = normalizedDx * attractionForce
+        barrelVelocity.dy = normalizedDy * attractionForce
+        barrelVelocity.dz = normalizedDz * attractionForce
     }
 
     private collectBarrel(barrel: Entity, player: Entity): void {

@@ -81,10 +81,12 @@ export function createXPBarrel(
         xpValue,
         collectionRange: barrelConfig.collectionRange,
         isCollected: false,
-        floatHeight: Math.random() * 0.3, // Random starting float height
-        floatSpeed: barrelConfig.floatSpeed,
+        floatHeight: 0, // No floating height, stay on water
+        floatSpeed: 0, // No floating animation
         spawnTime: currentTime,
         lifespan: barrelConfig.lifespan,
+        isBeingAttracted: false, // Initially not being attracted
+        attractionSpeed: 8.0, // Speed at which barrel moves toward player
     }
     entity.addComponent(xpBarrel)
 

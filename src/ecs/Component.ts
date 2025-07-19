@@ -329,6 +329,8 @@ export interface XPBarrelComponent extends Component {
     floatSpeed: number // Speed of floating animation
     spawnTime: number // When this barrel was spawned
     lifespan: number // How long before barrel disappears (in seconds, 0 = infinite)
+    isBeingAttracted: boolean // Whether this barrel is being magnetically pulled to player
+    attractionSpeed: number // Speed at which barrel moves toward player
 }
 
 // Collectable component for items that can be collected by the player

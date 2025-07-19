@@ -56,7 +56,7 @@ Previously, players gained XP immediately when killing enemies. Now, when enemie
 #### Added barrel model support
 - Added `barrel` model type to `ModelConfig.ts`
 - Maps to `barrel.glb` asset file
-- Scale set to 0.5 for appropriate size
+- Scale set to 1.5 for better visibility
 
 ## Configuration Options
 
@@ -91,10 +91,12 @@ interface BarrelSpawnConfig {
 
 ## Visual Features
 
-### Barrel Animation
-- **Floating**: Barrels gently bob up and down on the water surface using sine wave animation
-- **Rotation**: Gentle rotation for visual appeal
-- **Drift**: Small random drift velocity to simulate floating in water
+### Barrel Behavior
+- **Static Positioning**: Barrels remain at water level (y=0) without floating animation
+- **Magnetic Collection**: When player enters collection range (3 units), barrels are magnetically attracted to the ship
+- **Smooth Movement**: Barrels move toward player at configurable speed (8.0 units/second)
+- **Scale**: Barrels are scaled to 1.5x for better visibility
+- **Drift**: Small random drift velocity when not being attracted
 
 ### Collection Feedback
 - Console logging when barrels are collected
@@ -127,8 +129,10 @@ The BarrelCollectionSystem runs at position 12 in the update cycle, between coll
 
 ### Visual Customization
 - **Float Speed**: Adjust `floatSpeed` for faster/slower bobbing animation
-- **Model Scale**: Modify scale in ModelConfig for different barrel sizes
+- **Model Scale**: Modify scale in ModelConfig for different barrel sizes (currently 1.5x)
 - **Drift Speed**: Change velocity values in BarrelFactory for different drift behavior
+- **Attraction Speed**: Modify `attractionSpeed` in XPBarrelComponent for faster/slower magnetic movement
+- **Collection Distance**: Adjust the final collection distance (currently 1.0 unit) for immediate vs delayed pickup
 
 ## Future Enhancements
 
