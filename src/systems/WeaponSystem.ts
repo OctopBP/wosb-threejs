@@ -534,9 +534,5 @@ export class WeaponSystem extends System {
             gunSmokeId,
             gunSmokeConfig,
         )
-
-        setTimeout(() => {
-            this.particleSystem?.removeParticleSystem(gunSmokeId)
-        }, 2000)
     }
 }

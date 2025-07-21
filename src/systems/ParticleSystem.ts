@@ -142,6 +142,7 @@ interface ParticleSystemInstance {
     texture: Texture
     isActive: boolean
     materialGroup: string // Group systems with same texture/sprite settings
+    autoRemove: boolean // Whether to automatically remove when lifetime is finished
 }
 
 export class ParticleSystem extends System {
@@ -169,11 +170,24 @@ export class ParticleSystem extends System {
     }
 
     update(deltaTime: number): void {
+        const systemsToRemove: string[] = []
+
         for (const system of this.particleSystems.values()) {
             if (system.isActive) {
                 this.updateParticleSystem(system, deltaTime)
+
+                // Check if system should be automatically removed
+                if (system.autoRemove && this.shouldRemoveSystem(system)) {
+                    systemsToRemove.push(system.id)
+                }
             }
         }
+
+        // Remove systems that have finished their lifetime
+        for (const systemId of systemsToRemove) {
+            this.removeParticleSystem(systemId)
+        }
+
         this.updateGeometry()
     }
 
@@ -204,6 +218,7 @@ export class ParticleSystem extends System {
             texture: this.textureLoader.load(config.texture),
             isActive: true,
             materialGroup: materialGroup,
+            autoRemove: true, // Default to auto-remove
         }
 
         // Setup default curves or use custom ones
@@ -342,6 +357,13 @@ export class ParticleSystem extends System {
         const system = this.particleSystems.get(id)
         if (system) {
             system.isActive = false
+        }
+    }
+
+    setAutoRemove(id: string, autoRemove: boolean): void {
+        const system = this.particleSystems.get(id)
+        if (system) {
+            system.autoRemove = autoRemove
         }
     }
 
@@ -654,13 +676,18 @@ export class ParticleSystem extends System {
     // Utility methods for managing particle systems
     getParticleSystemInfo(
         id: string,
-    ): { particleCount: number; isActive: boolean } | null {
+    ): {
+        particleCount: number
+        isActive: boolean
+        autoRemove: boolean
+    } | null {
         const system = this.particleSystems.get(id)
         if (!system) return null
 
         return {
             particleCount: system.particles.length,
             isActive: system.isActive,
+            autoRemove: system.autoRemove,
         }
     }
 
@@ -674,5 +701,31 @@ export class ParticleSystem extends System {
             total += system.particles.length
         }
         return total
+    }
+
+    /**
+     * Determines if a particle system should be automatically removed.
+     * A system is removed when:
+     * 1. It has no particles remaining AND
+     * 2. It's not actively emitting particles (no continuous emission or burst cycles)
+     */
+    private shouldRemoveSystem(system: ParticleSystemInstance): boolean {
+        // Don't remove if there are still particles alive
+        if (system.particles.length > 0) {
+            return false
+        }
+
+        // Don't remove if system has continuous emission
+        if (system.config.emissionRate > 0) {
+            return false
+        }
+
+        // Don't remove if system has burst cycles (recurring bursts)
+        if (system.config.burstInterval > 0) {
+            return false
+        }
+
+        // System has no particles and no active emission - safe to remove
+        return true
     }
 }
