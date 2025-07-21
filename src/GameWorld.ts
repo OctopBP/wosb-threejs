@@ -38,6 +38,7 @@ import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -69,6 +70,7 @@ export class GameWorld {
     private enemyArrowSystem: EnemyArrowSystem
     private audioSystem: AudioSystem
     private audioUISystem: AudioUISystem
+    private particleSystem: ParticleSystem
     private debugSystem: DebugSystem
     private playerEntity: Entity | null = null
     private debugEntity: Entity | null = null
@@ -113,6 +115,7 @@ export class GameWorld {
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
         this.audioSystem = new AudioSystem(this.world)
         this.audioUISystem = new AudioUISystem(this.world)
+        this.particleSystem = new ParticleSystem(this.world, scene, camera)
         this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other
@@ -121,7 +124,9 @@ export class GameWorld {
         this.newShipOfferUISystem.setGameStateSystem(this.gameStateSystem)
         this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
         this.weaponSystem.setAudioSystem(this.audioSystem)
+        this.weaponSystem.setParticleSystem(this.particleSystem)
         this.collisionSystem.setAudioSystem(this.audioSystem)
+        this.collisionSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)
 
@@ -150,7 +155,8 @@ export class GameWorld {
         this.world.addSystem(this.newShipOfferUISystem) // 18. Handle new ship offer UI
         this.world.addSystem(this.cameraSystem) // 19. Update camera system
         this.world.addSystem(this.debugSystem) // 20. Render debug gizmos
-        this.world.addSystem(this.renderSystem) // 21. Render the results
+        this.world.addSystem(this.particleSystem) // 21. Render particles
+        this.world.addSystem(this.renderSystem) // 22. Render the results
     }
 
     init(): void {
