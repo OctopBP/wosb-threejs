@@ -9,7 +9,6 @@ import {
     TextureLoader,
     Vector3,
 } from 'three'
-import { gunSmokeParticleConfig } from '../config/ParticlesConfig'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import particleFragmentShader from '../shaders/particle.frag?raw'
@@ -81,7 +80,6 @@ export interface ParticleEmissionConfig {
 }
 
 export interface ParticleSystemConfig extends ParticleEmissionConfig {
-    id: string
     position: Vector3
 
     // Animation curves for particle properties over lifetime
@@ -133,6 +131,7 @@ class LinearSpline<T> {
 }
 
 interface ParticleSystemInstance {
+    id: string
     config: ParticleSystemConfig
     particles: Particle[]
     timeToSpawn: number
@@ -166,9 +165,6 @@ export class ParticleSystem extends System {
 
         this.camera = camera
 
-        // Keep the original keyboard event for testing
-        window.addEventListener('keydown', this.onKeyUp.bind(this))
-
         this.updateGeometry()
     }
 
@@ -181,7 +177,15 @@ export class ParticleSystem extends System {
         this.updateGeometry()
     }
 
-    createParticleSystem(config: ParticleSystemConfig): void {
+    createAndBurstParticleSystem(
+        id: string,
+        config: ParticleSystemConfig,
+    ): void {
+        this.createParticleSystem(id, config)
+        this.burst(id)
+    }
+
+    createParticleSystem(id: string, config: ParticleSystemConfig): void {
         // Create material group identifier based on texture and sprite sheet settings
         const spriteKey = config.spriteSheet
             ? `${config.spriteSheet.columns}x${config.spriteSheet.rows}`
@@ -189,6 +193,7 @@ export class ParticleSystem extends System {
         const materialGroup = `${config.texture}_${spriteKey}`
 
         const system: ParticleSystemInstance = {
+            id,
             config,
             particles: [],
             timeToSpawn: 0,
@@ -207,7 +212,7 @@ export class ParticleSystem extends System {
         // Create material and geometry for this group if they don't exist
         this.ensureMaterialGroup(materialGroup, system)
 
-        this.particleSystems.set(config.id, system)
+        this.particleSystems.set(id, system)
     }
 
     private ensureMaterialGroup(
@@ -275,11 +280,8 @@ export class ParticleSystem extends System {
                 system.alphaSpline.AddPoint(point.time, point.value)
             }
         } else {
-            // Default alpha curve
-            system.alphaSpline.AddPoint(0.0, 0.0)
-            system.alphaSpline.AddPoint(0.1, 1.0)
-            system.alphaSpline.AddPoint(0.6, 1.0)
-            system.alphaSpline.AddPoint(1.0, 0.0)
+            system.alphaSpline.AddPoint(0.0, 1)
+            system.alphaSpline.AddPoint(1.0, 1)
         }
 
         // Setup color curve
@@ -301,8 +303,7 @@ export class ParticleSystem extends System {
         } else {
             // Default size curve
             system.sizeSpline.AddPoint(0.0, 1.0)
-            system.sizeSpline.AddPoint(0.5, 2.0)
-            system.sizeSpline.AddPoint(1.0, 0.5)
+            system.sizeSpline.AddPoint(1.0, 1.0)
         }
     }
 
@@ -351,8 +352,6 @@ export class ParticleSystem extends System {
             this.addParticles(system, burstCount)
         }
     }
-
-
 
     private updateParticleSystem(
         system: ParticleSystemInstance,
@@ -422,7 +421,7 @@ export class ParticleSystem extends System {
                 rotationSpeed: rotationSpeed,
                 velocity: velocity,
                 acceleration: config.gravity.clone(),
-                systemId: config.id,
+                systemId: system.id,
                 frameIndex: frameIndex,
             }
 
@@ -649,18 +648,6 @@ export class ParticleSystem extends System {
                 geometry.attributes.angle.needsUpdate = true
                 geometry.attributes.frameIndex.needsUpdate = true
             }
-        }
-    }
-
-    // Legacy method for backwards compatibility and testing
-    private onKeyUp(_event: KeyboardEvent): void {
-        if (_event.code.toLowerCase() === 'keyv') {
-            console.log('Legacy AddParticles')
-            // Create a simple test system if none exists
-            if (!this.particleSystems.has('test')) {
-                this.createParticleSystem(gunSmokeParticleConfig)
-            }
-            this.burst('test', 5)
         }
     }
 

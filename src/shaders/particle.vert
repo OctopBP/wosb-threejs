@@ -22,6 +22,6 @@ void main() {
 
   // Calculate sprite sheet frame UV offset
   float frameX = mod(frameIndex, spriteColumns);
-  float frameY = floor(frameIndex / spriteColumns);
-  vFrameUV = vec2(frameX / spriteColumns, 1.0 -(frameY / spriteRows));
+  float frameY = ceil((frameIndex + 1.0) / spriteColumns);
+  vFrameUV = vec2(frameX / spriteColumns, 1.0 - frameY / spriteRows);
 }

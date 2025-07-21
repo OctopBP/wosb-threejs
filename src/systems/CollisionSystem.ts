@@ -1,5 +1,5 @@
 import { Mesh, Vector3 } from 'three'
-import { wreckageParticleConfig } from '../config/ParticlesConfig'
+import { getParticleConfig } from '../config/ParticlesConfig'
 import type {
     CollisionComponent,
     DamageableComponent,
@@ -89,7 +89,7 @@ export class CollisionSystem extends System {
                     this.applyDamage(targetHealth, projectileComp.damage)
 
                     // Play wreckage particle effect
-                    this.playWreckageParticleEffect(targetPos)
+                    this.playWreckageParticleEffect(projectilePos)
 
                     // Play hit sound effect
                     this.playHitSound()
@@ -158,15 +158,21 @@ export class CollisionSystem extends System {
         health.currentHealth = Math.max(0, health.currentHealth - damage)
     }
 
-    private playWreckageParticleEffect(targetPos: PositionComponent): void {
+    private playWreckageParticleEffect(position: PositionComponent): void {
         if (!this.particleSystem) {
             return
         }
 
-        this.particleSystem.createParticleSystem({
-            ...wreckageParticleConfig,
-            position: new Vector3(targetPos.x, targetPos.y, targetPos.z),
-        })
+        const wreckageId = `wreckage_${position.x}_${position.y}_${position.z}`
+        const wreckageConfig = getParticleConfig(
+            'wreckage',
+            new Vector3(position.x, position.y, position.z),
+            new Vector3(0, 1, 0),
+        )
+        this.particleSystem.createAndBurstParticleSystem(
+            wreckageId,
+            wreckageConfig,
+        )
     }
 
     private removeProjectile(projectileId: number): void {
