@@ -57,6 +57,11 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
             primitive: 'sphere',
             options: { diameter: 0.2, segments: 8 },
         },
+        barrel: {
+            kind: 'model',
+            fileName: 'barrel.glb',
+            scale: 2,
+        },
     } as const
 
 export type ModelType = keyof typeof MODEL_CONFIGS

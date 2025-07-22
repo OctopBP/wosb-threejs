@@ -312,6 +312,38 @@ export interface DebugComponent extends Component {
     showVelocityVectors: boolean
 }
 
+// Animation states for barrels
+export type BarrelAnimationState = 'flying' | 'floating' | 'attracting'
+
+// XP Barrel component for collectable barrels that award experience
+export interface XPBarrelComponent extends Component {
+    type: 'xpBarrel'
+    xpValue: number // How much XP this barrel gives when collected
+    collectionRange: number // Distance within which player can collect this barrel
+    isCollected: boolean // Whether this barrel has been collected
+    spawnTime: number // When this barrel was spawned
+    lifespan: number // How long before barrel disappears (in seconds, 0 = infinite)
+    isBeingAttracted: boolean // Whether this barrel is being magnetically pulled to player
+    attractionSpeed: number // Speed at which barrel moves toward player
+
+    // Explosion/Arc animation properties
+    animationState: BarrelAnimationState // Current animation state
+    startPosition: { x: number; y: number; z: number } // Where barrel started (enemy position)
+    targetPosition: { x: number; y: number; z: number } // Where barrel will land
+    flightTime: number // Total time for arc flight
+    flightProgress: number // Progress of flight (0-1)
+    arcHeight: number // Maximum height of arc trajectory
+}
+
+// Collectable component for items that can be collected by the player
+export interface CollectableComponent extends Component {
+    type: 'collectable'
+    collectionRange: number // Distance within which collection occurs
+    autoCollect: boolean // Whether to collect automatically when in range
+    requiresInput: boolean // Whether player needs to press a key to collect
+    collectedBy: number[] // Entity IDs that have collected this item
+}
+
 // Death animation component for sinking ship effects
 export interface DeathAnimationComponent extends Component {
     type: 'deathAnimation'

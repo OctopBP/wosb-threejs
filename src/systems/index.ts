@@ -3,6 +3,7 @@
 export * from './AccelerationSystem'
 export * from './AudioSystem'
 export * from './AudioUISystem'
+export * from './BarrelCollectionSystem'
 export * from './BossFightUISystem'
 export * from './CameraSystem'
 export * from './CollisionSystem'
