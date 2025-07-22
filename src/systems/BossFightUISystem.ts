@@ -5,6 +5,7 @@ import type { World } from '../ecs/World'
 export class BossFightUISystem extends System {
     private faderOverlay: HTMLElement | null = null
     private isUICreated = false
+    private isShowing = false
 
     constructor(world: World) {
         super(world, [])
@@ -29,22 +30,43 @@ export class BossFightUISystem extends System {
         }
 
         if (gameState.currentState === 'bossFight') {
-            this.showUI()
+            if (!this.isShowing) {
+                this.showUI()
+            }
         } else {
-            this.hideUI()
+            if (this.isShowing) {
+                this.hideUI()
+            }
         }
     }
 
     private showUI(): void {
         this.createUI()
-        if (this.faderOverlay) {
+        if (this.faderOverlay && !this.isShowing) {
+            this.isShowing = true
             this.faderOverlay.style.display = 'block'
+
+            // Force a reflow to ensure display:block is applied before opacity change
+            this.faderOverlay.offsetHeight
+
+            // Start fade-in animation
+            this.faderOverlay.style.opacity = '1'
         }
     }
 
     private hideUI(): void {
-        if (this.faderOverlay) {
-            this.faderOverlay.style.display = 'none'
+        if (this.faderOverlay && this.isShowing) {
+            this.isShowing = false
+
+            // Start fade-out animation
+            this.faderOverlay.style.opacity = '0'
+
+            // Hide the element after transition completes
+            setTimeout(() => {
+                if (this.faderOverlay && !this.isShowing) {
+                    this.faderOverlay.style.display = 'none'
+                }
+            }, 1000) // Match the transition duration
         }
     }
 
@@ -66,6 +88,10 @@ export class BossFightUISystem extends System {
         this.faderOverlay.style.backgroundSize = 'cover'
         this.faderOverlay.style.backgroundPosition = 'center'
         this.faderOverlay.style.backgroundRepeat = 'no-repeat'
+
+        // Set up fade animation
+        this.faderOverlay.style.opacity = '0'
+        this.faderOverlay.style.transition = 'opacity 1.0s ease-in-out'
 
         // Add to page
         document.body.appendChild(this.faderOverlay)
