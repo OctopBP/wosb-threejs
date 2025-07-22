@@ -1,7 +1,6 @@
 import { Mesh } from 'three'
 import { defaultBarrelConfig } from '../config/BarrelConfig'
 import type {
-    BarrelAnimationState,
     CollectableComponent,
     PositionComponent,
     RenderableComponent,
@@ -70,7 +69,7 @@ export class BarrelCollectionSystem extends System {
             }
 
             // Handle animation states
-            this.updateBarrelAnimation(barrel, deltaTime, currentTime)
+            this.updateBarrelAnimation(barrel, deltaTime)
 
             // Handle attracting and floating states
             if (
@@ -99,7 +98,7 @@ export class BarrelCollectionSystem extends System {
                 )
 
                 // Check if close enough to collect
-                if (distanceToPlayer <= 1.0) {
+                if (distanceToPlayer <= 0.5) {
                     this.collectBarrel(barrel, player)
                 }
             }
@@ -156,11 +155,7 @@ export class BarrelCollectionSystem extends System {
         barrelVelocity.dz = normalizedDz * xpBarrel.attractionSpeed
     }
 
-    private updateBarrelAnimation(
-        barrel: Entity,
-        deltaTime: number,
-        currentTime: number,
-    ): void {
+    private updateBarrelAnimation(barrel: Entity, deltaTime: number): void {
         const xpBarrel = barrel.getComponent<XPBarrelComponent>('xpBarrel')
         const position = barrel.getComponent<PositionComponent>('position')
         const velocity = barrel.getComponent<VelocityComponent>('velocity')
@@ -250,16 +245,7 @@ export class BarrelCollectionSystem extends System {
         // Award XP to player
         if (this.levelingSystem) {
             this.levelingSystem.awardXP(player.id, xpBarrel.xpValue)
-            console.log(
-                `🪣 Barrel collected! Awarded ${xpBarrel.xpValue} XP to player`,
-            )
         }
-
-        // TODO: Play collection sound effect here when audio system is available
-        // audioSystem.playSfx('barrel_collect')
-
-        // TODO: Add collection particle effect here when VFX system is available
-        // particleSystem.playEffect('barrel_collection', barrelPosition)
     }
 
     private cleanupCollectedBarrels(): void {

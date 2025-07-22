@@ -60,7 +60,7 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
         barrel: {
             kind: 'model',
             fileName: 'barrel.glb',
-            scale: 1.5,
+            scale: 2,
         },
     } as const
 
