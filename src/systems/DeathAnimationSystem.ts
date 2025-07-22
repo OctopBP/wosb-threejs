@@ -58,30 +58,13 @@ export class DeathAnimationSystem extends System {
             if (!deathAnimation.dissolveShaderApplied) {
                 const renderable =
                     entity.getComponent<RenderableComponent>('renderable')
-                console.log(
-                    'DeathAnimationSystem: Checking mesh availability for entity',
-                    entity.id,
-                    'mesh exists:',
-                    !!renderable?.mesh,
-                )
 
                 if (renderable?.mesh && renderable.mesh instanceof Mesh) {
                     this.applyDissolveShader(entity)
                     deathAnimation.dissolveShaderApplied = true
                 } else {
-                    console.log(
-                        'DeathAnimationSystem: Mesh not ready yet for entity',
-                        entity.id,
-                        'will try again next frame',
-                    )
-
                     // If it's been too long waiting for mesh (more than 0.5 seconds), give up on dissolve effect
                     if (deathAnimation.currentTime > 0.5) {
-                        console.warn(
-                            'DeathAnimationSystem: Giving up on dissolve shader for entity',
-                            entity.id,
-                            '- mesh not available after 0.5s',
-                        )
                         deathAnimation.dissolveShaderApplied = true // Mark as applied to stop trying
                     }
                 }
@@ -136,31 +119,15 @@ export class DeathAnimationSystem extends System {
         const renderable =
             entity.getComponent<RenderableComponent>('renderable')
 
-        console.log(
-            'DeathAnimationSystem: Attempting to apply dissolve shader to entity',
-            entity.id,
-        )
-
         if (!renderable?.mesh || !(renderable.mesh instanceof Mesh)) {
-            console.warn(
-                'DeathAnimationSystem: Cannot apply dissolve shader - mesh not available or not a Mesh instance',
-            )
             return
         }
 
         const deathAnimation =
             entity.getComponent<DeathAnimationComponent>('deathAnimation')
         if (!deathAnimation) {
-            console.warn(
-                'DeathAnimationSystem: Cannot apply dissolve shader - deathAnimation component not found',
-            )
             return
         }
-
-        console.log(
-            'DeathAnimationSystem: Applying dissolve shader to entity',
-            entity.id,
-        )
 
         // Store original material for cleanup
         deathAnimation.originalMaterial = renderable.mesh.material

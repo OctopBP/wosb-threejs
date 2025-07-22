@@ -230,13 +230,6 @@ export class GameWorld {
         return this.gameStateSystem
     }
 
-    // Method to change game difficulty
-    setGameDifficulty(config: GameStateConfig): void {
-        // Directly update the config property (make it public in GameStateSystem)
-        ;(this.gameStateSystem as any).config = config
-        console.log('🎮 Game difficulty updated')
-    }
-
     getPlayerEntity(): Entity | null {
         return this.playerEntity
     }
