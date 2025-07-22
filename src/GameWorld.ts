@@ -25,6 +25,7 @@ import {
 } from './entities/PlayerFactory'
 import {
     AudioUISystem,
+    BossFightUISystem,
     EnemyAISystem,
     GameStateSystem,
     NewShipOfferUISystem,
@@ -66,6 +67,7 @@ export class GameWorld {
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
     private newShipOfferUISystem: NewShipOfferUISystem
+    private bossFightUISystem: BossFightUISystem
     private cameraSystem: CameraSystem
     private rangeIndicatorSystem: RangeIndicatorSystem
     private enemyArrowSystem: EnemyArrowSystem
@@ -111,6 +113,7 @@ export class GameWorld {
             canvas,
         )
         this.newShipOfferUISystem = new NewShipOfferUISystem(this.world)
+        this.bossFightUISystem = new BossFightUISystem(this.world)
         this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
@@ -154,10 +157,11 @@ export class GameWorld {
         this.world.addSystem(this.rangeIndicatorSystem) // 16. Update range indicator
         this.world.addSystem(this.enemyArrowSystem) // 17. Update enemy arrows
         this.world.addSystem(this.newShipOfferUISystem) // 18. Handle new ship offer UI
-        this.world.addSystem(this.cameraSystem) // 19. Update camera system
-        this.world.addSystem(this.debugSystem) // 20. Render debug gizmos
-        this.world.addSystem(this.particleSystem) // 21. Render particles
-        this.world.addSystem(this.renderSystem) // 22. Render the results
+        this.world.addSystem(this.bossFightUISystem) // 19. Handle boss fight UI overlay
+        this.world.addSystem(this.cameraSystem) // 20. Update camera system
+        this.world.addSystem(this.debugSystem) // 21. Render debug gizmos
+        this.world.addSystem(this.particleSystem) // 22. Render particles
+        this.world.addSystem(this.renderSystem) // 23. Render the results
     }
 
     init(): void {
