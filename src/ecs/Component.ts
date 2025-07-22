@@ -320,6 +320,8 @@ export interface DeathAnimationComponent extends Component {
     sinkDuration: number // Total time to complete sinking animation
     currentTime: number // Current time in animation
     wreckageTriggered: boolean // Whether wreckage particles have been triggered
+    dissolveShaderApplied: boolean // Whether dissolve shader has been applied
+    originalMaterial?: any // Store original material for cleanup
 }
 
 // Alive component - entities with this component are alive and should participate in normal systems

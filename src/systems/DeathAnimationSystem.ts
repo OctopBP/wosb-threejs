@@ -1,4 +1,4 @@
-import { Mesh, Object3D, Vector3 } from 'three'
+import { Color, Mesh, Object3D, ShaderMaterial, Vector3 } from 'three'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import type {
     DeathAnimationComponent,
@@ -6,8 +6,11 @@ import type {
     PositionComponent,
     RenderableComponent,
 } from '../ecs/Component'
+import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import dissolveFragmentShader from '../shaders/dissolve.frag?raw'
+import dissolveVertexShader from '../shaders/dissolve.vert?raw'
 import type { ParticleSystem } from './ParticleSystem'
 
 export class DeathAnimationSystem extends System {
@@ -51,6 +54,15 @@ export class DeathAnimationSystem extends System {
                 1,
             )
 
+            // Apply dissolve shader at the beginning of death animation
+            if (!deathAnimation.dissolveShaderApplied) {
+                this.applyDissolveShader(entity)
+                deathAnimation.dissolveShaderApplied = true
+            }
+
+            // Update dissolve shader uniforms
+            this.updateDissolveShader(entity, progress)
+
             // Apply sinking animation - gradually move ship underwater
             position.y =
                 deathAnimation.originalY - progress * deathAnimation.sinkSpeed
@@ -90,13 +102,83 @@ export class DeathAnimationSystem extends System {
         )
     }
 
+    private applyDissolveShader(entity: Entity): void {
+        const renderable =
+            entity.getComponent<RenderableComponent>('renderable')
+        if (!renderable?.mesh || !(renderable.mesh instanceof Mesh)) return
+
+        const deathAnimation =
+            entity.getComponent<DeathAnimationComponent>('deathAnimation')
+        if (!deathAnimation) return
+
+        // Store original material for cleanup
+        deathAnimation.originalMaterial = renderable.mesh.material
+
+        // Create dissolve shader material
+        const dissolveMaterial = new ShaderMaterial({
+            vertexShader: dissolveVertexShader,
+            fragmentShader: dissolveFragmentShader,
+            uniforms: {
+                uDissolveAmount: { value: 0.0 },
+                uEdgeWidth: { value: 0.1 },
+                uEdgeColor: { value: new Color(0xff6600) }, // Orange glow
+                uBaseColor: { value: new Color(0x8b4513) }, // Brown ship color
+                uOpacity: { value: 1.0 },
+                uTime: { value: 0.0 },
+            },
+            transparent: true,
+            alphaTest: 0.1,
+        })
+
+        // Apply the dissolve material
+        renderable.mesh.material = dissolveMaterial
+    }
+
+    private updateDissolveShader(entity: Entity, progress: number): void {
+        const renderable =
+            entity.getComponent<RenderableComponent>('renderable')
+        if (!renderable?.mesh || !(renderable.mesh instanceof Mesh)) return
+
+        const material = renderable.mesh.material
+        if (!(material instanceof ShaderMaterial) || !material.uniforms) return
+
+        // Update shader uniforms based on animation progress
+        const currentTime = performance.now() / 1000
+
+        // Dissolve starts halfway through the animation and completes at the end
+        const dissolveProgress = Math.max(0, (progress - 0.3) / 0.7)
+
+        material.uniforms.uDissolveAmount.value = dissolveProgress
+        material.uniforms.uTime.value = currentTime
+        material.uniforms.uOpacity.value = 1.0 - progress * 0.5 // Gradual opacity reduction
+    }
+
     private removeDeadEntity(entityId: number): void {
         const entity = this.world.getEntity(entityId)
         if (!entity) return
 
-        // Clean up mesh if it exists
+        // Clean up dissolve shader if applied
+        const deathAnimation =
+            entity.getComponent<DeathAnimationComponent>('deathAnimation')
         const renderable =
             entity.getComponent<RenderableComponent>('renderable')
+
+        if (
+            deathAnimation?.dissolveShaderApplied &&
+            renderable?.mesh instanceof Mesh
+        ) {
+            // Dispose of the dissolve shader material
+            if (renderable.mesh.material instanceof ShaderMaterial) {
+                renderable.mesh.material.dispose()
+            }
+
+            // Restore original material if it exists (for proper cleanup)
+            if (deathAnimation.originalMaterial) {
+                renderable.mesh.material = deathAnimation.originalMaterial
+            }
+        }
+
+        // Clean up mesh if it exists
         if (renderable?.mesh) {
             // Remove from scene
             if (renderable.mesh.parent) {
@@ -148,6 +230,8 @@ export class DeathAnimationSystem extends System {
             sinkDuration,
             currentTime: 0,
             wreckageTriggered: false,
+            dissolveShaderApplied: false,
+            originalMaterial: undefined,
         }
 
         entity.addComponent(deathAnimation)
