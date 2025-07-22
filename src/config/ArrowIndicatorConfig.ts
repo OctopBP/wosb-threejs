@@ -2,7 +2,7 @@
 
 export const ARROW_INDICATOR_CONFIG = {
     arrowRadius: 1.75, // Distance from player to place arrows
-    arrowHeightOffset: 1, // Y offset above ground
+    arrowHeightOffset: 0.25, // Y offset above ground
     defaultArrowScale: 0.5, // Default scale for enemy arrows
     defaultMaxArrows: 5, // Default max arrows shown
     defaultArrowColor: 0xff5000, // Red

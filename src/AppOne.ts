@@ -106,7 +106,7 @@ export class AppOne {
         directionalLight.shadow.camera.bottom = -25
         scene.add(directionalLight)
 
-        const waterGeometry = new PlaneGeometry(150, 150, 256, 256)
+        const waterGeometry = new PlaneGeometry(150, 150, 512, 512)
         const envMap = new CubeTextureLoader().load([
             '/sky.png', // px
             '/sky.png', // nx
@@ -160,7 +160,7 @@ export class AppOne {
         this.waterUniforms = waterUniforms
 
         // Add fog for atmosphere
-        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 10, 100)
+        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 15, 30)
 
         return scene
     }

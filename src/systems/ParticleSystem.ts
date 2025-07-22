@@ -277,6 +277,7 @@ export class ParticleSystem extends System {
 
             // Create points object and add to scene
             const points = new Points(geometry, material)
+            points.renderOrder = 2
             this.scene.add(points)
 
             // Store references
