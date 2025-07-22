@@ -131,14 +131,39 @@ export class GameStateSystem extends System {
             'enemy',
             'health',
         ])
-        const deadEnemies = enemies.filter((enemy) => {
+
+        // Find newly dead enemies (dead but don't have death animation component yet)
+        const newlyDeadEnemies = enemies.filter((enemy) => {
             const health = enemy.getComponent<HealthComponent>('health')
-            return health?.isDead === true
+            const hasDeathAnimation = enemy.hasComponent('deathAnimation')
+            return health?.isDead === true && !hasDeathAnimation
         })
 
-        // Spawn XP barrels for each dead enemy
-        if (deadEnemies.length > 0) {
-            for (const deadEnemy of deadEnemies) {
+        if (newlyDeadEnemies.length > 0) {
+            // Award XP for newly dead enemies (dev logic)
+            if (this.levelingSystem) {
+                // Find the player entity to award XP to
+                const playerEntities = this.world.getEntitiesWithComponents([
+                    'player',
+                ])
+                if (playerEntities.length > 0) {
+                    const player = playerEntities[0]
+                    for (const deadEnemy of newlyDeadEnemies) {
+                        // Check if it's a boss or regular enemy and use configured XP multipliers
+                        const isBoss = deadEnemy.hasComponent('boss')
+                        const xpMultiplier = isBoss
+                            ? this.config.boss.xpMultiplier
+                            : 1
+                        // You may need to import or define enemyXPConfig.basicEnemy if not already present
+                        // For now, let's assume a value of 1 for demonstration
+                        const xpAwarded = 1 * xpMultiplier
+                        this.levelingSystem.awardXP(player.id, xpAwarded)
+                    }
+                }
+            }
+
+            // Spawn XP barrels for each dead enemy (HEAD logic)
+            for (const deadEnemy of newlyDeadEnemies) {
                 // Get enemy position for barrel spawning
                 const enemyPosition =
                     deadEnemy.getComponent<PositionComponent>('position')
@@ -176,37 +201,8 @@ export class GameStateSystem extends System {
             }
         }
 
-        // Remove dead enemies from world
-        for (const deadEnemy of deadEnemies) {
-            // Clean up mesh if exists
-            const renderable =
-                deadEnemy.getComponent<RenderableComponent>('renderable')
-            if (renderable?.mesh) {
-                // Remove from scene (assuming parent is handling this)
-                if (renderable.mesh.parent) {
-                    renderable.mesh.parent.remove(renderable.mesh)
-                }
-
-                // Dispose geometry and materials if it's a Mesh
-                if (renderable.mesh instanceof Mesh) {
-                    if (renderable.mesh.geometry) {
-                        renderable.mesh.geometry.dispose()
-                    }
-                    if (renderable.mesh.material) {
-                        if (Array.isArray(renderable.mesh.material)) {
-                            for (const material of renderable.mesh.material) {
-                                material.dispose()
-                            }
-                        } else {
-                            renderable.mesh.material.dispose()
-                        }
-                    }
-                }
-
-                renderable.mesh = undefined
-            }
-            this.world.removeEntity(deadEnemy.id)
-        }
+        // Note: Dead enemies are now handled by DeathAnimationSystem
+        // They will be removed after their sinking animation completes
     }
 
     private checkPlayerDeath(gameState: GameStateComponent): void {

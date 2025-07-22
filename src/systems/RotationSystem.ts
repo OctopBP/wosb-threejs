@@ -10,7 +10,13 @@ import type { World } from '../ecs/World'
 
 export class RotationSystem extends System {
     constructor(world: World) {
-        super(world, ['position', 'velocity', 'input', 'movementConfig'])
+        super(world, [
+            'position',
+            'velocity',
+            'input',
+            'movementConfig',
+            'alive',
+        ])
     }
 
     update(deltaTime: number): void {

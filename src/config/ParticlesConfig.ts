@@ -105,11 +105,60 @@ export const wreckageParticleConfig: ParticleSystemConfig = {
 }
 
 /**
+ * Configuration for dramatic wreckage particles that appear when ships are destroyed
+ */
+export const deathWreckageParticleConfig: ParticleSystemConfig = {
+    position: new Vector3(0, 0, 0),
+
+    emissionRate: 0,
+    burstCount: 8,
+    burstInterval: -1,
+
+    // Particle properties
+    life: { min: 1.5, max: 2.5 },
+    size: { min: 1.0, max: 1.5 },
+    speed: { min: 2.0, max: 6.0 },
+
+    spawnArea: {
+        type: 'sphere',
+        size: new Vector3(1, 0.5, 1), // Spread particles around ship
+    },
+
+    direction: new Vector3(0, 1, 0),
+    directionSpread: Math.PI, // Full hemisphere spread
+
+    gravity: new Vector3(0, -2, 0), // Stronger gravity for dramatic effect
+    drag: 0.5, // Less drag so particles travel further
+
+    startColor: new Color(0xffffff),
+    endColor: new Color(0xffffff),
+
+    rotation: { min: 0, max: Math.PI * 2 },
+    rotationSpeed: { min: -3, max: 3 }, // Faster rotation for more drama
+
+    // Texture
+    texture: 'assets/sprites/wreckage.png',
+    spriteSheet: {
+        columns: 2,
+        rows: 2,
+        frameDuration: 0,
+        randomStartFrame: true,
+    },
+
+    alphaOverTime: [
+        { time: 0.0, value: 1 },
+        { time: 0.7, value: 1 },
+        { time: 1.0, value: 0 },
+    ],
+}
+
+/**
  * All particle configurations for easy access
  */
 export const particleConfigs = {
     gunSmoke: gunSmokeParticleConfig,
     wreckage: wreckageParticleConfig,
+    deathWreckage: deathWreckageParticleConfig,
 } as const
 
 /**

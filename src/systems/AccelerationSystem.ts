@@ -8,7 +8,7 @@ import type { World } from '../ecs/World'
 
 export class AccelerationSystem extends System {
     constructor(world: World) {
-        super(world, ['velocity', 'input', 'movementConfig'])
+        super(world, ['velocity', 'input', 'movementConfig', 'alive'])
     }
 
     update(deltaTime: number): void {

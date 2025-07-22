@@ -343,3 +343,20 @@ export interface CollectableComponent extends Component {
     requiresInput: boolean // Whether player needs to press a key to collect
     collectedBy: number[] // Entity IDs that have collected this item
 }
+
+// Death animation component for sinking ship effects
+export interface DeathAnimationComponent extends Component {
+    type: 'deathAnimation'
+    sinkSpeed: number // Speed at which ship sinks underwater
+    originalY: number // Original Y position before sinking
+    sinkDuration: number // Total time to complete sinking animation
+    currentTime: number // Current time in animation
+    wreckageTriggered: boolean // Whether wreckage particles have been triggered
+    dissolveShaderApplied: boolean // Whether dissolve shader has been applied
+    originalMaterial?: any // Store original material for cleanup
+}
+
+// Alive component - entities with this component are alive and should participate in normal systems
+export interface AliveComponent extends Component {
+    type: 'alive'
+}
