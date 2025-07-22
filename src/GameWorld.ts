@@ -16,13 +16,20 @@ import type {
 import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
 import { createDebugEntity } from './entities/DebugFactory'
+import { createIsland } from './entities/IslandFactory'
 import {
     createPlayerShip,
     equipPlayerWeapon,
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
-import { EnemyAISystem, GameStateSystem, NewShipOfferUISystem } from './systems'
+import {
+    AudioUISystem,
+    BossFightUISystem,
+    EnemyAISystem,
+    GameStateSystem,
+    NewShipOfferUISystem,
+} from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
 import { AudioSystem } from './systems/AudioSystem'
 import { BarrelCollectionSystem } from './systems/BarrelCollectionSystem'
@@ -34,6 +41,7 @@ import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -41,6 +49,7 @@ import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
+import { WaveRockingSystem } from './systems/WaveRockingSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 export class GameWorld {
     private world: World
@@ -49,6 +58,7 @@ export class GameWorld {
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
+    private waveRockingSystem: WaveRockingSystem
     private weaponSystem: WeaponSystem
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
@@ -61,10 +71,13 @@ export class GameWorld {
     private playerUISystem: PlayerUISystem
     private enemyHealthUISystem: EnemyHealthUISystem
     private newShipOfferUISystem: NewShipOfferUISystem
+    private bossFightUISystem: BossFightUISystem
     private cameraSystem: CameraSystem
     private rangeIndicatorSystem: RangeIndicatorSystem
     private enemyArrowSystem: EnemyArrowSystem
     private audioSystem: AudioSystem
+    private audioUISystem: AudioUISystem
+    private particleSystem: ParticleSystem
     private debugSystem: DebugSystem
     private playerEntity: Entity | null = null
     private debugEntity: Entity | null = null
@@ -89,6 +102,7 @@ export class GameWorld {
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
+        this.waveRockingSystem = new WaveRockingSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
@@ -105,10 +119,13 @@ export class GameWorld {
             canvas,
         )
         this.newShipOfferUISystem = new NewShipOfferUISystem(this.world)
+        this.bossFightUISystem = new BossFightUISystem(this.world)
         this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
         this.audioSystem = new AudioSystem(this.world)
+        this.audioUISystem = new AudioUISystem(this.world)
+        this.particleSystem = new ParticleSystem(this.world, scene, camera)
         this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other
@@ -118,35 +135,42 @@ export class GameWorld {
         this.newShipOfferUISystem.setGameStateSystem(this.gameStateSystem)
         this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
         this.weaponSystem.setAudioSystem(this.audioSystem)
+        this.weaponSystem.setParticleSystem(this.particleSystem)
         this.collisionSystem.setAudioSystem(this.audioSystem)
+        this.collisionSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
+        this.audioUISystem.setAudioSystem(this.audioSystem)
 
         // Setup audio system
         this.setupAudioSystem()
 
         // Add systems to world in execution order
         this.world.addSystem(this.audioSystem) // 0. Update audio system
-        this.world.addSystem(this.virtualJoystickSystem) // 1. Handle virtual joystick UI
-        this.world.addSystem(this.inputSystem) // 2. Handle input events and process to direction
-        this.world.addSystem(this.gameStateSystem) // 3. Manage game state and spawn enemies
-        this.world.addSystem(this.enemyAISystem) // 4. Update enemy AI (movement and targeting)
-        this.world.addSystem(this.rotationSystem) // 5. Handle rotation
-        this.world.addSystem(this.accelerationSystem) // 6. Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) // 7. Apply velocity to position (ships only)
-        this.world.addSystem(this.weaponSystem) // 8. Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // 9. Move projectiles with gravity
-        this.world.addSystem(this.projectileSystem) // 10. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 11. Check collisions and apply damage
-        this.world.addSystem(this.barrelCollectionSystem) // 12. Handle barrel collection and floating
-        this.world.addSystem(this.levelingSystem) // 13. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 14. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 15. Update enemy health UI
-        this.world.addSystem(this.rangeIndicatorSystem) // 16. Update range indicator
-        this.world.addSystem(this.enemyArrowSystem) // 17. Update enemy arrows
-        this.world.addSystem(this.newShipOfferUISystem) // 18. Handle new ship offer UI
-        this.world.addSystem(this.cameraSystem) // 19. Update camera system
-        this.world.addSystem(this.debugSystem) // 20. Render debug gizmos
-        this.world.addSystem(this.renderSystem) // 21. Render the results
+        this.world.addSystem(this.audioUISystem) // 1. Handle audio UI controls
+        this.world.addSystem(this.virtualJoystickSystem) // 2. Handle virtual joystick UI
+        this.world.addSystem(this.inputSystem) // 3. Handle input events and process to direction
+        this.world.addSystem(this.gameStateSystem) // 4. Manage game state and spawn enemies
+        this.world.addSystem(this.enemyAISystem) // 5. Update enemy AI (movement and targeting)
+        this.world.addSystem(this.rotationSystem) // 6. Handle rotation
+        this.world.addSystem(this.accelerationSystem) // 7. Apply acceleration/deceleration
+        this.world.addSystem(this.movementSystem) // 8. Apply velocity to position (ships only)
+        this.world.addSystem(this.waveRockingSystem) // 9. Apply wave rocking motion to ships
+        this.world.addSystem(this.weaponSystem) // 10. Handle weapon firing
+        this.world.addSystem(this.projectileMovementSystem) // 11. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 12. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 13. Check collisions and apply damage
+        this.world.addSystem(this.barrelCollectionSystem) // 14. Handle barrel collection and floating
+        this.world.addSystem(this.levelingSystem) // 15. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 16. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 17. Update enemy health UI
+        this.world.addSystem(this.rangeIndicatorSystem) // 18. Update range indicator
+        this.world.addSystem(this.enemyArrowSystem) // 19. Update enemy arrows
+        this.world.addSystem(this.newShipOfferUISystem) // 20. Handle new ship offer UI
+        this.world.addSystem(this.bossFightUISystem) // 21. Handle boss fight UI overlay
+        this.world.addSystem(this.cameraSystem) // 22. Update camera system
+        this.world.addSystem(this.debugSystem) // 23. Render debug gizmos
+        this.world.addSystem(this.particleSystem) // 24. Render particles
+        this.world.addSystem(this.renderSystem) // 25. Render the results
     }
 
     init(): void {
@@ -175,6 +199,11 @@ export class GameWorld {
                 arrowColor: ARROW_INDICATOR_CONFIG.defaultArrowColor,
             })
         }
+
+        // Create and add islands to the scene
+        const island = createIsland(0, 0, 0, 1.0)
+        this.world.addEntity(island)
+        console.log('🏝️ Islands created and added to scene')
     }
 
     update(time: number): void {
@@ -197,7 +226,8 @@ export class GameWorld {
 
     // Method to change game difficulty
     setGameDifficulty(config: GameStateConfig): void {
-        this.gameStateSystem.setConfig(config)
+        // Directly update the config property (make it public in GameStateSystem)
+        ;(this.gameStateSystem as any).config = config
         console.log('🎮 Game difficulty updated')
     }
 

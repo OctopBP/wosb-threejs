@@ -35,14 +35,6 @@ export const enemyMovementPreset: MovementConfigPreset = {
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,
     linearDampening: 0.95,
-    boundaries: {
-        minX: -15,
-        maxX: 15,
-        minY: 0,
-        maxY: 5,
-        minZ: -15,
-        maxZ: 15,
-    },
 }
 
 // Basic enemy health configuration

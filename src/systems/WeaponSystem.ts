@@ -1,5 +1,7 @@
 import type { Scene } from 'three'
+import { Vector3 } from 'three'
 import { createBulletCollision } from '../config/CollisionConfig'
+import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
     PositionComponent,
@@ -12,11 +14,13 @@ import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { AudioSystem } from './AudioSystem'
+import type { ParticleSystem } from './ParticleSystem'
 
 export class WeaponSystem extends System {
     private scene: Scene
     private debugAutoTargeting: boolean = false
     private audioSystem: AudioSystem | null = null
+    private particleSystem: ParticleSystem | null = null
 
     constructor(world: World, scene: Scene) {
         super(world, ['weapon', 'position'])
@@ -28,6 +32,14 @@ export class WeaponSystem extends System {
      */
     setAudioSystem(audioSystem: AudioSystem): void {
         this.audioSystem = audioSystem
+    }
+
+    /**
+     * Set the particle system reference for playing weapon particle effects
+     */
+    setParticleSystem(particleSystem: ParticleSystem): void {
+        this.particleSystem = particleSystem
+        // Note: We no longer pre-create particle systems, they are created per shot
     }
 
     // Method to enable/disable debug logging for auto-targeting weapons
@@ -203,14 +215,6 @@ export class WeaponSystem extends System {
         return closestTarget
     }
 
-    // Legacy method for backward compatibility (now just calls the generic version)
-    private findClosestEnemy(
-        shooterPosition: PositionComponent,
-        detectionRange: number,
-    ): Entity | null {
-        return this.findClosestTarget(shooterPosition, detectionRange, 'enemy')
-    }
-
     private calculateDistance(
         pos1: PositionComponent,
         pos2: PositionComponent,
@@ -222,21 +226,24 @@ export class WeaponSystem extends System {
 
     /**
      * Find the closest shooting point to the target
+     * Returns both the shooting point and its index
      */
     private findClosestShootingPoint(
         weapon: WeaponComponent,
         shooterPosition: PositionComponent,
         targetPosition: PositionComponent,
-    ): { x: number; y: number } {
+    ): { point: { x: number; y: number }; index: number } {
         if (!weapon.shootingPoints || weapon.shootingPoints.length === 0) {
             // Fallback to center of ship if no shooting points defined
-            return { x: 0, y: 0 }
+            return { point: { x: 0, y: 0 }, index: 0 }
         }
 
         let closestPoint = weapon.shootingPoints[0]
+        let closestIndex = 0
         let closestDistance = Number.MAX_VALUE
 
-        for (const point of weapon.shootingPoints) {
+        for (let i = 0; i < weapon.shootingPoints.length; i++) {
+            const point = weapon.shootingPoints[i]
             // Convert relative shooting point to world coordinates
             const rotation = -shooterPosition.rotationY
             const worldX =
@@ -254,10 +261,11 @@ export class WeaponSystem extends System {
             if (distance < closestDistance) {
                 closestDistance = distance
                 closestPoint = point
+                closestIndex = i
             }
         }
 
-        return closestPoint
+        return { point: closestPoint, index: closestIndex }
     }
 
     /**
@@ -294,9 +302,10 @@ export class WeaponSystem extends System {
         const forwardZ = Math.cos(shooterPosition.rotationY)
 
         // Use first shooting point for manual aiming (or center if none defined)
+        const shootingPointIndex = 0
         const shootingPoint =
             weapon.shootingPoints && weapon.shootingPoints.length > 0
-                ? weapon.shootingPoints[0]
+                ? weapon.shootingPoints[shootingPointIndex]
                 : { x: 0, y: 0 }
 
         // Get world position of the shooting point
@@ -361,6 +370,14 @@ export class WeaponSystem extends System {
 
         // Play weapon sound effect
         this.playWeaponSound()
+
+        // Play weapon particle effects
+        this.playWeaponParticleEffects(
+            shooterId,
+            shootingPointIndex,
+            worldShootingPos,
+            { x: forwardX, z: forwardZ },
+        )
     }
 
     private fireProjectileToTarget(
@@ -373,11 +390,12 @@ export class WeaponSystem extends System {
         const projectile = this.world.createEntity()
 
         // Find the closest shooting point to the target
-        const shootingPoint = this.findClosestShootingPoint(
-            weapon,
-            shooterPosition,
-            targetPosition,
-        )
+        const { point: shootingPoint, index: shootingPointIndex } =
+            this.findClosestShootingPoint(
+                weapon,
+                shooterPosition,
+                targetPosition,
+            )
 
         // Get world position of the chosen shooting point
         const worldShootingPos = this.getWorldShootingPosition(
@@ -453,6 +471,14 @@ export class WeaponSystem extends System {
 
         // Play weapon sound effect
         this.playWeaponSound()
+
+        // Play weapon particle effects
+        this.playWeaponParticleEffects(
+            shooterId,
+            shootingPointIndex,
+            worldShootingPos,
+            { x: forwardX, z: forwardZ },
+        )
     }
 
     /**
@@ -463,5 +489,50 @@ export class WeaponSystem extends System {
 
         // Use the single shoot sound for all weapons
         this.audioSystem.playSfx('shoot')
+    }
+
+    /**
+     * Play weapon particle effects at the shooting position
+     * Creates unique particle systems for each shot to allow multiple simultaneous effects
+     */
+    private playWeaponParticleEffects(
+        shooterId: number,
+        shootingPointIndex: number,
+        worldShootingPos: { x: number; z: number },
+        direction: { x: number; z: number },
+    ): void {
+        if (!this.particleSystem) {
+            return
+        }
+
+        const shootingPosition = new Vector3(
+            worldShootingPos.x,
+            0.5,
+            worldShootingPos.z,
+        )
+
+        // Create direction vector (normalized)
+        const shootingDirection = new Vector3(
+            direction.x,
+            0,
+            direction.z,
+        ).normalize()
+
+        // Generate unique IDs for this shot's particle systems
+        // Include shooting point index to ensure different cannons don't conflict
+        const timestamp = Date.now()
+        const randomSuffix = Math.floor(Math.random() * 1000) // Add randomness for rapid fire
+        const gunSmokeId = `gunSmoke_${shooterId}_${shootingPointIndex}_${timestamp}_${randomSuffix}`
+
+        // Create gunSmokeId particle system for this shot
+        const gunSmokeConfig = getParticleConfig(
+            'gunSmoke',
+            shootingPosition,
+            shootingDirection,
+        )
+        this.particleSystem.createAndBurstParticleSystem(
+            gunSmokeId,
+            gunSmokeConfig,
+        )
     }
 }

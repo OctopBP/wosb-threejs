@@ -4,6 +4,12 @@ import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { GameStateSystem } from './GameStateSystem'
 
+// UI Text Constants
+const TOP_TEXT = 'Нужно что-то помощнее?'
+const BOTTOM_TEXT = 'Забери свой "Black Prince"\nбесплатно прямо сейчас'
+const BUTTON_TEXT = 'ЗАБРАТЬ'
+const OFFER_LINK = 'https://www.worldofseabattle.com'
+
 export class NewShipOfferUISystem extends System {
     private offerUI: HTMLElement | null = null
     private isUICreated = false
@@ -50,84 +56,127 @@ export class NewShipOfferUISystem extends System {
     private createUI(): void {
         if (this.isUICreated) return
 
-        // Create overlay container
+        // Create overlay container with black fade
         this.offerUI = document.createElement('div')
         this.offerUI.style.position = 'fixed'
         this.offerUI.style.top = '0'
         this.offerUI.style.left = '0'
         this.offerUI.style.width = '100%'
         this.offerUI.style.height = '100%'
-        this.offerUI.style.backgroundColor = 'rgba(0, 0, 0, 0.8)'
+        this.offerUI.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
         this.offerUI.style.display = 'none'
         this.offerUI.style.justifyContent = 'center'
         this.offerUI.style.alignItems = 'center'
+        this.offerUI.style.flexDirection = 'column'
         this.offerUI.style.zIndex = '10000'
         this.offerUI.style.fontFamily = 'Arial, sans-serif'
 
-        // Create content container
+        // Create main content container
         const contentContainer = document.createElement('div')
-        contentContainer.style.backgroundColor = 'rgba(20, 30, 40, 0.95)'
-        contentContainer.style.padding = '40px'
-        contentContainer.style.borderRadius = '15px'
-        contentContainer.style.border = '3px solid rgba(255, 255, 255, 0.3)'
+        contentContainer.style.display = 'flex'
+        contentContainer.style.flexDirection = 'column'
+        contentContainer.style.alignItems = 'center'
         contentContainer.style.textAlign = 'center'
-        contentContainer.style.maxWidth = '400px'
+        contentContainer.style.maxWidth = '500px'
         contentContainer.style.width = '90%'
-        contentContainer.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)'
 
-        // Create title text
-        const titleText = document.createElement('h1')
-        titleText.textContent = 'You need better ship'
-        titleText.style.color = '#FF6B6B'
-        titleText.style.fontSize = '28px'
-        titleText.style.fontWeight = 'bold'
-        titleText.style.margin = '0 0 30px 0'
-        titleText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
+        // Create text above image
+        const topText = document.createElement('h1')
+        topText.textContent = TOP_TEXT
+        topText.style.color = '#FFFFFF'
+        topText.style.fontSize = '34px'
+        topText.style.fontWeight = 'bold'
+        topText.style.margin = '0 0 30px 0'
+        topText.style.textShadow = '3px 3px 6px rgba(0, 0, 0, 0.8)'
+        topText.style.letterSpacing = '2px'
 
-        // Create subtitle text
-        const subtitleText = document.createElement('p')
-        subtitleText.textContent =
-            'The boss was too powerful! Your ship needs serious upgrades to survive.'
-        subtitleText.style.color = '#FFFFFF'
-        subtitleText.style.fontSize = '16px'
-        subtitleText.style.margin = '0 0 30px 0'
-        subtitleText.style.opacity = '0.9'
+        // --- Logo + Button Container ---
+        const logoButtonContainer = document.createElement('div')
+        logoButtonContainer.style.position = 'relative'
+        logoButtonContainer.style.display = 'inline-block'
+        logoButtonContainer.style.width = '300px'
+        logoButtonContainer.style.margin = '20px 0'
 
-        // Create "Get it" button
-        const getItButton = document.createElement('button')
-        getItButton.textContent = 'Get it'
-        getItButton.style.backgroundColor = '#4CAF50'
-        getItButton.style.color = 'white'
-        getItButton.style.border = 'none'
-        getItButton.style.padding = '15px 40px'
-        getItButton.style.fontSize = '20px'
-        getItButton.style.fontWeight = 'bold'
-        getItButton.style.borderRadius = '8px'
-        getItButton.style.cursor = 'pointer'
-        getItButton.style.transition =
-            'background-color 0.3s ease, transform 0.2s ease'
-        getItButton.style.boxShadow = '0 4px 15px rgba(76, 175, 80, 0.3)'
+        // Create prince logo image
+        const logoImage = document.createElement('img')
+        logoImage.src = '/assets/ui/prince_nologo_glow.png'
+        logoImage.style.width = '100%'
+        logoImage.style.height = 'auto'
+        logoImage.style.display = 'block'
+        logoImage.style.filter = 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.5))'
 
-        // Add hover effects
-        getItButton.addEventListener('mouseenter', () => {
-            getItButton.style.backgroundColor = '#45a049'
-            getItButton.style.transform = 'translateY(-2px)'
+        // Create button using btn.png
+        const buttonContainer = document.createElement('div')
+        buttonContainer.style.position = 'absolute'
+        buttonContainer.style.left = '50%'
+        buttonContainer.style.bottom = '75px'
+        buttonContainer.style.transform = 'translateX(-50%) translateY(50%)'
+        buttonContainer.style.cursor = 'pointer'
+        buttonContainer.style.transition = 'transform 0.2s ease'
+        buttonContainer.style.zIndex = '2'
+
+        const buttonImage = document.createElement('img')
+        buttonImage.src = '/assets/ui/btn.png'
+        buttonImage.style.width = '200px'
+        buttonImage.style.height = 'auto'
+        buttonImage.style.filter = 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'
+
+        const buttonText = document.createElement('div')
+        buttonText.textContent = BUTTON_TEXT
+        buttonText.style.position = 'absolute'
+        buttonText.style.top = '50%'
+        buttonText.style.left = '50%'
+        buttonText.style.transform = 'translate(-50%, -50%)'
+        buttonText.style.color = '#FFFFFF'
+        buttonText.style.fontSize = '18px'
+        buttonText.style.fontWeight = 'bold'
+        buttonText.style.paddingBottom = '6px'
+        buttonText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
+        buttonText.style.pointerEvents = 'none'
+
+        // Add hover effects to button
+        buttonContainer.addEventListener('mouseenter', () => {
+            buttonContainer.style.transform =
+                'translateX(-50%) translateY(50%) scale(1.05)'
+            buttonImage.style.filter =
+                'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5)) brightness(1.1)'
         })
 
-        getItButton.addEventListener('mouseleave', () => {
-            getItButton.style.backgroundColor = '#4CAF50'
-            getItButton.style.transform = 'translateY(0)'
+        buttonContainer.addEventListener('mouseleave', () => {
+            buttonContainer.style.transform =
+                'translateX(-50%) translateY(50%) scale(1)'
+            buttonImage.style.filter =
+                'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'
         })
 
         // Add click handler
-        getItButton.addEventListener('click', () => {
+        buttonContainer.addEventListener('click', () => {
             this.handleGetItClick()
         })
 
+        // Assemble button
+        buttonContainer.appendChild(buttonImage)
+        buttonContainer.appendChild(buttonText)
+
+        // Assemble logo + button
+        logoButtonContainer.appendChild(logoImage)
+        logoButtonContainer.appendChild(buttonContainer)
+
+        // Create text below image
+        const bottomText = document.createElement('p')
+        bottomText.textContent = BOTTOM_TEXT
+        bottomText.style.color = '#FFFFFF'
+        bottomText.style.fontSize = '24px'
+        bottomText.style.margin = '30px 0 40px 0'
+        bottomText.style.opacity = '0.95'
+        bottomText.style.lineHeight = '1.5'
+        bottomText.style.whiteSpace = 'pre-line'
+        bottomText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
+
         // Assemble the UI
-        contentContainer.appendChild(titleText)
-        contentContainer.appendChild(subtitleText)
-        contentContainer.appendChild(getItButton)
+        contentContainer.appendChild(topText)
+        contentContainer.appendChild(logoButtonContainer)
+        contentContainer.appendChild(bottomText)
         this.offerUI.appendChild(contentContainer)
 
         // Add to page
@@ -148,17 +197,8 @@ export class NewShipOfferUISystem extends System {
     }
 
     private handleGetItClick(): void {
-        console.log(
-            '🚀 "Get it" button clicked - This would typically redirect to app store',
-        )
-
-        // For demo purposes, restart the game (this now handles complete cleanup and player recreation)
-        if (this.gameStateSystem) {
-            this.gameStateSystem.restartGame()
-        }
-
-        // In a real playable ad, this would redirect to the app store:
-        // window.open('https://play.google.com/store/apps/details?id=your.game.package', '_blank')
+        // Open the app store or desired link in a new tab
+        window.open(OFFER_LINK, '_blank')
     }
 
     cleanup(): void {

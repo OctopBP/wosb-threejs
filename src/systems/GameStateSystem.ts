@@ -1,7 +1,6 @@
 import { Mesh } from 'three'
 import type { GameStateConfig } from '../config/GameStateConfig'
 import { defaultGameStateConfig } from '../config/GameStateConfig'
-import { enemyXPConfig } from '../config/LevelingConfig'
 import type {
     GameState,
     GameStateComponent,
@@ -27,7 +26,7 @@ export class GameStateSystem extends System {
     private gameStateEntity: Entity | null = null
     private levelingSystem: LevelingSystem | null = null
     private gameWorld: GameWorld | null = null
-    private config: GameStateConfig
+    public config: GameStateConfig
     private stateHandlers: Map<string, GameStateHandler> = new Map()
 
     constructor(
@@ -56,12 +55,6 @@ export class GameStateSystem extends System {
     // Method to set the GameWorld reference (called from GameWorld constructor)
     setGameWorld(gameWorld: GameWorld): void {
         this.gameWorld = gameWorld
-    }
-
-    // Method to update configuration (useful for difficulty changes)
-    setConfig(config: GameStateConfig): void {
-        this.config = config
-        console.log('🎮 Game State configuration updated')
     }
 
     init(): void {

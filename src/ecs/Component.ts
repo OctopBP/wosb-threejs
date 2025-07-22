@@ -16,6 +16,10 @@ export interface PositionComponent extends Component {
     rotationX: number
     rotationY: number
     rotationZ: number
+    // Original values for wave rocking system
+    originalY?: number
+    originalRotationX?: number
+    originalRotationZ?: number
 }
 
 // Velocity component for entity movement
@@ -68,16 +72,6 @@ export interface MovementConfigComponent extends Component {
 
     // Movement dampening
     linearDampening: number
-
-    // Boundaries
-    boundaries: {
-        minX: number
-        maxX: number
-        minY: number
-        maxY: number
-        minZ: number
-        maxZ: number
-    }
 }
 
 // Renderable component for Three.js mesh
@@ -306,7 +300,6 @@ export interface BossComponent extends Component {
     type: 'boss'
     bossType: 'basic' // For future expansion
     damagePerShot: number // How much damage boss deals per shot
-    scale: number // Visual scale multiplier
 }
 
 // Debug component for controlling debug visualizations

@@ -101,9 +101,9 @@ export const defaultCameraConfig: CameraConfig = {
     states: {
         playerFocus: {
             name: 'playerFocus',
-            position: { x: 0, y: 12, z: -10 },
+            position: { x: 0, y: 15, z: -8 },
             target: { x: 0, y: 0, z: 0 },
-            fov: 50,
+            fov: 60,
             transitionDuration: 1.0,
             transitionEasing: 'easeInOut',
             screenShake: {

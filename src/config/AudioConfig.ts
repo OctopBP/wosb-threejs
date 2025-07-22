@@ -10,10 +10,10 @@ export const audioAssets: AudioAssets = {
         background: {
             url: '/assets/audio/music/Music.ogg',
             config: {
-                volume: 0.6,
-                loop: true
-            }
-        }
+                volume: 1,
+                loop: true,
+            },
+        },
     },
 
     // Sound effects
@@ -22,32 +22,32 @@ export const audioAssets: AudioAssets = {
         shoot: {
             url: '/assets/audio/sfx/Shoot.ogg',
             config: {
-                volume: 0.8,
-                loop: false
-            }
+                volume: 1,
+                loop: false,
+            },
         },
-        
+
         // Death/explosion sound
         death: {
             url: '/assets/audio/sfx/Death.ogg',
             config: {
                 volume: 1.0,
-                loop: false
-            }
+                loop: false,
+            },
         },
-        
+
         // Level up sound
         level_up: {
             url: '/assets/audio/sfx/LevelUp.ogg',
             config: {
-                volume: 0.9,
-                loop: false
-            }
-        }
+                volume: 1,
+                loop: false,
+            },
+        },
     },
 
     // UI sounds - empty for now since no UI audio files provided
-    ui: {}
+    ui: {},
 }
 
 /**
@@ -55,10 +55,10 @@ export const audioAssets: AudioAssets = {
  */
 export const defaultAudioSettings = {
     masterVolume: 1.0,
-    musicVolume: 0.7,
-    sfxVolume: 0.8,
-    uiVolume: 0.6,
-    muted: false
+    musicVolume: 0.5,
+    sfxVolume: 0.5,
+    uiVolume: 0.5,
+    muted: true,
 }
 
 /**
@@ -73,16 +73,16 @@ export const audioFormats = ['mp3', 'ogg', 'wav'] as const
 export const audioSystemConfig = {
     // Maximum number of concurrent sound effects
     maxConcurrentSfx: 10,
-    
+
     // Fade transition times (in seconds)
     musicFadeTime: 1.0,
     sfxFadeTime: 0.1,
-    
+
     // 3D Audio settings
     defaultMaxDistance: 50,
     defaultRefDistance: 1,
-    
+
     // Performance settings
     enablePositionalAudio: true,
-    enableAudioCompression: true
+    enableAudioCompression: true,
 } as const

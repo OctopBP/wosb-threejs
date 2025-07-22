@@ -3,19 +3,25 @@
 import { GUI } from 'lil-gui'
 import {
     Color,
+    CubeTextureLoader,
     DirectionalLight,
     Fog,
     HemisphereLight,
     Mesh,
-    MeshLambertMaterial,
+    NormalBlending,
     PCFSoftShadowMap,
     PerspectiveCamera,
     PlaneGeometry,
     Scene,
+    ShaderMaterial,
+    UniformsLib,
+    UniformsUtils,
     Vector3,
     WebGLRenderer,
 } from 'three'
 import { GameWorld } from './GameWorld'
+import waterFragmentShader from './shaders/water.frag?raw'
+import waterVertexShader from './shaders/water.vert?raw'
 
 export class AppOne {
     renderer: WebGLRenderer
@@ -23,6 +29,9 @@ export class AppOne {
     camera: PerspectiveCamera
     gameWorld: GameWorld
     gui?: GUI
+
+    waterMesh?: Mesh
+    waterMaterial?: ShaderMaterial
 
     constructor(readonly canvas: HTMLCanvasElement) {
         // Create renderer
@@ -76,12 +85,12 @@ export class AppOne {
         const scene = new Scene()
 
         // Create hemisphere light for general illumination
-        const hemisphereLight = new HemisphereLight(0xffffff, 0x444444, 0.8)
+        const hemisphereLight = new HemisphereLight(0xffffff, 0x304480, 0.75)
         hemisphereLight.position.set(0, 20, 0)
         scene.add(hemisphereLight)
 
         // Create directional light for better depth perception and shadows
-        const directionalLight = new DirectionalLight(0xffffff, 0.4)
+        const directionalLight = new DirectionalLight(0xffffff, 2.5)
         directionalLight.position.set(10, 10, 10)
         directionalLight.target.position.set(0, 0, 0)
         directionalLight.castShadow = true
@@ -95,18 +104,61 @@ export class AppOne {
         directionalLight.shadow.camera.bottom = -25
         scene.add(directionalLight)
 
-        // Create ocean/ground plane
-        const groundGeometry = new PlaneGeometry(50, 50)
-        const groundMaterial = new MeshLambertMaterial({
-            color: new Color(0.2, 0.4, 0.8), // Blue ocean
+        const waterGeometry = new PlaneGeometry(150, 150, 512, 512)
+        const skyTexturePath = 'assets/textures/sky.png'
+        const envMap = new CubeTextureLoader().load([
+            skyTexturePath, // px
+            skyTexturePath, // nx
+            skyTexturePath, // py
+            skyTexturePath, // ny
+            skyTexturePath, // pz
+            skyTexturePath, // nz
+        ])
+
+        const waterUniforms = {
+            uTime: { value: 0 },
+            uWavesAmplitude: { value: 0.1 },
+            uWavesSpeed: { value: 0.15 },
+            uWavesFrequency: { value: 0.08 },
+            uWavesPersistence: { value: 0.6 },
+            uWavesLacunarity: { value: 2.0 },
+            uWavesIterations: { value: 6.0 },
+            uOpacity: { value: 0.8 },
+            uTroughColor: { value: new Color(0.1, 0.2, 0.4) },
+            uSurfaceColor: { value: new Color(0.2, 0.4, 0.8) },
+            uPeakColor: { value: new Color(0.8, 0.9, 1.0) },
+            uPeakThreshold: { value: 0.4 },
+            uPeakTransition: { value: 0.2 },
+            uTroughThreshold: { value: -1.5 },
+            uTroughTransition: { value: 0.75 },
+            uFresnelScale: { value: 0.7 },
+            uFresnelPower: { value: 0.5 },
+            uEnvironmentMap: { value: envMap },
+        }
+        const waterMaterial = new ShaderMaterial({
+            vertexShader: waterVertexShader,
+            fragmentShader: waterFragmentShader,
+            uniforms: UniformsUtils.merge([UniformsLib['fog'], waterUniforms]),
+            blending: NormalBlending,
+            transparent: true,
+            depthWrite: true,
+            depthTest: true,
+            fog: true,
         })
-        const ground = new Mesh(groundGeometry, groundMaterial)
-        ground.rotation.x = -Math.PI / 2 // Rotate to be horizontal
-        ground.receiveShadow = true
-        scene.add(ground)
+
+        const water = new Mesh(waterGeometry, waterMaterial)
+        water.rotation.x = -Math.PI / 2
+        water.position.set(0, 0, 35)
+        water.receiveShadow = true
+        water.name = 'Water'
+        water.renderOrder = 1
+        scene.add(water)
+        // Store references for GUI
+        this.waterMesh = water
+        this.waterMaterial = waterMaterial
 
         // Add fog for atmosphere
-        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 10, 100)
+        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 15, 30)
 
         return scene
     }
@@ -343,119 +395,6 @@ export class AppOne {
         // Update camera status every frame
         setInterval(updateCameraStatus, 100)
 
-        // Weapon controls
-        const weaponFolder = this.gui.addFolder('Weapon Controls')
-
-        // Current weapon status display (always auto-targeting now)
-        const weaponStatus = { type: 'Auto-Targeting' }
-        const weaponStatusController = weaponFolder
-            .add(weaponStatus, 'type')
-            .name('Current Weapon')
-        weaponStatusController.disable()
-
-        // Quick weapon presets
-        weaponFolder
-            .add(
-                {
-                    equipStandard: () => {
-                        this.gameWorld.equipPlayerWeapon()
-                        console.log('Equipped Standard Auto-Targeting Weapon')
-                    },
-                },
-                'equipStandard',
-            )
-            .name('Equip Standard Weapon')
-
-        weaponFolder
-            .add(
-                {
-                    equipFastAuto: () => {
-                        this.gameWorld.equipPlayerWeapon({
-                            damage: 15,
-                            fireRate: 2.0,
-                            projectileSpeed: 15.0,
-                            range: 15.0,
-                            detectionRange: 18.0,
-                        })
-                        console.log('Equipped Fast Auto-Targeting Weapon')
-                    },
-                },
-                'equipFastAuto',
-            )
-            .name('Equip Fast Auto-Targeting')
-
-        // Auto-targeting debug controls
-        weaponFolder
-            .add(
-                {
-                    enableDebug: () => {
-                        this.gameWorld.setAutoTargetingDebug(true)
-                        console.log(
-                            '🎯 Auto-targeting debug enabled - watch console for weapon behavior',
-                        )
-                    },
-                },
-                'enableDebug',
-            )
-            .name('Enable Auto-Targeting Debug')
-
-        weaponFolder
-            .add(
-                {
-                    disableDebug: () => {
-                        this.gameWorld.setAutoTargetingDebug(false)
-                        console.log('🎯 Auto-targeting debug disabled')
-                    },
-                },
-                'disableDebug',
-            )
-            .name('Disable Auto-Targeting Debug')
-
-        // Enemy weapon info
-        weaponFolder
-            .add(
-                {
-                    enemyWeaponInfo: () => {
-                        console.log('🤖 Enemy Auto-Targeting Weapons:')
-                        console.log('- Uses unified WeaponConfigPreset system')
-                        console.log('- Detection Range: 18 units')
-                        console.log('- Firing Range: 16 units')
-                        console.log('- Damage: 15 per shot')
-                        console.log('- Fire Rate: 0.8 shots/second')
-                        console.log('- Only fire when player is in range')
-                        console.log(
-                            '- Projectiles aim directly at player position',
-                        )
-                        console.log('- Same codebase as player weapons')
-                    },
-                },
-                'enemyWeaponInfo',
-            )
-            .name('Enemy Weapon Info')
-
-        weaponFolder
-            .add(
-                {
-                    unifiedSystemInfo: () => {
-                        console.log('🔧 Unified Weapon System Benefits:')
-                        console.log(
-                            '- Single WeaponConfigPreset for all entities',
-                        )
-                        console.log(
-                            '- Consistent behavior between players and enemies',
-                        )
-                        console.log(
-                            '- Simplified configuration and maintenance',
-                        )
-                        console.log('- Reduced code duplication')
-                        console.log('- Same WeaponSystem handles all entities')
-                        console.log('- Easy to add new weapon types')
-                    },
-                },
-                'unifiedSystemInfo',
-            )
-            .name('Unified System Info')
-
         // Debug Visualization controls
         const debugFolder = this.gui.addFolder('Debug Visualization')
 
@@ -593,7 +532,7 @@ export class AppOne {
         }
         if (directionalLight) {
             lightFolder
-                .add(directionalLight, 'intensity', 0, 2, 0.01)
+                .add(directionalLight, 'intensity', 0, 5, 0.01)
                 .name('Directional Intensity')
         }
 
@@ -602,6 +541,122 @@ export class AppOne {
         if (this.scene.fog instanceof Fog) {
             fogFolder.add(this.scene.fog, 'near', 1, 50, 0.1)
             fogFolder.add(this.scene.fog, 'far', 50, 200, 1)
+        }
+
+        this.createWaterFolderWithRetry()
+    }
+
+    private createWaterFolderWithRetry(retries = 5, delay = 200) {
+        if (!this.gui) return
+        // Remove existing Water folder if it exists (prevents duplicates)
+        const existing = this.gui.folders.find((f) => f._title === 'Water')
+        if (existing) {
+            existing.destroy()
+        }
+        if (this.waterMaterial?.uniforms) {
+            this.createWaterFolder()
+        } else if (retries > 0) {
+            console.warn('Water uniforms not ready, retrying...')
+            setTimeout(
+                () => this.createWaterFolderWithRetry(retries - 1, delay),
+                delay,
+            )
+        } else {
+            const waterFolder = this.gui.addFolder('Water')
+            waterFolder
+                .add({ error: 'Water uniforms not ready' }, 'error')
+                .name('Error')
+            console.error('Water uniforms not available after retries.')
+        }
+    }
+
+    private createWaterFolder() {
+        if (!this.gui) return
+        const waterFolder = this.gui.addFolder('Water')
+        const uniforms = this.waterMaterial?.uniforms
+        if (uniforms) {
+            // Numeric uniforms
+            waterFolder
+                .add(uniforms.uWavesAmplitude, 'value', 0, 5, 0.01)
+                .name('Waves Amplitude')
+            waterFolder
+                .add(uniforms.uWavesSpeed, 'value', 0, 2, 0.01)
+                .name('Waves Speed')
+            waterFolder
+                .add(uniforms.uWavesFrequency, 'value', 0, 1, 0.001)
+                .name('Waves Frequency')
+            waterFolder
+                .add(uniforms.uWavesPersistence, 'value', 0, 1, 0.01)
+                .name('Waves Persistence')
+            waterFolder
+                .add(uniforms.uWavesLacunarity, 'value', 1, 4, 0.01)
+                .name('Waves Lacunarity')
+            waterFolder
+                .add(uniforms.uWavesIterations, 'value', 1, 8, 1)
+                .name('Waves Iterations')
+            waterFolder
+                .add(uniforms.uOpacity, 'value', 0, 1, 0.01)
+                .name('Opacity')
+            waterFolder
+                .add(uniforms.uPeakThreshold, 'value', 0, 2, 0.01)
+                .name('Peak Threshold')
+            waterFolder
+                .add(uniforms.uPeakTransition, 'value', 0, 1, 0.01)
+                .name('Peak Transition')
+            waterFolder
+                .add(uniforms.uTroughThreshold, 'value', -2, 0, 0.01)
+                .name('Trough Threshold')
+            waterFolder
+                .add(uniforms.uTroughTransition, 'value', 0, 1, 0.01)
+                .name('Trough Transition')
+            waterFolder
+                .add(uniforms.uFresnelScale, 'value', 0, 3, 0.01)
+                .name('Fresnel Scale')
+            waterFolder
+                .add(uniforms.uFresnelPower, 'value', 0, 5, 0.01)
+                .name('Fresnel Power')
+            // Color uniforms
+            waterFolder
+                .addColor(
+                    {
+                        Trough:
+                            '#' + uniforms.uTroughColor.value.getHexString(),
+                    },
+                    'Trough',
+                )
+                .name('Trough Color')
+                .onChange((v: string) => {
+                    uniforms.uTroughColor.value.set(v)
+                })
+            waterFolder
+                .addColor(
+                    {
+                        Surface:
+                            '#' + uniforms.uSurfaceColor.value.getHexString(),
+                    },
+                    'Surface',
+                )
+                .name('Surface Color')
+                .onChange((v: string) => {
+                    uniforms.uSurfaceColor.value.set(v)
+                })
+            waterFolder
+                .addColor(
+                    {
+                        Peak: '#' + uniforms.uPeakColor.value.getHexString(),
+                    },
+                    'Peak',
+                )
+                .name('Peak Color')
+                .onChange((v: string) => {
+                    uniforms.uPeakColor.value.set(v)
+                })
+            console.log('Water folder created with uniforms:', uniforms)
+        } else {
+            waterFolder
+                .add({ error: 'Water uniforms not ready' }, 'error')
+                .name('Error')
+            console.error('Water uniforms not available in createWaterFolder.')
         }
     }
 
@@ -617,6 +672,14 @@ export class AppOne {
 
     private startRenderLoop() {
         const animate = (time: number) => {
+            // Animate water shader
+            const water = this.scene.getObjectByName('Water') as
+                | Mesh
+                | undefined
+            if (water && (water.material as ShaderMaterial).uniforms?.uTime) {
+                ;(water.material as ShaderMaterial).uniforms.uTime.value =
+                    time * 0.001
+            }
             this.gameWorld.update(time)
             this.renderer.render(this.scene, this.camera)
             requestAnimationFrame(animate)

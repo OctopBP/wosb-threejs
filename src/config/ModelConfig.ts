@@ -14,6 +14,22 @@ export interface PrimitiveModelConfig {
 
 export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
     {
+        ship_lvl_1: {
+            kind: 'model',
+            fileName: 'ship_lvl_1.glb',
+            scale: 0.75,
+        },
+        ship_lvl_2: {
+            kind: 'model',
+            fileName: 'ship_lvl_2.glb',
+            scale: 0.75,
+        },
+        ship_lvl_3: {
+            kind: 'model',
+            fileName: 'ship_lvl_3.glb',
+            scale: 0.75,
+        },
+        // Legacy ship alias for backward compatibility
         ship: {
             kind: 'model',
             fileName: 'ship_lvl_1.glb',
@@ -29,6 +45,11 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
             kind: 'model',
             fileName: 'boss.glb',
             scale: 0.5,
+        },
+        island: {
+            kind: 'model',
+            fileName: 'islands.glb',
+            scale: 1.0,
         },
         bullet: {
             kind: 'primitive',
@@ -52,4 +73,19 @@ export function getModelConfig(modelType: ModelType) {
 export function isPrimitiveModel(modelType: ModelType): boolean {
     const config = MODEL_CONFIGS[modelType]
     return config.kind === 'primitive'
+}
+
+/**
+ * Get the appropriate ship model type based on player level
+ * @param level Player level (1-6)
+ * @returns ModelType for the appropriate ship model
+ */
+export function getShipModelForLevel(level: number): ModelType {
+    if (level >= 3) {
+        return 'ship_lvl_3'
+    } else if (level >= 2) {
+        return 'ship_lvl_2'
+    } else {
+        return 'ship_lvl_1'
+    }
 }
