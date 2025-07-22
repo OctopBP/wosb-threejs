@@ -34,6 +34,7 @@ import { AccelerationSystem } from './systems/AccelerationSystem'
 import { AudioSystem } from './systems/AudioSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
+import { DeathAnimationSystem } from './systems/DeathAnimationSystem'
 import { DebugSystem } from './systems/DebugSystem'
 import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
@@ -62,6 +63,7 @@ export class GameWorld {
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
+    private deathAnimationSystem: DeathAnimationSystem
     private renderSystem: RenderSystem
     private gameStateSystem: GameStateSystem
     private enemyAISystem: EnemyAISystem
@@ -105,6 +107,7 @@ export class GameWorld {
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
+        this.deathAnimationSystem = new DeathAnimationSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
         this.gameStateSystem = new GameStateSystem(this.world, gameStateConfig)
         this.enemyAISystem = new EnemyAISystem(this.world)
@@ -134,6 +137,8 @@ export class GameWorld {
         this.weaponSystem.setParticleSystem(this.particleSystem)
         this.collisionSystem.setAudioSystem(this.audioSystem)
         this.collisionSystem.setParticleSystem(this.particleSystem)
+        this.collisionSystem.setDeathAnimationSystem(this.deathAnimationSystem)
+        this.deathAnimationSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)
 
@@ -155,17 +160,18 @@ export class GameWorld {
         this.world.addSystem(this.projectileMovementSystem) // 11. Move projectiles with gravity
         this.world.addSystem(this.projectileSystem) // 12. Update projectile lifetimes
         this.world.addSystem(this.collisionSystem) // 13. Check collisions and apply damage
-        this.world.addSystem(this.levelingSystem) // 14. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 15. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 16. Update enemy health UI
-        this.world.addSystem(this.rangeIndicatorSystem) // 17. Update range indicator
-        this.world.addSystem(this.enemyArrowSystem) // 18. Update enemy arrows
-        this.world.addSystem(this.newShipOfferUISystem) // 19. Handle new ship offer UI
-        this.world.addSystem(this.bossFightUISystem) // 20. Handle boss fight UI overlay
-        this.world.addSystem(this.cameraSystem) // 21. Update camera system
-        this.world.addSystem(this.debugSystem) // 22. Render debug gizmos
-        this.world.addSystem(this.particleSystem) // 23. Render particles
-        this.world.addSystem(this.renderSystem) // 24. Render the results
+        this.world.addSystem(this.deathAnimationSystem) // 14. Handle death animations (sinking ships)
+        this.world.addSystem(this.levelingSystem) // 15. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 16. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 17. Update enemy health UI
+        this.world.addSystem(this.rangeIndicatorSystem) // 18. Update range indicator
+        this.world.addSystem(this.enemyArrowSystem) // 19. Update enemy arrows
+        this.world.addSystem(this.newShipOfferUISystem) // 20. Handle new ship offer UI
+        this.world.addSystem(this.bossFightUISystem) // 21. Handle boss fight UI overlay
+        this.world.addSystem(this.cameraSystem) // 22. Update camera system
+        this.world.addSystem(this.debugSystem) // 23. Render debug gizmos
+        this.world.addSystem(this.particleSystem) // 24. Render particles
+        this.world.addSystem(this.renderSystem) // 25. Render the results
     }
 
     init(): void {

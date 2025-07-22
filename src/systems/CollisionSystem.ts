@@ -11,11 +11,13 @@ import type {
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { AudioSystem } from './AudioSystem'
+import type { DeathAnimationSystem } from './DeathAnimationSystem'
 import type { ParticleSystem } from './ParticleSystem'
 
 export class CollisionSystem extends System {
     private audioSystem: AudioSystem | null = null
     private particleSystem: ParticleSystem | null = null
+    private deathAnimationSystem: DeathAnimationSystem | null = null
 
     constructor(world: World) {
         super(world, []) // We'll manually query for different component combinations
@@ -30,6 +32,10 @@ export class CollisionSystem extends System {
 
     setParticleSystem(particleSystem: ParticleSystem): void {
         this.particleSystem = particleSystem
+    }
+
+    setDeathAnimationSystem(deathAnimationSystem: DeathAnimationSystem): void {
+        this.deathAnimationSystem = deathAnimationSystem
     }
 
     update(_deltaTime: number): void {
@@ -102,8 +108,24 @@ export class CollisionSystem extends System {
                     // Check if target died
                     if (targetHealth.currentHealth <= 0) {
                         targetHealth.isDead = true
+
+                        // Remove alive component - entity is now dead
+                        if (target.hasComponent('alive')) {
+                            target.removeComponent('alive')
+                        }
+
                         // Play death/explosion sound
                         this.playDeathSound()
+
+                        // Start death animation for enemies (not player)
+                        if (
+                            target.hasComponent('enemy') &&
+                            this.deathAnimationSystem
+                        ) {
+                            this.deathAnimationSystem.startDeathAnimation(
+                                target.id,
+                            )
+                        }
                     }
 
                     break // Projectile can only hit one target

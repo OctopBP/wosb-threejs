@@ -8,6 +8,7 @@ import type { MovementConfigPreset } from '../config/MovementPresets'
 import { createMovementConfig } from '../config/MovementPresets'
 import { createPlayerWeaponConfig } from '../config/WeaponConfig'
 import type {
+    AliveComponent,
     DamageableComponent,
     HealthComponent,
     InputComponent,
@@ -124,6 +125,12 @@ export function createPlayerShip(
     // Leveling stats component for stat improvements
     const levelingStats = createLevelingStatsComponent()
     entity.addComponent(levelingStats)
+
+    // Alive component - player starts alive
+    const alive: AliveComponent = {
+        type: 'alive',
+    }
+    entity.addComponent(alive)
 
     return entity
 }

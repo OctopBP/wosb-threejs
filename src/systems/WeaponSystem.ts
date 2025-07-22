@@ -23,7 +23,7 @@ export class WeaponSystem extends System {
     private particleSystem: ParticleSystem | null = null
 
     constructor(world: World, scene: Scene) {
-        super(world, ['weapon', 'position'])
+        super(world, ['weapon', 'position', 'alive'])
         this.scene = scene
     }
 
