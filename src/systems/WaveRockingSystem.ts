@@ -4,6 +4,7 @@ import type {
     VelocityComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 
 export interface WaveConfig {
@@ -30,7 +31,7 @@ export class WaveRockingSystem extends System {
     private readonly waveConfig: WaveConfig = {
         // Vertical bobbing (Y position)
         verticalAmplitude: 0.15, // How much the ship bobs up/down
-        verticalFrequency: 0.8, // How fast the bobbing motion
+        verticalFrequency: 1.8, // How fast the bobbing motion
 
         // Rolling motion (Z rotation)
         rollAmplitude: 0.08, // How much the ship rolls side to side (radians)
@@ -71,7 +72,7 @@ export class WaveRockingSystem extends System {
             // Only apply to ship meshes
             if (!this.isShipMesh(renderable.meshType)) continue
 
-            this.applyWaveMotion(position, deltaTime)
+            this.applyWaveMotion(position)
             this.applyWaveMovementEffects(position, velocity, deltaTime)
         }
     }
@@ -85,10 +86,7 @@ export class WaveRockingSystem extends System {
         )
     }
 
-    private applyWaveMotion(
-        position: PositionComponent,
-        deltaTime: number,
-    ): void {
+    private applyWaveMotion(position: PositionComponent): void {
         // Create spatial variation based on ship position
         const spatialOffsetX = position.x * this.waveConfig.spatialVariation
         const spatialOffsetZ = position.z * this.waveConfig.spatialVariation
