@@ -1,5 +1,11 @@
 import type { Scene, Texture } from 'three'
-import { Group, Sprite, SpriteMaterial, TextureLoader } from 'three'
+import {
+    Group,
+    NormalBlending,
+    Sprite,
+    SpriteMaterial,
+    TextureLoader,
+} from 'three'
 import { ARROW_INDICATOR_CONFIG } from '../config/ArrowIndicatorConfig'
 import type { EnemyArrowComponent, PositionComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
@@ -130,6 +136,9 @@ export class EnemyArrowSystem extends System {
             map: this.arrowTexture,
             color: enemyArrow.arrowColor,
             transparent: true,
+            depthWrite: false,
+            depthTest: true,
+            blending: NormalBlending,
         })
 
         // Create sprite
@@ -159,6 +168,7 @@ export class EnemyArrowSystem extends System {
         // Rotate the sprite to point toward the enemy
         // Since sprite arrow points up (top), we need to rotate it
         arrow.material.rotation = angle
+        arrow.renderOrder = 1000
 
         // Scale arrow
         arrow.scale.setScalar(enemyArrow.arrowScale)
