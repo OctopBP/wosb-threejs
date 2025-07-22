@@ -183,7 +183,6 @@ export function createBossShip(
         type: 'boss',
         bossType: 'basic',
         damagePerShot: weapon.damage,
-        scale: bossVisualConfig.scale,
     }
     entity.addComponent(boss)
 
