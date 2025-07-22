@@ -1,5 +1,6 @@
 // Model configuration mapping
 import type { MaterialType } from './MaterialsConfig'
+import type { PrimitiveType } from './PrimitivesConfig'
 
 export interface ModelConfig {
     kind: 'model'
@@ -11,8 +12,7 @@ export interface ModelConfig {
 export interface PrimitiveModelConfig {
     kind: 'primitive'
     scale: number
-    primitive: string
-    options: Record<string, number>
+    primitiveRef: PrimitiveType // Reference to primitive configuration
     materialRef?: MaterialType // Reference to material configuration
 }
 
@@ -64,9 +64,27 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
         bullet: {
             kind: 'primitive',
             scale: 0.75,
-            primitive: 'sphere',
-            options: { diameter: 0.2, segments: 8 },
+            primitiveRef: 'projectile',
             materialRef: 'projectile',
+        },
+        // Additional primitive examples
+        asteroid: {
+            kind: 'primitive',
+            scale: 2.0,
+            primitiveRef: 'debris',
+            materialRef: 'fallback',
+        },
+        powerup: {
+            kind: 'primitive',
+            scale: 0.5,
+            primitiveRef: 'beacon',
+            materialRef: 'player',
+        },
+        checkpoint: {
+            kind: 'primitive',
+            scale: 1.0,
+            primitiveRef: 'marker',
+            materialRef: 'enemy',
         },
     } as const
 

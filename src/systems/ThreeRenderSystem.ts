@@ -1,6 +1,8 @@
 import type { Object3D, Scene } from 'three'
 import {
     BoxGeometry,
+    ConeGeometry,
+    CylinderGeometry,
     Group,
     LoadingManager,
     Mesh,
@@ -10,6 +12,7 @@ import {
 import { getMaterialConfig } from '../config/MaterialsConfig'
 import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
 import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
+import { getPrimitiveConfig } from '../config/PrimitivesConfig'
 import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import type { World } from '../ecs/World'
 import { getModelClone } from '../ModelPreloader'
@@ -94,16 +97,44 @@ export class ThreeRenderSystem extends AbstractRenderSystem {
     private createPrimitiveMesh(meshId: string, meshType: string): Mesh {
         const config = getModelConfig(meshType) as PrimitiveModelConfig
 
-        let geometry: SphereGeometry | BoxGeometry
+        let geometry:
+            | SphereGeometry
+            | BoxGeometry
+            | CylinderGeometry
+            | ConeGeometry
         let material: MeshLambertMaterial
 
-        if ('primitive' in config) {
-            switch (config.primitive) {
+        if ('primitiveRef' in config) {
+            const primitiveConfig = getPrimitiveConfig(config.primitiveRef)
+
+            switch (primitiveConfig.shape) {
                 case 'sphere':
                     geometry = new SphereGeometry(
-                        config.options.diameter / 2 || 0.25,
-                        config.options.segments || 8,
-                        config.options.segments || 8,
+                        primitiveConfig.options.diameter / 2 || 0.25,
+                        primitiveConfig.options.segments || 8,
+                        primitiveConfig.options.segments || 8,
+                    )
+                    break
+                case 'box':
+                    geometry = new BoxGeometry(
+                        primitiveConfig.options.width || 1.0,
+                        primitiveConfig.options.height || 1.0,
+                        primitiveConfig.options.depth || 1.0,
+                    )
+                    break
+                case 'cylinder':
+                    geometry = new CylinderGeometry(
+                        primitiveConfig.options.radiusTop || 0.5,
+                        primitiveConfig.options.radiusBottom || 0.5,
+                        primitiveConfig.options.height || 1.0,
+                        primitiveConfig.options.segments || 8,
+                    )
+                    break
+                case 'cone':
+                    geometry = new ConeGeometry(
+                        primitiveConfig.options.radius || 0.5,
+                        primitiveConfig.options.height || 1.0,
+                        primitiveConfig.options.segments || 8,
                     )
                     break
                 default:
