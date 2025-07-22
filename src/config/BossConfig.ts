@@ -31,14 +31,6 @@ export const bossMovementPreset: MovementConfigPreset = {
     inputDeadZone: 0.1,
     pointerSensitivity: 0.5,
     linearDampening: 0.9,
-    boundaries: {
-        minX: -20,
-        maxX: 20,
-        minY: 0,
-        maxY: 5,
-        minZ: -20,
-        maxZ: 20,
-    },
 }
 
 // Boss health configuration

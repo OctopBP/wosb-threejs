@@ -12,14 +12,6 @@ export const balancedPreset: MovementConfigPreset = {
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,
     linearDampening: 0.95,
-    boundaries: {
-        minX: -10,
-        maxX: 10,
-        minY: 0,
-        maxY: 5,
-        minZ: -10,
-        maxZ: 10,
-    },
 }
 
 // Helper function to create a movement configuration

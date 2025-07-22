@@ -68,16 +68,6 @@ export interface MovementConfigComponent extends Component {
 
     // Movement dampening
     linearDampening: number
-
-    // Boundaries
-    boundaries: {
-        minX: number
-        maxX: number
-        minY: number
-        maxY: number
-        minZ: number
-        maxZ: number
-    }
 }
 
 // Renderable component for Three.js mesh
