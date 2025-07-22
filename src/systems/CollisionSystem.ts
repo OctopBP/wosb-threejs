@@ -108,6 +108,12 @@ export class CollisionSystem extends System {
                     // Check if target died
                     if (targetHealth.currentHealth <= 0) {
                         targetHealth.isDead = true
+
+                        // Remove alive component - entity is now dead
+                        if (target.hasComponent('alive')) {
+                            target.removeComponent('alive')
+                        }
+
                         // Play death/explosion sound
                         this.playDeathSound()
 

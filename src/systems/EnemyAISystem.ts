@@ -1,6 +1,5 @@
 import type {
     EnemyAIComponent,
-    HealthComponent,
     PositionComponent,
     VelocityComponent,
     WeaponComponent,
@@ -11,7 +10,14 @@ import type { World } from '../ecs/World'
 
 export class EnemyAISystem extends System {
     constructor(world: World) {
-        super(world, ['enemy', 'enemyAI', 'position', 'velocity', 'weapon'])
+        super(world, [
+            'enemy',
+            'enemyAI',
+            'position',
+            'velocity',
+            'weapon',
+            'alive',
+        ])
     }
 
     update(_deltaTime: number): void {
@@ -26,10 +32,9 @@ export class EnemyAISystem extends System {
         const player = playerEntities[0]
         const playerPosition =
             player.getComponent<PositionComponent>('position')
-        const playerHealth = player.getComponent<HealthComponent>('health')
 
         // Skip if player is dead or position not found
-        if (!playerPosition || playerHealth?.isDead) {
+        if (!playerPosition || !player.hasComponent('alive')) {
             return
         }
 
@@ -38,12 +43,8 @@ export class EnemyAISystem extends System {
             const position = enemy.getComponent<PositionComponent>('position')
             const velocity = enemy.getComponent<VelocityComponent>('velocity')
             const weapon = enemy.getComponent<WeaponComponent>('weapon')
-            const health = enemy.getComponent<HealthComponent>('health')
 
             if (!enemyAI || !position || !velocity || !weapon) continue
-
-            // Skip dead enemies - they should not move or attack
-            if (health?.isDead) continue
 
             // Update AI behavior
             this.updateMovement(enemyAI, position, velocity, playerPosition)

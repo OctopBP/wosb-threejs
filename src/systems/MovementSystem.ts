@@ -1,5 +1,4 @@
 import type {
-    HealthComponent,
     MovementConfigComponent,
     PositionComponent,
     VelocityComponent,
@@ -10,7 +9,7 @@ import type { World } from '../ecs/World'
 
 export class MovementSystem extends System {
     constructor(world: World) {
-        super(world, ['position', 'velocity', 'movementConfig'])
+        super(world, ['position', 'velocity', 'movementConfig', 'alive'])
     }
 
     update(deltaTime: number): void {
@@ -21,12 +20,8 @@ export class MovementSystem extends System {
             const velocity = entity.getComponent<VelocityComponent>('velocity')
             const config =
                 entity.getComponent<MovementConfigComponent>('movementConfig')
-            const health = entity.getComponent<HealthComponent>('health')
 
             if (!position || !velocity || !config) continue
-
-            // Skip dead entities - they should not move (except for death animation system)
-            if (health?.isDead) continue
 
             this.updatePosition(position, velocity, deltaTime)
         }

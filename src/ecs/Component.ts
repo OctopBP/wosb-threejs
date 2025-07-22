@@ -321,3 +321,8 @@ export interface DeathAnimationComponent extends Component {
     currentTime: number // Current time in animation
     wreckageTriggered: boolean // Whether wreckage particles have been triggered
 }
+
+// Alive component - entities with this component are alive and should participate in normal systems
+export interface AliveComponent extends Component {
+    type: 'alive'
+}

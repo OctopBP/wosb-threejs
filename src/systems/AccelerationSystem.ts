@@ -1,5 +1,4 @@
 import type {
-    HealthComponent,
     InputComponent,
     MovementConfigComponent,
     VelocityComponent,
@@ -9,7 +8,7 @@ import type { World } from '../ecs/World'
 
 export class AccelerationSystem extends System {
     constructor(world: World) {
-        super(world, ['velocity', 'input', 'movementConfig'])
+        super(world, ['velocity', 'input', 'movementConfig', 'alive'])
     }
 
     update(deltaTime: number): void {
@@ -20,12 +19,8 @@ export class AccelerationSystem extends System {
             const input = entity.getComponent<InputComponent>('input')
             const config =
                 entity.getComponent<MovementConfigComponent>('movementConfig')
-            const health = entity.getComponent<HealthComponent>('health')
 
             if (!velocity || !input || !config) continue
-
-            // Skip dead entities - they should not accelerate
-            if (health?.isDead) continue
 
             if (input.hasInput) {
                 this.applyAcceleration(velocity, input, config, deltaTime)
