@@ -55,10 +55,10 @@ export const audioAssets: AudioAssets = {
  */
 export const defaultAudioSettings = {
     masterVolume: 1.0,
-    musicVolume: 0.7,
-    sfxVolume: 0.8,
-    uiVolume: 0.6,
-    muted: false,
+    musicVolume: 0.5,
+    sfxVolume: 0.5,
+    uiVolume: 0.5,
+    muted: true,
 }
 
 /**

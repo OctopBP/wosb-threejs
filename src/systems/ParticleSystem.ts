@@ -277,6 +277,7 @@ export class ParticleSystem extends System {
 
             // Create points object and add to scene
             const points = new Points(geometry, material)
+            points.renderOrder = 2
             this.scene.add(points)
 
             // Store references
@@ -603,8 +604,8 @@ export class ParticleSystem extends System {
             // Sort particles by distance for proper blending
             allParticles.sort(
                 (a, b) =>
-                    this.camera.position.distanceTo(b.position) -
-                    this.camera.position.distanceTo(a.position),
+                    this.camera.position.distanceToSquared(b.position) -
+                    this.camera.position.distanceToSquared(a.position),
             )
 
             // Build attribute arrays
@@ -674,9 +675,7 @@ export class ParticleSystem extends System {
     }
 
     // Utility methods for managing particle systems
-    getParticleSystemInfo(
-        id: string,
-    ): {
+    getParticleSystemInfo(id: string): {
         particleCount: number
         isActive: boolean
         autoRemove: boolean

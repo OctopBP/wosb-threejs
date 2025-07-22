@@ -16,6 +16,7 @@ import type {
 import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
 import { createDebugEntity } from './entities/DebugFactory'
+import { createIsland } from './entities/IslandFactory'
 import {
     createPlayerShip,
     equipPlayerWeapon,
@@ -185,6 +186,11 @@ export class GameWorld {
                 arrowColor: ARROW_INDICATOR_CONFIG.defaultArrowColor,
             })
         }
+
+        // Create and add islands to the scene
+        const island = createIsland(0, 0, 0, 1.0)
+        this.world.addEntity(island)
+        console.log('🏝️ Islands created and added to scene')
     }
 
     update(time: number): void {
