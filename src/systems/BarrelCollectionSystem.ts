@@ -72,55 +72,35 @@ export class BarrelCollectionSystem extends System {
             // Handle animation states
             this.updateBarrelAnimation(barrel, deltaTime, currentTime)
 
-            // Only handle collection logic if barrel is floating or attracting
+            // Handle attracting and floating states
             if (
                 xpBarrel.animationState === 'floating' ||
                 xpBarrel.animationState === 'attracting'
             ) {
-                // Check if player is in collection range
+                // Calculate distance to player
                 const distanceToPlayer = this.getDistanceToPlayer(
                     playerPosition,
                     barrelPosition,
                 )
 
-                if (distanceToPlayer <= xpBarrel.collectionRange) {
-                    if (xpBarrel.animationState === 'floating') {
-                        // Start magnetic attraction
-                        xpBarrel.animationState = 'attracting'
-                        xpBarrel.isBeingAttracted = true
-                    }
+                // For floating state, immediately transition to attracting and start lerping
+                if (xpBarrel.animationState === 'floating') {
+                    xpBarrel.animationState = 'attracting'
+                    xpBarrel.isBeingAttracted = true
+                }
 
-                    // Apply magnetic movement toward player
-                    this.applyMagneticMovement(
-                        barrel,
-                        playerPosition,
-                        barrelPosition,
-                        barrelVelocity,
-                        deltaTime,
-                    )
+                // Apply lerping movement toward player
+                this.applyMagneticMovement(
+                    barrel,
+                    playerPosition,
+                    barrelPosition,
+                    barrelVelocity,
+                    deltaTime,
+                )
 
-                    // Check if close enough to collect (smaller distance than collection range)
-                    if (distanceToPlayer <= 1.0) {
-                        this.collectBarrel(barrel, player)
-                    }
-                } else {
-                    // Reset attraction if player moves out of range
-                    if (xpBarrel.animationState === 'attracting') {
-                        xpBarrel.animationState = 'floating'
-                        xpBarrel.isBeingAttracted = false
-                        // Reset velocity to gentle drift
-                        const driftRange =
-                            defaultBarrelConfig.driftSpeedMax -
-                            defaultBarrelConfig.driftSpeedMin
-                        barrelVelocity.dx =
-                            (Math.random() - 0.5) *
-                            (defaultBarrelConfig.driftSpeedMin +
-                                Math.random() * driftRange)
-                        barrelVelocity.dz =
-                            (Math.random() - 0.5) *
-                            (defaultBarrelConfig.driftSpeedMin +
-                                Math.random() * driftRange)
-                    }
+                // Check if close enough to collect
+                if (distanceToPlayer <= 1.0) {
+                    this.collectBarrel(barrel, player)
                 }
             }
         }
@@ -221,19 +201,9 @@ export class BarrelCollectionSystem extends System {
             velocity.dy = 0
             velocity.dz = 0
 
-            // Transition to floating state
-            xpBarrel.animationState = 'floating'
-
-            // Set gentle drift velocity
-            const driftRange =
-                defaultBarrelConfig.driftSpeedMax -
-                defaultBarrelConfig.driftSpeedMin
-            velocity.dx =
-                (Math.random() - 0.5) *
-                (defaultBarrelConfig.driftSpeedMin + Math.random() * driftRange)
-            velocity.dz =
-                (Math.random() - 0.5) *
-                (defaultBarrelConfig.driftSpeedMin + Math.random() * driftRange)
+            // Transition directly to attracting state to start lerping to player
+            xpBarrel.animationState = 'attracting'
+            xpBarrel.isBeingAttracted = true
             return
         }
 
