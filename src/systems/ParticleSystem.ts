@@ -603,8 +603,8 @@ export class ParticleSystem extends System {
             // Sort particles by distance for proper blending
             allParticles.sort(
                 (a, b) =>
-                    this.camera.position.distanceTo(b.position) -
-                    this.camera.position.distanceTo(a.position),
+                    this.camera.position.distanceToSquared(b.position) -
+                    this.camera.position.distanceToSquared(a.position),
             )
 
             // Build attribute arrays

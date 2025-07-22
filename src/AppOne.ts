@@ -8,6 +8,7 @@ import {
     Fog,
     HemisphereLight,
     Mesh,
+    NormalBlending,
     PCFSoftShadowMap,
     PerspectiveCamera,
     PlaneGeometry,
@@ -137,7 +138,10 @@ export class AppOne {
             vertexShader: waterVertexShader,
             fragmentShader: waterFragmentShader,
             uniforms: waterUniforms,
+            blending: NormalBlending,
             transparent: true,
+            depthWrite: true,
+            depthTest: true,
         })
 
         const water = new Mesh(waterGeometry, waterMaterial)
@@ -149,7 +153,6 @@ export class AppOne {
         this.waterMesh = water
         this.waterMaterial = waterMaterial
         this.waterUniforms = waterUniforms
-        // --- END WATER SHADER REPLACEMENT ---
 
         // Add fog for atmosphere
         scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 10, 100)

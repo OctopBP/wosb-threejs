@@ -9,28 +9,20 @@ import {
     MeshLambertMaterial,
     SphereGeometry,
 } from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
 import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
-import type {
-    BossComponent,
-    PositionComponent,
-    RenderableComponent,
-} from '../ecs/Component'
-import type { Entity } from '../ecs/Entity'
+import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import { getModelClone } from '../ModelPreloader'
 export class RenderSystem extends System {
     private scene: Scene
-    private gltfLoader: GLTFLoader
     private loadingManager: LoadingManager
 
     constructor(world: World, scene: Scene) {
         super(world, ['position', 'renderable'])
         this.scene = scene
         this.loadingManager = new LoadingManager()
-        this.gltfLoader = new GLTFLoader(this.loadingManager)
     }
 
     update(_deltaTime: number): void {
@@ -62,7 +54,7 @@ export class RenderSystem extends System {
                 }
 
                 // Create new mesh
-                const mesh = this.createMesh(renderable, entity)
+                const mesh = this.createMesh(renderable)
                 if (mesh) {
                     renderable.mesh = mesh
                     // Store the meshType in userData for tracking changes
@@ -88,36 +80,20 @@ export class RenderSystem extends System {
         }
     }
 
-    private createMesh(
-        renderable: RenderableComponent,
-        entity: Entity,
-    ): Object3D | null {
+    private createMesh(renderable: RenderableComponent): Object3D | null {
         // Check if this is a primitive mesh or a model mesh
         if (isPrimitiveModel(renderable.meshType)) {
             return this.createPrimitiveMesh(
                 renderable.meshId,
                 renderable.meshType,
-                entity,
             )
         } else {
-            return this.createModelMesh(
-                renderable.meshId,
-                renderable.meshType,
-                entity,
-            )
+            return this.createModelMesh(renderable.meshId, renderable.meshType)
         }
     }
 
-    private createPrimitiveMesh(
-        meshId: string,
-        meshType: string,
-        entity: Entity,
-    ): Mesh {
+    private createPrimitiveMesh(meshId: string, meshType: string): Mesh {
         const config = getModelConfig(meshType) as PrimitiveModelConfig
-
-        // Check if this entity is a boss for additional scaling
-        const bossComponent = entity.getComponent<BossComponent>('boss')
-        const additionalScale = bossComponent ? bossComponent.scale : 1.0
 
         let geometry: SphereGeometry | BoxGeometry
         let material: MeshLambertMaterial
@@ -140,11 +116,13 @@ export class RenderSystem extends System {
             material = new MeshLambertMaterial({
                 color: 0x000000, // Black color for projectiles
                 transparent: false,
+                depthWrite: true,
+                depthTest: true,
             })
 
             const mesh = new Mesh(geometry, material)
             mesh.name = meshId
-            mesh.scale.setScalar(config.scale * additionalScale)
+            mesh.scale.setScalar(config.scale)
             mesh.castShadow = true
             mesh.receiveShadow = true
 
@@ -152,30 +130,25 @@ export class RenderSystem extends System {
         } else {
             // Fallback
             geometry = new SphereGeometry(0.25, 8, 8)
-            material = new MeshLambertMaterial({ color: 0x000000 }) // Black color for projectiles
+            material = new MeshLambertMaterial({
+                color: 0x000000,
+                transparent: false,
+                depthWrite: true,
+                depthTest: true,
+            })
             const mesh = new Mesh(geometry, material)
             mesh.name = meshId
-            mesh.scale.setScalar(additionalScale)
             mesh.castShadow = true
             mesh.receiveShadow = true
             return mesh
         }
     }
 
-    private createModelMesh(
-        meshId: string,
-        meshType: string,
-        entity: Entity,
-    ): Group {
+    private createModelMesh(meshId: string, meshType: string): Group {
         const parentGroup = new Group()
         parentGroup.name = meshId
 
         const modelConfig = getModelConfig(meshType) as ModelConfig
-
-        // Check if this entity is a boss for additional scaling
-        const bossComponent = entity.getComponent<BossComponent>('boss')
-        const additionalScale = bossComponent ? bossComponent.scale : 1.0
-        const finalScale = modelConfig.scale * additionalScale
 
         // Use preloaded model clone
         const model = getModelClone(meshType)
@@ -187,7 +160,7 @@ export class RenderSystem extends System {
                 }
             })
             parentGroup.add(model)
-            parentGroup.scale.setScalar(finalScale)
+            parentGroup.scale.setScalar(modelConfig.scale)
         } else {
             // Fallback: create a primitive
             const fallbackGeometry = new BoxGeometry(1, 0.5, 2)
@@ -198,7 +171,7 @@ export class RenderSystem extends System {
             fallbackMesh.castShadow = true
             fallbackMesh.receiveShadow = true
             parentGroup.add(fallbackMesh)
-            parentGroup.scale.setScalar(finalScale)
+            parentGroup.scale.setScalar(modelConfig.scale)
         }
         return parentGroup
     }
