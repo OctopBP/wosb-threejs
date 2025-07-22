@@ -107,13 +107,14 @@ export class AppOne {
         scene.add(directionalLight)
 
         const waterGeometry = new PlaneGeometry(150, 150, 512, 512)
+        const skyTexturePath = 'assets/textures/sky.png'
         const envMap = new CubeTextureLoader().load([
-            '/sky.png', // px
-            '/sky.png', // nx
-            '/sky.png', // py
-            '/sky.png', // ny
-            '/sky.png', // pz
-            '/sky.png', // nz
+            skyTexturePath, // px
+            skyTexturePath, // nx
+            skyTexturePath, // py
+            skyTexturePath, // ny
+            skyTexturePath, // pz
+            skyTexturePath, // nz
         ])
 
         const waterUniforms = {
