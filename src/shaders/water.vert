@@ -12,6 +12,8 @@ uniform float uWavesIterations;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
 
+#include <fog_pars_vertex>
+
 //	Simplex 3D Noise
 //	by Ian McEwan, Stefan Gustavson (https://github.com/stegu/webgl-noise)
 //
@@ -88,5 +90,8 @@ void main() {
   vNormal = objectNormal;
   vWorldPosition = modelPosition.xyz;
 
-  gl_Position = projectionMatrix * viewMatrix * modelPosition;
+  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * mvPosition;
+
+  #include <fog_vertex>
 }

@@ -137,11 +137,12 @@ export class AppOne {
         const waterMaterial = new ShaderMaterial({
             vertexShader: waterVertexShader,
             fragmentShader: waterFragmentShader,
-            uniforms: waterUniforms,
+            uniforms: UniformsUtils.merge([UniformsLib['fog'], waterUniforms]),
             blending: NormalBlending,
             transparent: true,
             depthWrite: true,
             depthTest: true,
+            fog: true,
         })
 
         const water = new Mesh(waterGeometry, waterMaterial)
