@@ -297,6 +297,11 @@ export class WeaponSystem extends System {
         // Create projectile entity
         const projectile = this.world.createEntity()
 
+        // Get shooter entity to access its velocity
+        const shooterEntity = this.world.getEntity(shooterId)
+        const shooterVelocity =
+            shooterEntity?.getComponent<VelocityComponent>('velocity')
+
         // Calculate forward direction based on shooter's rotation
         const forwardX = Math.sin(shooterPosition.rotationY)
         const forwardZ = Math.cos(shooterPosition.rotationY)
@@ -377,6 +382,7 @@ export class WeaponSystem extends System {
             shootingPointIndex,
             worldShootingPos,
             { x: forwardX, z: forwardZ },
+            shooterVelocity,
         )
     }
 
@@ -388,6 +394,11 @@ export class WeaponSystem extends System {
     ): void {
         // Create projectile entity
         const projectile = this.world.createEntity()
+
+        // Get shooter entity to access its velocity
+        const shooterEntity = this.world.getEntity(shooterId)
+        const shooterVelocity =
+            shooterEntity?.getComponent<VelocityComponent>('velocity')
 
         // Find the closest shooting point to the target
         const { point: shootingPoint, index: shootingPointIndex } =
@@ -478,6 +489,7 @@ export class WeaponSystem extends System {
             shootingPointIndex,
             worldShootingPos,
             { x: forwardX, z: forwardZ },
+            shooterVelocity,
         )
     }
 
@@ -500,6 +512,7 @@ export class WeaponSystem extends System {
         shootingPointIndex: number,
         worldShootingPos: { x: number; z: number },
         direction: { x: number; z: number },
+        shooterVelocity?: VelocityComponent,
     ): void {
         if (!this.particleSystem) {
             return
@@ -530,6 +543,20 @@ export class WeaponSystem extends System {
             shootingPosition,
             shootingDirection,
         )
+
+        // Add ship velocity to gunsmoke particles if available
+        if (shooterVelocity) {
+            const shipVelocity = new Vector3(
+                shooterVelocity.dx,
+                shooterVelocity.dy,
+                shooterVelocity.dz,
+            )
+
+            // Store ship velocity in the config for use during particle creation
+            // We'll add it to the particle velocity in the particle system
+            gunSmokeConfig.shipVelocity = shipVelocity
+        }
+
         this.particleSystem.createAndBurstParticleSystem(
             gunSmokeId,
             gunSmokeConfig,
