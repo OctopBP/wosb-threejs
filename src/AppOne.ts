@@ -14,6 +14,8 @@ import {
     PlaneGeometry,
     Scene,
     ShaderMaterial,
+    UniformsLib,
+    UniformsUtils,
     Vector3,
     WebGLRenderer,
 } from 'three'
@@ -104,7 +106,7 @@ export class AppOne {
         directionalLight.shadow.camera.bottom = -25
         scene.add(directionalLight)
 
-        const waterGeometry = new PlaneGeometry(50, 50, 256, 256)
+        const waterGeometry = new PlaneGeometry(150, 150, 256, 256)
         const envMap = new CubeTextureLoader().load([
             '/sky.png', // px
             '/sky.png', // nx
@@ -147,8 +149,10 @@ export class AppOne {
 
         const water = new Mesh(waterGeometry, waterMaterial)
         water.rotation.x = -Math.PI / 2
+        water.position.set(0, 0, 35)
         water.receiveShadow = true
         water.name = 'Water'
+        water.renderOrder = 1
         scene.add(water)
         // Store references for GUI
         this.waterMesh = water
