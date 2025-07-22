@@ -48,6 +48,7 @@ import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
+import { WaveRockingSystem } from './systems/WaveRockingSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
 export class GameWorld {
     private world: World
@@ -56,6 +57,7 @@ export class GameWorld {
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
+    private waveRockingSystem: WaveRockingSystem
     private weaponSystem: WeaponSystem
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
@@ -98,6 +100,7 @@ export class GameWorld {
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
+        this.waveRockingSystem = new WaveRockingSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
@@ -147,21 +150,22 @@ export class GameWorld {
         this.world.addSystem(this.rotationSystem) // 6. Handle rotation
         this.world.addSystem(this.accelerationSystem) // 7. Apply acceleration/deceleration
         this.world.addSystem(this.movementSystem) // 8. Apply velocity to position (ships only)
-        this.world.addSystem(this.weaponSystem) // 9. Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // 10. Move projectiles with gravity
-        this.world.addSystem(this.projectileSystem) // 11. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 12. Check collisions and apply damage
-        this.world.addSystem(this.levelingSystem) // 13. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 14. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 15. Update enemy health UI
-        this.world.addSystem(this.rangeIndicatorSystem) // 16. Update range indicator
-        this.world.addSystem(this.enemyArrowSystem) // 17. Update enemy arrows
-        this.world.addSystem(this.newShipOfferUISystem) // 18. Handle new ship offer UI
-        this.world.addSystem(this.bossFightUISystem) // 19. Handle boss fight UI overlay
-        this.world.addSystem(this.cameraSystem) // 20. Update camera system
-        this.world.addSystem(this.debugSystem) // 21. Render debug gizmos
-        this.world.addSystem(this.particleSystem) // 22. Render particles
-        this.world.addSystem(this.renderSystem) // 23. Render the results
+        this.world.addSystem(this.waveRockingSystem) // 9. Apply wave rocking motion to ships
+        this.world.addSystem(this.weaponSystem) // 10. Handle weapon firing
+        this.world.addSystem(this.projectileMovementSystem) // 11. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 12. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 13. Check collisions and apply damage
+        this.world.addSystem(this.levelingSystem) // 14. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 15. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 16. Update enemy health UI
+        this.world.addSystem(this.rangeIndicatorSystem) // 17. Update range indicator
+        this.world.addSystem(this.enemyArrowSystem) // 18. Update enemy arrows
+        this.world.addSystem(this.newShipOfferUISystem) // 19. Handle new ship offer UI
+        this.world.addSystem(this.bossFightUISystem) // 20. Handle boss fight UI overlay
+        this.world.addSystem(this.cameraSystem) // 21. Update camera system
+        this.world.addSystem(this.debugSystem) // 22. Render debug gizmos
+        this.world.addSystem(this.particleSystem) // 23. Render particles
+        this.world.addSystem(this.renderSystem) // 24. Render the results
     }
 
     init(): void {
