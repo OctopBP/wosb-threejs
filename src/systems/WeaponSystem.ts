@@ -531,6 +531,20 @@ export class WeaponSystem extends System {
             direction.z,
         ).normalize()
 
+        // Add ship velocity to the gunsmoke burst direction
+        if (shooterVelocity) {
+            const shipVelocity = new Vector3(
+                shooterVelocity.dx,
+                shooterVelocity.dy,
+                shooterVelocity.dz,
+            )
+
+            // Add ship velocity to the shooting direction for more realistic gunsmoke
+            // This makes the smoke appear to be ejected in the direction of ship movement + gun direction
+            shootingDirection.add(shipVelocity.multiplyScalar(0.5)) // Scale down the influence
+            shootingDirection.normalize() // Re-normalize after adding velocity
+        }
+
         // Generate unique IDs for this shot's particle systems
         // Include shooting point index to ensure different cannons don't conflict
         const timestamp = Date.now()
@@ -543,19 +557,6 @@ export class WeaponSystem extends System {
             shootingPosition,
             shootingDirection,
         )
-
-        // Add ship velocity to gunsmoke particles if available
-        if (shooterVelocity) {
-            const shipVelocity = new Vector3(
-                shooterVelocity.dx,
-                shooterVelocity.dy,
-                shooterVelocity.dz,
-            )
-
-            // Store ship velocity in the config for use during particle creation
-            // We'll add it to the particle velocity in the particle system
-            gunSmokeConfig.shipVelocity = shipVelocity
-        }
 
         this.particleSystem.createAndBurstParticleSystem(
             gunSmokeId,

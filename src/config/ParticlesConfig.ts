@@ -152,8 +152,6 @@ export function getParticleConfig(
         spriteSheet: original.spriteSheet
             ? { ...original.spriteSheet }
             : undefined,
-        // Copy shipVelocity if it exists
-        shipVelocity: original.shipVelocity?.clone(),
     }
 
     // Override direction if provided (useful for directional effects like gunSmoke)

@@ -86,9 +86,6 @@ export interface ParticleSystemConfig extends ParticleEmissionConfig {
     sizeOverTime?: Array<{ time: number; value: number }>
     alphaOverTime?: Array<{ time: number; value: number }>
     colorOverTime?: Array<{ time: number; value: Color }>
-
-    // Ship velocity to add to particles (for effects like gunsmoke)
-    shipVelocity?: Vector3
 }
 
 class LinearSpline<T> {
@@ -420,11 +417,6 @@ export class ParticleSystem extends System {
             // Generate velocity direction
             const velocity =
                 this.generateVelocityDirection(config).multiplyScalar(speed)
-
-            // Add ship velocity to particle velocity if provided (for effects like gunsmoke)
-            if (config.shipVelocity) {
-                velocity.add(config.shipVelocity)
-            }
 
             // Generate rotation
             const rotation = getValueFromValueOrRange(config.rotation)
