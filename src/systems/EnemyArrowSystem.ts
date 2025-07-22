@@ -7,7 +7,11 @@ import {
     TextureLoader,
 } from 'three'
 import { ARROW_INDICATOR_CONFIG } from '../config/ArrowIndicatorConfig'
-import type { EnemyArrowComponent, PositionComponent } from '../ecs/Component'
+import type {
+    EnemyArrowComponent,
+    HealthComponent,
+    PositionComponent,
+} from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 export class EnemyArrowSystem extends System {
@@ -62,18 +66,25 @@ export class EnemyArrowSystem extends System {
         enemyArrow: EnemyArrowComponent,
         position: PositionComponent,
     ): void {
-        // Get all enemy entities
+        // Get all enemy entities with health
         const enemies = this.world.getEntitiesWithComponents([
             'enemy',
             'position',
+            'health',
         ])
+
+        // Filter out dead enemies
+        const aliveEnemies = enemies.filter((enemy) => {
+            const health = enemy.getComponent<HealthComponent>('health')
+            return health && !health.isDead
+        })
 
         // Clear old arrows
         this.removeEnemyArrows(enemyArrow)
         enemyArrow.enemyArrows = []
 
         // Find closest enemies and create arrows
-        const enemyDistances = enemies
+        const enemyDistances = aliveEnemies
             .map((enemy) => {
                 const enemyPos =
                     enemy.getComponent<PositionComponent>('position')

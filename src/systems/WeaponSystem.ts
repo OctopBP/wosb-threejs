@@ -4,6 +4,7 @@ import { createBulletCollision } from '../config/CollisionConfig'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
+    HealthComponent,
     PositionComponent,
     ProjectileComponent,
     RenderableComponent,
@@ -197,6 +198,10 @@ export class WeaponSystem extends System {
         let closestDistance = Number.MAX_VALUE
 
         for (const target of targets) {
+            // check if target is alive
+            const health = target.getComponent<HealthComponent>('health')
+            if (!health || health.isDead) continue
+
             const targetPosition =
                 target.getComponent<PositionComponent>('position')
             if (!targetPosition) continue

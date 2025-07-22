@@ -16,7 +16,7 @@ export const collisionPresets = {
 
     enemyShip: {
         shape: 'box' as const,
-        width: 0.6,
+        width: 0.8,
         height: 1,
         depth: 1.4,
     } satisfies BoxCollider,
