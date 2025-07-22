@@ -1,4 +1,4 @@
-import { Color, Mesh, Object3D, ShaderMaterial, Vector3 } from 'three'
+import { Color, Mesh, ShaderMaterial, Vector3 } from 'three'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import type {
     DeathAnimationComponent,
@@ -98,7 +98,7 @@ export class DeathAnimationSystem extends System {
                 deathAnimation.originalY - progress * deathAnimation.sinkSpeed
 
             // Add dramatic rotation during sinking for flooding effect
-            position.rotationX = progress * 0.5 // Forward tilt as it floods and sinks
+            position.rotationX = progress * 1.5 // Forward tilt as it floods and sinks
             position.rotationZ = Math.sin(progress * Math.PI * 3) * 0.2 // Rolling motion as water enters
             // Optional: slight yaw rotation for more chaos
             position.rotationY += deltaTime * 0.3 * progress // Slow spin as it sinks
@@ -267,8 +267,8 @@ export class DeathAnimationSystem extends System {
      */
     public startDeathAnimation(
         entityId: number,
-        sinkSpeed = 2.0,
-        sinkDuration = 2.0,
+        sinkSpeed = 3.0,
+        sinkDuration = 4.0,
     ): void {
         const entity = this.world.getEntity(entityId)
         if (!entity) return
