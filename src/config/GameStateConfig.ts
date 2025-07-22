@@ -41,37 +41,3 @@ export const defaultGameStateConfig: GameStateConfig = {
         spawnAngleRandomness: true, // Whether to randomize spawn angles
     },
 }
-
-// Easy difficulty preset
-export const easyGameStateConfig: GameStateConfig = {
-    ...defaultGameStateConfig,
-    wave1: {
-        ...defaultGameStateConfig.wave1,
-        enemyCount: 3,
-    },
-    wave2: {
-        ...defaultGameStateConfig.wave2,
-        enemyCount: 6,
-    },
-    boss: {
-        ...defaultGameStateConfig.boss,
-        xpMultiplier: 15,
-    },
-}
-
-// Hard difficulty preset
-export const hardGameStateConfig: GameStateConfig = {
-    ...defaultGameStateConfig,
-    wave1: {
-        ...defaultGameStateConfig.wave1,
-        enemyCount: 8,
-    },
-    wave2: {
-        ...defaultGameStateConfig.wave2,
-        enemyCount: 15,
-    },
-    boss: {
-        ...defaultGameStateConfig.boss,
-        xpMultiplier: 25,
-    },
-}

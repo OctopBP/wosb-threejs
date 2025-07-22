@@ -37,8 +37,8 @@ export const enemyWeaponPreset: WeaponConfigPreset = {
 }
 
 export const bossWeaponPreset: WeaponConfigPreset = {
-    damage: 100,
-    fireRate: 0.2,
+    damage: 50,
+    fireRate: 1.5,
     projectileSpeed: 25.0,
     range: 15.0,
     projectileType: 'bullet',
