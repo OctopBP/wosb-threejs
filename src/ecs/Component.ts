@@ -16,6 +16,10 @@ export interface PositionComponent extends Component {
     rotationX: number
     rotationY: number
     rotationZ: number
+    // Original values for wave rocking system
+    originalY?: number
+    originalRotationX?: number
+    originalRotationZ?: number
 }
 
 // Velocity component for entity movement
