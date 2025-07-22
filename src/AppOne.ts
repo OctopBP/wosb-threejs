@@ -84,12 +84,12 @@ export class AppOne {
         const scene = new Scene()
 
         // Create hemisphere light for general illumination
-        const hemisphereLight = new HemisphereLight(0xffffff, 0x444444, 0.8)
+        const hemisphereLight = new HemisphereLight(0xffffff, 0x304480, 0.75)
         hemisphereLight.position.set(0, 20, 0)
         scene.add(hemisphereLight)
 
         // Create directional light for better depth perception and shadows
-        const directionalLight = new DirectionalLight(0xffffff, 0.4)
+        const directionalLight = new DirectionalLight(0xffffff, 2.5)
         directionalLight.position.set(10, 10, 10)
         directionalLight.target.position.set(0, 0, 0)
         directionalLight.castShadow = true
@@ -103,22 +103,7 @@ export class AppOne {
         directionalLight.shadow.camera.bottom = -25
         scene.add(directionalLight)
 
-        // --- WATER SHADER REPLACEMENT ---
-        // Remove old ground plane code
-        // const groundGeometry = new PlaneGeometry(50, 50)
-        // const groundMaterial = new MeshLambertMaterial({
-        //     color: new Color(0.2, 0.4, 0.8), // Blue ocean
-        // })
-        // const ground = new Mesh(groundGeometry, groundMaterial)
-        // ground.rotation.x = -Math.PI / 2 // Rotate to be horizontal
-        // ground.receiveShadow = true
-        // scene.add(ground)
-
-        // Water plane
         const waterGeometry = new PlaneGeometry(50, 50, 256, 256)
-
-        // Placeholder environment map (sky blue)
-        // In production, replace with a real cubemap
         const envMap = new CubeTextureLoader().load([
             '/sky.png', // px
             '/sky.png', // nx
@@ -130,22 +115,22 @@ export class AppOne {
 
         const waterUniforms = {
             uTime: { value: 0 },
-            uWavesAmplitude: { value: 0.25 },
+            uWavesAmplitude: { value: 0.1 },
             uWavesSpeed: { value: 0.15 },
             uWavesFrequency: { value: 0.08 },
-            uWavesPersistence: { value: 0.5 },
+            uWavesPersistence: { value: 0.6 },
             uWavesLacunarity: { value: 2.0 },
-            uWavesIterations: { value: 4.0 },
-            uOpacity: { value: 0.95 },
+            uWavesIterations: { value: 6.0 },
+            uOpacity: { value: 0.8 },
             uTroughColor: { value: new Color(0.1, 0.2, 0.4) },
             uSurfaceColor: { value: new Color(0.2, 0.4, 0.8) },
             uPeakColor: { value: new Color(0.8, 0.9, 1.0) },
-            uPeakThreshold: { value: 0.5 },
+            uPeakThreshold: { value: 0.4 },
             uPeakTransition: { value: 0.2 },
-            uTroughThreshold: { value: -0.5 },
-            uTroughTransition: { value: 0.2 },
-            uFresnelScale: { value: 1.0 },
-            uFresnelPower: { value: 2.5 },
+            uTroughThreshold: { value: -1.5 },
+            uTroughTransition: { value: 0.75 },
+            uFresnelScale: { value: 0.7 },
+            uFresnelPower: { value: 0.5 },
             uEnvironmentMap: { value: envMap },
         }
         const waterMaterial = new ShaderMaterial({
@@ -654,7 +639,7 @@ export class AppOne {
         }
         if (directionalLight) {
             lightFolder
-                .add(directionalLight, 'intensity', 0, 2, 0.01)
+                .add(directionalLight, 'intensity', 0, 5, 0.01)
                 .name('Directional Intensity')
         }
 

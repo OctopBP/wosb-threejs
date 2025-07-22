@@ -21,7 +21,6 @@ import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import { getModelClone } from '../ModelPreloader'
-
 export class RenderSystem extends System {
     private scene: Scene
     private gltfLoader: GLTFLoader
@@ -189,27 +188,17 @@ export class RenderSystem extends System {
             })
             parentGroup.add(model)
             parentGroup.scale.setScalar(finalScale)
-            if (bossComponent) {
-                console.log(
-                    `👾 Boss model loaded with scale: ${finalScale} (base: ${modelConfig.scale}, boss: ${additionalScale})`,
-                )
-            }
         } else {
             // Fallback: create a primitive
             const fallbackGeometry = new BoxGeometry(1, 0.5, 2)
             const fallbackMaterial = new MeshLambertMaterial({
-                color: bossComponent ? 0xff0000 : 0x00ff00, // Red for boss, green for others
+                color: 0xff00ff,
             })
             const fallbackMesh = new Mesh(fallbackGeometry, fallbackMaterial)
             fallbackMesh.castShadow = true
             fallbackMesh.receiveShadow = true
             parentGroup.add(fallbackMesh)
             parentGroup.scale.setScalar(finalScale)
-            if (bossComponent) {
-                console.log(
-                    `👾 Boss fallback model created with scale: ${finalScale}`,
-                )
-            }
         }
         return parentGroup
     }

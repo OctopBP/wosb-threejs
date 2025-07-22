@@ -5,7 +5,7 @@ export function createIsland(
     x: number,
     y: number,
     z: number,
-    scale: number = 1.0,
+    _scale: number = 1.0,
 ): Entity {
     const entity = new Entity()
 
