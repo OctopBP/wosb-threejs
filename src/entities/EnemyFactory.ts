@@ -178,12 +178,11 @@ export function createBossShip(
     }
     entity.addComponent(enemy)
 
-    // Boss tag component with scale information
+    // Boss tag component
     const boss: BossComponent = {
         type: 'boss',
         bossType: 'basic',
         damagePerShot: weapon.damage,
-        scale: bossVisualConfig.scale,
     }
     entity.addComponent(boss)
 

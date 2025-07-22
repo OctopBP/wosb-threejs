@@ -1,8 +1,11 @@
 // Model configuration mapping
+import type { MaterialType } from './MaterialsConfig'
+
 export interface ModelConfig {
     kind: 'model'
     fileName: string
     scale: number
+    materialRef?: MaterialType // Reference to material configuration
 }
 
 export interface PrimitiveModelConfig {
@@ -10,6 +13,7 @@ export interface PrimitiveModelConfig {
     scale: number
     primitive: string
     options: Record<string, number>
+    materialRef?: MaterialType // Reference to material configuration
 }
 
 export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
@@ -18,33 +22,39 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
             kind: 'model',
             fileName: 'ship_lvl_1.glb',
             scale: 0.75,
+            materialRef: 'player',
         },
         ship_lvl_2: {
             kind: 'model',
             fileName: 'ship_lvl_2.glb',
             scale: 0.75,
+            materialRef: 'player',
         },
         ship_lvl_3: {
             kind: 'model',
             fileName: 'ship_lvl_3.glb',
             scale: 0.75,
+            materialRef: 'player',
         },
         // Legacy ship alias for backward compatibility
         ship: {
             kind: 'model',
             fileName: 'ship_lvl_1.glb',
             scale: 0.75,
+            materialRef: 'player',
         },
         // Add primitive types for projectiles and obstacles
         enemy1: {
             kind: 'model',
             fileName: 'ship_lvl_2.glb',
             scale: 0.75,
+            materialRef: 'enemy',
         },
         boss: {
             kind: 'model',
             fileName: 'boss.glb',
             scale: 0.5,
+            materialRef: 'enemy',
         },
         island: {
             kind: 'model',
@@ -56,6 +66,7 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
             scale: 0.75,
             primitive: 'sphere',
             options: { diameter: 0.2, segments: 8 },
+            materialRef: 'projectile',
         },
     } as const
 
