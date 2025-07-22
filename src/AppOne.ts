@@ -30,10 +30,8 @@ export class AppOne {
     gameWorld: GameWorld
     gui?: GUI
 
-    // Add these for water controls
     waterMesh?: Mesh
     waterMaterial?: ShaderMaterial
-    waterUniforms?: any
 
     constructor(readonly canvas: HTMLCanvasElement) {
         // Create renderer
@@ -158,7 +156,6 @@ export class AppOne {
         // Store references for GUI
         this.waterMesh = water
         this.waterMaterial = waterMaterial
-        this.waterUniforms = waterUniforms
 
         // Add fog for atmosphere
         scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 15, 30)
@@ -546,91 +543,121 @@ export class AppOne {
             fogFolder.add(this.scene.fog, 'far', 50, 200, 1)
         }
 
-        // --- WATER FOLDER ---
+        this.createWaterFolderWithRetry()
+    }
+
+    private createWaterFolderWithRetry(retries = 5, delay = 200) {
+        if (!this.gui) return
+        // Remove existing Water folder if it exists (prevents duplicates)
+        const existing = this.gui.folders.find((f) => f._title === 'Water')
+        if (existing) {
+            existing.destroy()
+        }
+        if (this.waterMaterial?.uniforms) {
+            this.createWaterFolder()
+        } else if (retries > 0) {
+            console.warn('Water uniforms not ready, retrying...')
+            setTimeout(
+                () => this.createWaterFolderWithRetry(retries - 1, delay),
+                delay,
+            )
+        } else {
+            const waterFolder = this.gui.addFolder('Water')
+            waterFolder
+                .add({ error: 'Water uniforms not ready' }, 'error')
+                .name('Error')
+            console.error('Water uniforms not available after retries.')
+        }
+    }
+
+    private createWaterFolder() {
+        if (!this.gui) return
         const waterFolder = this.gui.addFolder('Water')
-        if (this.waterUniforms) {
+        const uniforms = this.waterMaterial?.uniforms
+        if (uniforms) {
             // Numeric uniforms
             waterFolder
-                .add(this.waterUniforms.uWavesAmplitude, 'value', 0, 2, 0.01)
+                .add(uniforms.uWavesAmplitude, 'value', 0, 5, 0.01)
                 .name('Waves Amplitude')
             waterFolder
-                .add(this.waterUniforms.uWavesSpeed, 'value', 0, 2, 0.01)
+                .add(uniforms.uWavesSpeed, 'value', 0, 2, 0.01)
                 .name('Waves Speed')
             waterFolder
-                .add(this.waterUniforms.uWavesFrequency, 'value', 0, 1, 0.001)
+                .add(uniforms.uWavesFrequency, 'value', 0, 1, 0.001)
                 .name('Waves Frequency')
             waterFolder
-                .add(this.waterUniforms.uWavesPersistence, 'value', 0, 1, 0.01)
+                .add(uniforms.uWavesPersistence, 'value', 0, 1, 0.01)
                 .name('Waves Persistence')
             waterFolder
-                .add(this.waterUniforms.uWavesLacunarity, 'value', 1, 4, 0.01)
+                .add(uniforms.uWavesLacunarity, 'value', 1, 4, 0.01)
                 .name('Waves Lacunarity')
             waterFolder
-                .add(this.waterUniforms.uWavesIterations, 'value', 1, 8, 1)
+                .add(uniforms.uWavesIterations, 'value', 1, 8, 1)
                 .name('Waves Iterations')
             waterFolder
-                .add(this.waterUniforms.uOpacity, 'value', 0, 1, 0.01)
+                .add(uniforms.uOpacity, 'value', 0, 1, 0.01)
                 .name('Opacity')
             waterFolder
-                .add(this.waterUniforms.uPeakThreshold, 'value', 0, 2, 0.01)
+                .add(uniforms.uPeakThreshold, 'value', 0, 2, 0.01)
                 .name('Peak Threshold')
             waterFolder
-                .add(this.waterUniforms.uPeakTransition, 'value', 0, 1, 0.01)
+                .add(uniforms.uPeakTransition, 'value', 0, 1, 0.01)
                 .name('Peak Transition')
             waterFolder
-                .add(this.waterUniforms.uTroughThreshold, 'value', -2, 0, 0.01)
+                .add(uniforms.uTroughThreshold, 'value', -2, 0, 0.01)
                 .name('Trough Threshold')
             waterFolder
-                .add(this.waterUniforms.uTroughTransition, 'value', 0, 1, 0.01)
+                .add(uniforms.uTroughTransition, 'value', 0, 1, 0.01)
                 .name('Trough Transition')
             waterFolder
-                .add(this.waterUniforms.uFresnelScale, 'value', 0, 3, 0.01)
+                .add(uniforms.uFresnelScale, 'value', 0, 3, 0.01)
                 .name('Fresnel Scale')
             waterFolder
-                .add(this.waterUniforms.uFresnelPower, 'value', 0, 5, 0.01)
+                .add(uniforms.uFresnelPower, 'value', 0, 5, 0.01)
                 .name('Fresnel Power')
             // Color uniforms
             waterFolder
                 .addColor(
                     {
                         Trough:
-                            '#' +
-                            this.waterUniforms.uTroughColor.value.getHexString(),
+                            '#' + uniforms.uTroughColor.value.getHexString(),
                     },
                     'Trough',
                 )
                 .name('Trough Color')
                 .onChange((v: string) => {
-                    this.waterUniforms.uTroughColor.value.set(v)
+                    uniforms.uTroughColor.value.set(v)
                 })
             waterFolder
                 .addColor(
                     {
                         Surface:
-                            '#' +
-                            this.waterUniforms.uSurfaceColor.value.getHexString(),
+                            '#' + uniforms.uSurfaceColor.value.getHexString(),
                     },
                     'Surface',
                 )
                 .name('Surface Color')
                 .onChange((v: string) => {
-                    this.waterUniforms.uSurfaceColor.value.set(v)
+                    uniforms.uSurfaceColor.value.set(v)
                 })
             waterFolder
                 .addColor(
                     {
-                        Peak:
-                            '#' +
-                            this.waterUniforms.uPeakColor.value.getHexString(),
+                        Peak: '#' + uniforms.uPeakColor.value.getHexString(),
                     },
                     'Peak',
                 )
                 .name('Peak Color')
                 .onChange((v: string) => {
-                    this.waterUniforms.uPeakColor.value.set(v)
+                    uniforms.uPeakColor.value.set(v)
                 })
+            console.log('Water folder created with uniforms:', uniforms)
+        } else {
+            waterFolder
+                .add({ error: 'Water uniforms not ready' }, 'error')
+                .name('Error')
+            console.error('Water uniforms not available in createWaterFolder.')
         }
-        // --- END WATER FOLDER ---
     }
 
     private handleResize() {
