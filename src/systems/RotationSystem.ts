@@ -1,4 +1,5 @@
 import type {
+    HealthComponent,
     InputComponent,
     MovementConfigComponent,
     PositionComponent,
@@ -22,8 +23,12 @@ export class RotationSystem extends System {
             const input = entity.getComponent<InputComponent>('input')
             const config =
                 entity.getComponent<MovementConfigComponent>('movementConfig')
+            const health = entity.getComponent<HealthComponent>('health')
 
             if (!position || !velocity || !input || !config) continue
+
+            // Skip dead entities - they should not respond to input rotation
+            if (health?.isDead) continue
 
             this.processRotation(position, velocity, input, config, deltaTime)
             this.applyRotationDampening(velocity)

@@ -4,6 +4,7 @@ import { createBulletCollision } from '../config/CollisionConfig'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
+    HealthComponent,
     PositionComponent,
     ProjectileComponent,
     RenderableComponent,
@@ -59,8 +60,12 @@ export class WeaponSystem extends System {
         for (const entity of entities) {
             const weapon = entity.getComponent<WeaponComponent>('weapon')
             const position = entity.getComponent<PositionComponent>('position')
+            const health = entity.getComponent<HealthComponent>('health')
 
             if (!weapon || !position) continue
+
+            // Skip dead entities - they should not shoot
+            if (health?.isDead) continue
 
             if (weapon.isAutoTargeting) {
                 this.handleAutoTargetingWeapon(

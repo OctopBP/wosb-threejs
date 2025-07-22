@@ -1,4 +1,4 @@
-import { Vector3 } from 'three'
+import { Mesh, Object3D, Vector3 } from 'three'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import type {
     DeathAnimationComponent,
@@ -55,9 +55,11 @@ export class DeathAnimationSystem extends System {
             position.y =
                 deathAnimation.originalY - progress * deathAnimation.sinkSpeed
 
-            // Optional: Add slight rotation during sinking for more dramatic effect
-            position.rotationX = progress * 0.3 // Slight forward tilt as it sinks
-            position.rotationZ = Math.sin(progress * Math.PI * 2) * 0.1 // Slight rolling motion
+            // Add dramatic rotation during sinking for flooding effect
+            position.rotationX = progress * 0.5 // Forward tilt as it floods and sinks
+            position.rotationZ = Math.sin(progress * Math.PI * 3) * 0.2 // Rolling motion as water enters
+            // Optional: slight yaw rotation for more chaos
+            position.rotationY += deltaTime * 0.3 * progress // Slow spin as it sinks
 
             // Check if animation is complete
             if (progress >= 1.0) {
@@ -102,11 +104,11 @@ export class DeathAnimationSystem extends System {
             }
 
             // Dispose geometry and materials if it's a Mesh
-            if (renderable.mesh instanceof Object3D) {
-                if ('geometry' in renderable.mesh && renderable.mesh.geometry) {
+            if (renderable.mesh instanceof Mesh) {
+                if (renderable.mesh.geometry) {
                     renderable.mesh.geometry.dispose()
                 }
-                if ('material' in renderable.mesh && renderable.mesh.material) {
+                if (renderable.mesh.material) {
                     if (Array.isArray(renderable.mesh.material)) {
                         for (const material of renderable.mesh.material) {
                             material.dispose()

@@ -38,8 +38,12 @@ export class EnemyAISystem extends System {
             const position = enemy.getComponent<PositionComponent>('position')
             const velocity = enemy.getComponent<VelocityComponent>('velocity')
             const weapon = enemy.getComponent<WeaponComponent>('weapon')
+            const health = enemy.getComponent<HealthComponent>('health')
 
             if (!enemyAI || !position || !velocity || !weapon) continue
+
+            // Skip dead enemies - they should not move or attack
+            if (health?.isDead) continue
 
             // Update AI behavior
             this.updateMovement(enemyAI, position, velocity, playerPosition)
