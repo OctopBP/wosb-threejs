@@ -24,7 +24,7 @@ export class EnemyArrowSystem extends System {
 
     private loadArrowTexture(): void {
         this.textureLoader.load(
-            'assets/sprites/arrow.png',
+            'assets/sprites/enemy_target.png',
             (texture) => {
                 this.arrowTexture = texture
                 console.log('Arrow texture loaded successfully')
@@ -170,8 +170,14 @@ export class EnemyArrowSystem extends System {
         arrow.material.rotation = angle
         arrow.renderOrder = 1000
 
-        // Scale arrow
-        arrow.scale.setScalar(enemyArrow.arrowScale)
+        // Scale arrow based on texture aspect ratio
+        const baseScale = enemyArrow.arrowScale
+        let aspect = 1
+        if (this.arrowTexture?.image) {
+            aspect =
+                this.arrowTexture.image.width / this.arrowTexture.image.height
+        }
+        arrow.scale.set(baseScale * aspect, baseScale, 1)
 
         group.add(arrow)
         return group
