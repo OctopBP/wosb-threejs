@@ -1,5 +1,7 @@
-import { Mesh } from 'three'
+import { Mesh, Vector3 } from 'three'
+import { getParticleConfig } from '../config/ParticlesConfig'
 import type {
+    CollisionComponent,
     DamageableComponent,
     HealthComponent,
     PositionComponent,
@@ -8,12 +10,26 @@ import type {
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import type { AudioSystem } from './AudioSystem'
+import type { ParticleSystem } from './ParticleSystem'
 
 export class CollisionSystem extends System {
-    private readonly collisionRadius = 0.8 // Adjusted for sphere projectiles hitting box obstacles
+    private audioSystem: AudioSystem | null = null
+    private particleSystem: ParticleSystem | null = null
 
     constructor(world: World) {
         super(world, []) // We'll manually query for different component combinations
+    }
+
+    /**
+     * Set the audio system reference for playing collision sounds
+     */
+    setAudioSystem(audioSystem: AudioSystem): void {
+        this.audioSystem = audioSystem
+    }
+
+    setParticleSystem(particleSystem: ParticleSystem): void {
+        this.particleSystem = particleSystem
     }
 
     update(_deltaTime: number): void {
@@ -25,6 +41,7 @@ export class CollisionSystem extends System {
             'damageable',
             'health',
             'position',
+            'collision',
         ])
 
         const projectilesToRemove: number[] = []
@@ -48,14 +65,34 @@ export class CollisionSystem extends System {
                     target.getComponent<HealthComponent>('health')
                 const targetDamageable =
                     target.getComponent<DamageableComponent>('damageable')
+                const targetCollision =
+                    target.getComponent<CollisionComponent>('collision')
 
-                if (!targetPos || !targetHealth || !targetDamageable) continue
+                if (
+                    !targetPos ||
+                    !targetHealth ||
+                    !targetDamageable ||
+                    !targetCollision
+                )
+                    continue
                 if (targetHealth.isDead) continue
 
-                // Check collision using simple distance check
-                if (this.checkCollision(projectilePos, targetPos)) {
+                // Check collision using configurable collision shapes
+                if (
+                    this.checkCollision(
+                        projectilePos,
+                        targetPos,
+                        targetCollision,
+                    )
+                ) {
                     // Apply damage
                     this.applyDamage(targetHealth, projectileComp.damage)
+
+                    // Play wreckage particle effect
+                    this.playWreckageParticleEffect(projectilePos)
+
+                    // Play hit sound effect
+                    this.playHitSound()
 
                     // Mark projectile for removal
                     if (!projectilesToRemove.includes(projectile.id)) {
@@ -65,7 +102,8 @@ export class CollisionSystem extends System {
                     // Check if target died
                     if (targetHealth.currentHealth <= 0) {
                         targetHealth.isDead = true
-                        // Could trigger death effects here in the future
+                        // Play death/explosion sound
+                        this.playDeathSound()
                     }
 
                     break // Projectile can only hit one target
@@ -82,17 +120,59 @@ export class CollisionSystem extends System {
     private checkCollision(
         projectilePos: PositionComponent,
         targetPos: PositionComponent,
+        targetCollision: CollisionComponent,
     ): boolean {
-        const dx = projectilePos.x - targetPos.x
-        const dy = projectilePos.y - targetPos.y
-        const dz = projectilePos.z - targetPos.z
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+        // Apply offset if specified
+        const offsetX = targetCollision.offset?.x || 0
+        const offsetY = targetCollision.offset?.y || 0
+        const offsetZ = targetCollision.offset?.z || 0
 
-        return distance <= this.collisionRadius
+        const targetX = targetPos.x + offsetX
+        const targetY = targetPos.y + offsetY
+        const targetZ = targetPos.z + offsetZ
+
+        if (targetCollision.collider.shape === 'sphere') {
+            // Sphere collision
+            const radius = targetCollision.collider.radius
+            const dx = projectilePos.x - targetX
+            const dy = projectilePos.y - targetY
+            const dz = projectilePos.z - targetZ
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+            return distance <= radius
+        } else {
+            // Box collision
+            const halfWidth = targetCollision.collider.width / 2
+            const halfHeight = targetCollision.collider.height / 2
+            const halfDepth = targetCollision.collider.depth / 2
+
+            const dx = Math.abs(projectilePos.x - targetX)
+            const dy = Math.abs(projectilePos.y - targetY)
+            const dz = Math.abs(projectilePos.z - targetZ)
+
+            return dx <= halfWidth && dy <= halfHeight && dz <= halfDepth
+        }
     }
 
     private applyDamage(health: HealthComponent, damage: number): void {
         health.currentHealth = Math.max(0, health.currentHealth - damage)
+    }
+
+    private playWreckageParticleEffect(position: PositionComponent): void {
+        if (!this.particleSystem) {
+            return
+        }
+
+        const wreckageId = `wreckage_${position.x}_${position.y}_${position.z}`
+        const wreckageConfig = getParticleConfig(
+            'wreckage',
+            new Vector3(position.x, position.y, position.z),
+            new Vector3(0, 1, 0),
+        )
+        this.particleSystem.createAndBurstParticleSystem(
+            wreckageId,
+            wreckageConfig,
+        )
     }
 
     private removeProjectile(projectileId: number): void {
@@ -129,5 +209,25 @@ export class CollisionSystem extends System {
             // Remove entity from world
             this.world.removeEntity(projectileId)
         }
+    }
+
+    /**
+     * Play hit sound effect - using death sound for now since no separate hit sound available
+     */
+    private playHitSound(): void {
+        if (!this.audioSystem) return
+
+        // Use death sound for hits since no separate hit sound is available
+        this.audioSystem.playSfx('death', { volume: 0.5 })
+    }
+
+    /**
+     * Play death/explosion sound effect
+     */
+    private playDeathSound(): void {
+        if (!this.audioSystem) return
+
+        // Use the death sound for all death events
+        this.audioSystem.playSfx('death')
     }
 }

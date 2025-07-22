@@ -1,0 +1,10 @@
+# UI Sounds Directory
+
+Currently no UI sounds are configured.
+
+You can add UI sound files here and update the audioAssets configuration in src/config/AudioConfig.ts to use them.
+
+## Specifications:
+- Format: OGG or MP3
+- Short duration (0.1-0.5 seconds)
+- Volume: Subtle, non-intrusive

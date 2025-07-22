@@ -116,6 +116,8 @@ export interface WeaponComponent extends Component {
     isAutoTargeting: boolean // whether this weapon auto-aims at enemies
     detectionRange: number // range for enemy detection (can be different from firing range)
     requiresLineOfSight: boolean // whether to check for obstacles (future feature)
+    // Shooting points relative to ship position
+    shootingPoints: Array<{ x: number; y: number }> // relative positions where cannons are located
 }
 
 // Projectile component for projectile entities
@@ -126,6 +128,31 @@ export interface ProjectileComponent extends Component {
     ownerId: number // entity id that fired this projectile
     maxLifetime: number
     currentLifetime: number
+}
+
+// Collision shape types using discriminated unions
+export type BoxCollider = {
+    shape: 'box'
+    width: number
+    height: number
+    depth: number
+}
+
+export type SphereCollider = {
+    shape: 'sphere'
+    radius: number
+}
+
+// Collision component for configurable collision shapes
+export interface CollisionComponent extends Component {
+    type: 'collision'
+    collider: BoxCollider | SphereCollider
+    // Optional offset from entity position
+    offset?: {
+        x: number
+        y: number
+        z: number
+    }
 }
 
 // Damageable component for entities that can receive damage
@@ -280,4 +307,14 @@ export interface BossComponent extends Component {
     bossType: 'basic' // For future expansion
     damagePerShot: number // How much damage boss deals per shot
     scale: number // Visual scale multiplier
+}
+
+// Debug component for controlling debug visualizations
+export interface DebugComponent extends Component {
+    type: 'debug'
+    enabled: boolean
+    showShootingPoints: boolean
+    showCollisionShapes: boolean
+    showWeaponRange: boolean
+    showVelocityVectors: boolean
 }

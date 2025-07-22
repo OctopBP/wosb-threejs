@@ -25,7 +25,7 @@
         "lint-staged": "^15.2.11",
         "rollup-plugin-visualizer": "^5.14.0",
         "terser": "^5.43.1",
-        "typescript": "^5.3.3",
+        "typescript": "^5.8.3",
         "vite": "^5.0.11"
     },
     "lint-staged": {
@@ -34,8 +34,8 @@
         ]
     },
     "dependencies": {
-        "three": "^0.170.0",
         "@types/three": "^0.170.0",
-        "lil-gui": "^0.20.0"
+        "lil-gui": "^0.20.0",
+        "three": "^0.170.0"
     }
 }

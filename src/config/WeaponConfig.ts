@@ -2,73 +2,98 @@ import type { WeaponComponent } from '../ecs/Component'
 
 export type WeaponConfigPreset = Omit<WeaponComponent, 'type' | 'lastShotTime'>
 
-// Basic cannon configuration for player ship
-export const basicCannonPreset: WeaponConfigPreset = {
+export const playerWeaponPreset: WeaponConfigPreset = {
     damage: 25,
-    fireRate: 0.75, // Every 1.5 seconds (1/0.75 shots per second)
+    fireRate: 1.0,
+    projectileSpeed: 15.0,
+    range: 10.0,
+    projectileType: 'bullet',
+    isAutoTargeting: true,
+    detectionRange: 8.0,
+    requiresLineOfSight: false,
+    shootingPoints: [
+        { x: -0.15, y: 0.4 },
+        { x: 0.15, y: 0.4 },
+        { x: -0.2, y: -0.25 },
+        { x: 0.2, y: -0.25 },
+    ],
+}
+
+export const enemyWeaponPreset: WeaponConfigPreset = {
+    damage: 10,
+    fireRate: 0.8,
     projectileSpeed: 10.0,
+    range: 12.0,
+    projectileType: 'bullet',
+    isAutoTargeting: true,
+    detectionRange: 10.0,
+    requiresLineOfSight: false,
+    shootingPoints: [
+        { x: -0.2, y: 0.4 },
+        { x: 0.2, y: 0.4 },
+        { x: -0.2, y: -0.25 },
+        { x: 0.2, y: -0.25 },
+    ],
+}
+
+export const bossWeaponPreset: WeaponConfigPreset = {
+    damage: 100,
+    fireRate: 0.2,
+    projectileSpeed: 25.0,
     range: 15.0,
     projectileType: 'bullet',
-    // Manual targeting (traditional weapon)
-    isAutoTargeting: false,
-    detectionRange: 15.0, // Same as range for manual weapons
-    requiresLineOfSight: false,
-}
-
-// Auto-targeting weapon configuration for player ship
-export const autoTargetingCannonPreset: WeaponConfigPreset = {
-    damage: 25, // Slightly less damage than manual weapon for balance
-    fireRate: 1.0, // Faster fire rate to compensate for lower damage
-    projectileSpeed: 15.0, // Faster projectiles for better tracking
-    range: 10.0, // Longer range for auto-targeting
-    projectileType: 'bullet',
-    // Auto-targeting properties
-    isAutoTargeting: true,
-    detectionRange: 8.0, // Larger detection range than firing range
-    requiresLineOfSight: false, // Simple implementation for now
-}
-
-// Fast auto-targeting weapon (alternative configuration)
-export const fastAutoTargetingPreset: WeaponConfigPreset = {
-    damage: 15, // Lower damage
-    fireRate: 2.0, // Much faster fire rate
-    projectileSpeed: 15.0, // Very fast projectiles
-    range: 15.0, // Standard range
-    projectileType: 'bullet',
-    // Auto-targeting properties
     isAutoTargeting: true,
     detectionRange: 18.0,
     requiresLineOfSight: false,
+    shootingPoints: [
+        { x: -0.4, y: 2 },
+        { x: 0.4, y: 2 },
+        { x: -0.5, y: 1 },
+        { x: 0.5, y: 1 },
+        { x: -0.6, y: 0 },
+        { x: 0.6, y: 0 },
+        { x: -0.45, y: -1 },
+        { x: 0.45, y: -1 },
+        { x: 0, y: -2 },
+    ],
 }
 
-// Projectile physics configuration
 export const projectilePhysicsConfig = {
-    gravity: -9.8, // Gravity acceleration (m/s²)
-    upwardVelocity: 2.0, // Initial upward velocity for arc trajectory
-    heightOffset: 0.2, // How high above shooter to spawn projectile
-    forwardOffset: 0, // How far in front of shooter to spawn projectile
+    gravity: -9.8,
+    upwardVelocity: 2.0,
+    heightOffset: 0.2,
+    forwardOffset: 0,
 }
 
-// Helper function to create a weapon configuration
-export function createWeaponConfig(
+export function createPlayerWeaponConfig(
     overrides: Partial<WeaponConfigPreset> = {},
 ): WeaponComponent {
     return {
         type: 'weapon',
         lastShotTime: 0,
-        ...autoTargetingCannonPreset,
+        ...playerWeaponPreset,
         ...overrides,
     }
 }
 
-// Helper function to create an auto-targeting weapon configuration
-export function createAutoTargetingWeaponConfig(
+export function createEnemyWeaponConfig(
     overrides: Partial<WeaponConfigPreset> = {},
 ): WeaponComponent {
     return {
         type: 'weapon',
         lastShotTime: 0,
-        ...autoTargetingCannonPreset,
+        ...enemyWeaponPreset,
+        ...overrides,
+    }
+}
+
+export function createBossWeaponConfig(
+    overrides: Partial<WeaponConfigPreset> = {},
+): WeaponComponent {
+    return {
+        type: 'weapon',
+        lastShotTime: 0,
+        ...bossWeaponPreset,
         ...overrides,
     }
 }

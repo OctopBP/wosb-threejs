@@ -1,10 +1,6 @@
-import type {
-    EnemyAIComponent,
-    HealthComponent,
-    WeaponComponent,
-} from '../ecs/Component'
+import type { EnemyAIComponent, HealthComponent } from '../ecs/Component'
 import type { MovementConfigPreset } from './MovementPresets'
-import type { WeaponConfigPreset } from './WeaponConfig'
+import { createEnemyWeaponConfig } from './WeaponConfig'
 
 // Enemy health configuration
 export interface EnemyHealthConfig
@@ -54,45 +50,6 @@ export const basicEnemyHealthPreset: EnemyHealthConfig = {
     maxHealth: 50, // As specified in requirements
 }
 
-// Auto-targeting weapon configuration for enemies
-export const autoTargetingEnemyWeaponPreset: WeaponConfigPreset = {
-    damage: 10, // Decent damage but less than player's manual weapon
-    fireRate: 0.8, // Slightly slower than player auto-targeting weapon
-    projectileSpeed: 10.0, // Standard projectile speed
-    range: 12.0, // Good range for enemies
-    projectileType: 'bullet',
-    // Auto-targeting properties
-    isAutoTargeting: true,
-    detectionRange: 10.0, // Larger detection range than firing range
-    requiresLineOfSight: false,
-}
-
-// Alternative: Fast enemy auto-targeting weapon
-export const fastEnemyWeaponPreset: WeaponConfigPreset = {
-    damage: 10, // Lower damage
-    fireRate: 1.5, // Faster fire rate
-    projectileSpeed: 12.0, // Faster projectiles
-    range: 14.0, // Shorter range
-    projectileType: 'bullet',
-    // Auto-targeting properties
-    isAutoTargeting: true,
-    detectionRange: 16.0,
-    requiresLineOfSight: false,
-}
-
-// Legacy: Manual enemy weapon (for comparison/testing)
-export const weakEnemyWeaponPreset: WeaponConfigPreset = {
-    damage: 10,
-    fireRate: 0.5,
-    projectileSpeed: 8.0,
-    range: 12.0,
-    projectileType: 'bullet',
-    // Manual targeting (old behavior)
-    isAutoTargeting: false,
-    detectionRange: 12.0,
-    requiresLineOfSight: false,
-}
-
 // Basic enemy AI configuration
 export const basicEnemyAIPreset: EnemyAIConfig = {
     moveSpeed: 1.0,
@@ -119,40 +76,8 @@ export function createEnemyHealthConfig(
     }
 }
 
-export function createEnemyWeaponConfig(
-    overrides: Partial<WeaponConfigPreset> = {},
-): WeaponComponent {
-    return {
-        type: 'weapon',
-        lastShotTime: 0,
-        ...autoTargetingEnemyWeaponPreset, // Use auto-targeting by default
-        ...overrides,
-    }
-}
-
-// Helper function to create manual enemy weapon (for testing/comparison)
-export function createManualEnemyWeaponConfig(
-    overrides: Partial<WeaponConfigPreset> = {},
-): WeaponComponent {
-    return {
-        type: 'weapon',
-        lastShotTime: 0,
-        ...weakEnemyWeaponPreset, // Use manual targeting
-        ...overrides,
-    }
-}
-
-// Helper function to create fast auto-targeting enemy weapon
-export function createFastEnemyWeaponConfig(
-    overrides: Partial<WeaponConfigPreset> = {},
-): WeaponComponent {
-    return {
-        type: 'weapon',
-        lastShotTime: 0,
-        ...fastEnemyWeaponPreset, // Use fast auto-targeting
-        ...overrides,
-    }
-}
+// Re-export the enemy weapon config function for convenience
+export { createEnemyWeaponConfig }
 
 export function createEnemyAIConfig(
     targetId: number | null = null,

@@ -1,5 +1,6 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
+import { audioAssets, defaultAudioSettings } from './config/AudioConfig'
 import type { GameStateConfig } from './config/GameStateConfig'
 import { defaultGameStateConfig } from './config/GameStateConfig'
 import type {
@@ -14,24 +15,31 @@ import type {
 } from './ecs'
 import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
+import { createDebugEntity } from './entities/DebugFactory'
 import { createIsland } from './entities/IslandFactory'
 import {
     createPlayerShip,
-    equipAutoTargetingWeapon,
-    equipManualWeapon,
-    hasAutoTargetingWeapon,
+    equipPlayerWeapon,
     updateMovementConfig,
     updateWeaponConfig,
 } from './entities/PlayerFactory'
-import { EnemyAISystem, GameStateSystem, NewShipOfferUISystem } from './systems'
+import {
+    AudioUISystem,
+    EnemyAISystem,
+    GameStateSystem,
+    NewShipOfferUISystem,
+} from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
+import { AudioSystem } from './systems/AudioSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
+import { DebugSystem } from './systems/DebugSystem'
 import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -61,8 +69,14 @@ export class GameWorld {
     private cameraSystem: CameraSystem
     private rangeIndicatorSystem: RangeIndicatorSystem
     private enemyArrowSystem: EnemyArrowSystem
+    private audioSystem: AudioSystem
+    private audioUISystem: AudioUISystem
+    private particleSystem: ParticleSystem
+    private debugSystem: DebugSystem
     private playerEntity: Entity | null = null
+    private debugEntity: Entity | null = null
     private lastTime: number = 0
+    private audioInitialized = false
 
     constructor(
         private scene: Scene,
@@ -100,33 +114,50 @@ export class GameWorld {
         this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
+        this.audioSystem = new AudioSystem(this.world)
+        this.audioUISystem = new AudioUISystem(this.world)
+        this.particleSystem = new ParticleSystem(this.world, scene, camera)
+        this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other
         this.gameStateSystem.setLevelingSystem(this.levelingSystem)
         this.gameStateSystem.setGameWorld(this)
         this.newShipOfferUISystem.setGameStateSystem(this.gameStateSystem)
         this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
+        this.weaponSystem.setAudioSystem(this.audioSystem)
+        this.weaponSystem.setParticleSystem(this.particleSystem)
+        this.collisionSystem.setAudioSystem(this.audioSystem)
+        this.collisionSystem.setParticleSystem(this.particleSystem)
+        this.levelingSystem.setAudioSystem(this.audioSystem)
+        this.audioUISystem.setAudioSystem(this.audioSystem)
+
+        // Setup audio system
+        this.setupAudioSystem()
 
         // Add systems to world in execution order
-        this.world.addSystem(this.virtualJoystickSystem) // 0. Handle virtual joystick UI
-        this.world.addSystem(this.inputSystem) // 1. Handle input events and process to direction
-        this.world.addSystem(this.gameStateSystem) // 2. Manage game state and spawn enemies
-        this.world.addSystem(this.enemyAISystem) // 3. Update enemy AI (movement and targeting)
-        this.world.addSystem(this.rotationSystem) // 4. Handle rotation
-        this.world.addSystem(this.accelerationSystem) // 5. Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) // 6. Apply velocity to position (ships only)
-        this.world.addSystem(this.weaponSystem) // 7. Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // 8. Move projectiles with gravity
-        this.world.addSystem(this.projectileSystem) // 9. Update projectile lifetimes
-        this.world.addSystem(this.collisionSystem) // 10. Check collisions and apply damage
-        this.world.addSystem(this.levelingSystem) // 11. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 12. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 13. Update enemy health UI
-        this.world.addSystem(this.rangeIndicatorSystem) // 14. Update range indicator
-        this.world.addSystem(this.enemyArrowSystem) // 15. Update enemy arrows
-        this.world.addSystem(this.newShipOfferUISystem) // 16. Handle new ship offer UI
-        this.world.addSystem(this.cameraSystem) // 17. Update camera system
-        this.world.addSystem(this.renderSystem) // 18. Render the results
+        this.world.addSystem(this.audioSystem) // 0. Update audio system
+        this.world.addSystem(this.audioUISystem) // 1. Handle audio UI controls
+        this.world.addSystem(this.virtualJoystickSystem) // 2. Handle virtual joystick UI
+        this.world.addSystem(this.inputSystem) // 3. Handle input events and process to direction
+        this.world.addSystem(this.gameStateSystem) // 4. Manage game state and spawn enemies
+        this.world.addSystem(this.enemyAISystem) // 5. Update enemy AI (movement and targeting)
+        this.world.addSystem(this.rotationSystem) // 6. Handle rotation
+        this.world.addSystem(this.accelerationSystem) // 7. Apply acceleration/deceleration
+        this.world.addSystem(this.movementSystem) // 8. Apply velocity to position (ships only)
+        this.world.addSystem(this.weaponSystem) // 9. Handle weapon firing
+        this.world.addSystem(this.projectileMovementSystem) // 10. Move projectiles with gravity
+        this.world.addSystem(this.projectileSystem) // 11. Update projectile lifetimes
+        this.world.addSystem(this.collisionSystem) // 12. Check collisions and apply damage
+        this.world.addSystem(this.levelingSystem) // 13. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 14. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 15. Update enemy health UI
+        this.world.addSystem(this.rangeIndicatorSystem) // 16. Update range indicator
+        this.world.addSystem(this.enemyArrowSystem) // 17. Update enemy arrows
+        this.world.addSystem(this.newShipOfferUISystem) // 18. Handle new ship offer UI
+        this.world.addSystem(this.cameraSystem) // 19. Update camera system
+        this.world.addSystem(this.debugSystem) // 20. Render debug gizmos
+        this.world.addSystem(this.particleSystem) // 21. Render particles
+        this.world.addSystem(this.renderSystem) // 22. Render the results
     }
 
     init(): void {
@@ -139,7 +170,12 @@ export class GameWorld {
                 'player',
                 10,
             )
+        }
 
+        // Create debug entity for debug visualizations
+        this.debugEntity = createDebugEntity(this.world)
+
+        if (this.playerEntity) {
             // Enable visual guidance for the player
             this.enablePlayerVisualGuidance({
                 showRangeCircle: ARROW_INDICATOR_CONFIG.defaultShowRangeCircle,
@@ -211,40 +247,18 @@ export class GameWorld {
         }
     }
 
-    // Method to equip player with auto-targeting weapon
-    equipPlayerAutoTargetingWeapon(
+    // Method to equip player with weapon (auto-targeting only)
+    equipPlayerWeapon(
         overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
     ): void {
         if (this.playerEntity) {
-            equipAutoTargetingWeapon(this.playerEntity, overrides)
+            equipPlayerWeapon(this.playerEntity, overrides)
         }
     }
 
-    // Method to equip player with manual weapon
-    equipPlayerManualWeapon(
-        overrides: Partial<Omit<WeaponComponent, 'type' | 'lastShotTime'>> = {},
-    ): void {
-        if (this.playerEntity) {
-            equipManualWeapon(this.playerEntity, overrides)
-        }
-    }
-
-    // Method to check if player has auto-targeting weapon
+    // Method to check if player has auto-targeting weapon (always true now)
     playerHasAutoTargetingWeapon(): boolean {
-        return this.playerEntity
-            ? hasAutoTargetingWeapon(this.playerEntity)
-            : false
-    }
-
-    // Method to toggle between weapon types
-    togglePlayerWeaponType(): void {
-        if (this.playerEntity) {
-            if (hasAutoTargetingWeapon(this.playerEntity)) {
-                equipManualWeapon(this.playerEntity)
-            } else {
-                equipAutoTargetingWeapon(this.playerEntity)
-            }
-        }
+        return true // All player weapons are auto-targeting now
     }
 
     // Visual guidance methods
@@ -399,6 +413,27 @@ export class GameWorld {
         this.weaponSystem.setAutoTargetingDebug(enabled)
     }
 
+    // Debug visualization methods
+    setDebugMode(enabled: boolean): void {
+        this.debugSystem.setDebugEnabled(enabled)
+    }
+
+    toggleDebugShootingPoints(enabled: boolean): void {
+        this.debugSystem.toggleShootingPoints(enabled)
+    }
+
+    toggleDebugCollisionShapes(enabled: boolean): void {
+        this.debugSystem.toggleCollisionShapes(enabled)
+    }
+
+    toggleDebugWeaponRange(enabled: boolean): void {
+        this.debugSystem.toggleWeaponRange(enabled)
+    }
+
+    toggleDebugVelocityVectors(enabled: boolean): void {
+        this.debugSystem.toggleVelocityVectors(enabled)
+    }
+
     // Camera system methods
     transitionToCameraState(stateName: string, duration?: number): void {
         this.cameraSystem.transitionToState(stateName, duration)
@@ -512,5 +547,69 @@ export class GameWorld {
 
             console.log('🎮 Player entity recreated successfully')
         }
+    }
+
+    /**
+     * Setup the audio system with assets and initialize on first user interaction
+     */
+    private async setupAudioSystem(): Promise<void> {
+        // Register audio assets
+        this.audioSystem.registerAssets(audioAssets)
+
+        // Apply default settings
+        this.audioSystem.setMasterVolume(defaultAudioSettings.masterVolume)
+        this.audioSystem.setMusicVolume(defaultAudioSettings.musicVolume)
+        this.audioSystem.setSfxVolume(defaultAudioSettings.sfxVolume)
+        this.audioSystem.setUIVolume(defaultAudioSettings.uiVolume)
+        this.audioSystem.setMuted(defaultAudioSettings.muted)
+
+        // Setup user interaction listener to initialize audio
+        this.setupAudioInitialization()
+    }
+
+    /**
+     * Setup audio initialization on first user interaction
+     */
+    private setupAudioInitialization(): void {
+        const initializeAudio = async () => {
+            if (this.audioInitialized) return
+
+            try {
+                await this.audioSystem.initialize(this.camera)
+                await this.audioSystem.loadAssets()
+                this.audioInitialized = true
+
+                // Start background music when ready
+                this.audioSystem.playMusic('background')
+
+                console.log('🎵 Audio system initialized and ready')
+
+                // Remove event listeners
+                document.removeEventListener('click', initializeAudio)
+                document.removeEventListener('keydown', initializeAudio)
+                document.removeEventListener('touchstart', initializeAudio)
+            } catch (error) {
+                console.error('Failed to initialize audio system:', error)
+            }
+        }
+
+        // Listen for user interactions to initialize audio
+        document.addEventListener('click', initializeAudio, { once: true })
+        document.addEventListener('keydown', initializeAudio, { once: true })
+        document.addEventListener('touchstart', initializeAudio, { once: true })
+    }
+
+    /**
+     * Get the audio system for external use
+     */
+    getAudioSystem(): AudioSystem {
+        return this.audioSystem
+    }
+
+    /**
+     * Check if audio is initialized
+     */
+    isAudioInitialized(): boolean {
+        return this.audioInitialized
     }
 }
