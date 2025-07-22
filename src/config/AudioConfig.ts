@@ -58,7 +58,7 @@ export const defaultAudioSettings = {
     musicVolume: 0.5,
     sfxVolume: 0.5,
     uiVolume: 0.5,
-    muted: true,
+    muted: false,
 }
 
 /**
