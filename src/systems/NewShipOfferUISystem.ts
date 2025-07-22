@@ -99,7 +99,7 @@ export class NewShipOfferUISystem extends System {
 
         // Create prince logo image
         const logoImage = document.createElement('img')
-        logoImage.src = '/assets/ui/prince_nologo_glow.png'
+        logoImage.src = 'assets/ui/prince_nologo_glow.png'
         logoImage.style.width = '100%'
         logoImage.style.height = 'auto'
         logoImage.style.display = 'block'
@@ -116,7 +116,7 @@ export class NewShipOfferUISystem extends System {
         buttonContainer.style.zIndex = '2'
 
         const buttonImage = document.createElement('img')
-        buttonImage.src = '/assets/ui/btn.png'
+        buttonImage.src = 'assets/ui/btn.png'
         buttonImage.style.width = '200px'
         buttonImage.style.height = 'auto'
         buttonImage.style.filter = 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'

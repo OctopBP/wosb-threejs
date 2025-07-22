@@ -35,6 +35,7 @@ import { AudioSystem } from './systems/AudioSystem'
 import { BarrelCollectionSystem } from './systems/BarrelCollectionSystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
+import { DeathAnimationSystem } from './systems/DeathAnimationSystem'
 import { DebugSystem } from './systems/DebugSystem'
 import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
@@ -63,6 +64,7 @@ export class GameWorld {
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
+    private deathAnimationSystem: DeathAnimationSystem
     private renderSystem: RenderSystem
     private gameStateSystem: GameStateSystem
     private enemyAISystem: EnemyAISystem
@@ -107,6 +109,7 @@ export class GameWorld {
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
+        this.deathAnimationSystem = new DeathAnimationSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
         this.gameStateSystem = new GameStateSystem(this.world, gameStateConfig)
         this.enemyAISystem = new EnemyAISystem(this.world)
@@ -138,6 +141,8 @@ export class GameWorld {
         this.weaponSystem.setParticleSystem(this.particleSystem)
         this.collisionSystem.setAudioSystem(this.audioSystem)
         this.collisionSystem.setParticleSystem(this.particleSystem)
+        this.collisionSystem.setDeathAnimationSystem(this.deathAnimationSystem)
+        this.deathAnimationSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)
 
@@ -160,17 +165,18 @@ export class GameWorld {
         this.world.addSystem(this.projectileSystem) // 12. Update projectile lifetimes
         this.world.addSystem(this.collisionSystem) // 13. Check collisions and apply damage
         this.world.addSystem(this.barrelCollectionSystem) // 14. Handle barrel collection and floating
-        this.world.addSystem(this.levelingSystem) // 15. Handle XP gain and level-ups
-        this.world.addSystem(this.playerUISystem) // 16. Update leveling and health UI
-        this.world.addSystem(this.enemyHealthUISystem) // 17. Update enemy health UI
-        this.world.addSystem(this.rangeIndicatorSystem) // 18. Update range indicator
-        this.world.addSystem(this.enemyArrowSystem) // 19. Update enemy arrows
-        this.world.addSystem(this.newShipOfferUISystem) // 20. Handle new ship offer UI
-        this.world.addSystem(this.bossFightUISystem) // 21. Handle boss fight UI overlay
-        this.world.addSystem(this.cameraSystem) // 22. Update camera system
-        this.world.addSystem(this.debugSystem) // 23. Render debug gizmos
-        this.world.addSystem(this.particleSystem) // 24. Render particles
-        this.world.addSystem(this.renderSystem) // 25. Render the results
+        this.world.addSystem(this.deathAnimationSystem) // 15. Handle death animations (sinking ships)
+        this.world.addSystem(this.levelingSystem) // 16. Handle XP gain and level-ups
+        this.world.addSystem(this.playerUISystem) // 17. Update leveling and health UI
+        this.world.addSystem(this.enemyHealthUISystem) // 18. Update enemy health UI
+        this.world.addSystem(this.rangeIndicatorSystem) // 19. Update range indicator
+        this.world.addSystem(this.enemyArrowSystem) // 20. Update enemy arrows
+        this.world.addSystem(this.newShipOfferUISystem) // 21. Handle new ship offer UI
+        this.world.addSystem(this.bossFightUISystem) // 22. Handle boss fight UI overlay
+        this.world.addSystem(this.cameraSystem) // 23. Update camera system
+        this.world.addSystem(this.debugSystem) // 24. Render debug gizmos
+        this.world.addSystem(this.particleSystem) // 25. Render particles
+        this.world.addSystem(this.renderSystem) // 26. Render the results
     }
 
     init(): void {
@@ -222,13 +228,6 @@ export class GameWorld {
     // Method to access GameStateSystem for configuration changes
     getGameStateSystem(): GameStateSystem {
         return this.gameStateSystem
-    }
-
-    // Method to change game difficulty
-    setGameDifficulty(config: GameStateConfig): void {
-        // Directly update the config property (make it public in GameStateSystem)
-        ;(this.gameStateSystem as any).config = config
-        console.log('🎮 Game difficulty updated')
     }
 
     getPlayerEntity(): Entity | null {

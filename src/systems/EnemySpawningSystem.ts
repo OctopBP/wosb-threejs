@@ -1,11 +1,9 @@
-import { Mesh } from 'three'
-import { enemySpawningConfig } from '../config/EnemyConfig'
+import {
+    enemySpawningConfig,
+    getRandomSpawnDistance,
+} from '../config/EnemyConfig'
 import { enemyXPConfig } from '../config/LevelingConfig'
-import type {
-    HealthComponent,
-    PositionComponent,
-    RenderableComponent,
-} from '../ecs/Component'
+import type { HealthComponent, PositionComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import { createEnemyShip } from '../entities/EnemyFactory'
@@ -15,7 +13,6 @@ export class EnemySpawningSystem extends System {
     private lastSpawnTime: number = 0
     private spawnInterval: number = enemySpawningConfig.spawnInterval
     private maxEnemies: number = enemySpawningConfig.maxEnemies
-    private spawnDistance: number = enemySpawningConfig.spawnDistance
     private levelingSystem: LevelingSystem | null = null
 
     constructor(world: World) {
@@ -62,10 +59,9 @@ export class EnemySpawningSystem extends System {
 
         // Choose a random spawn position around the player
         const spawnAngle = Math.random() * 2 * Math.PI
-        const spawnX =
-            playerPosition.x + Math.cos(spawnAngle) * this.spawnDistance
-        const spawnZ =
-            playerPosition.z + Math.sin(spawnAngle) * this.spawnDistance
+        const spawnDistance = getRandomSpawnDistance()
+        const spawnX = playerPosition.x + Math.cos(spawnAngle) * spawnDistance
+        const spawnZ = playerPosition.z + Math.sin(spawnAngle) * spawnDistance
 
         // Create enemy ship
         const enemy = createEnemyShip(
@@ -84,13 +80,16 @@ export class EnemySpawningSystem extends System {
             'enemy',
             'health',
         ])
-        const deadEnemies = enemies.filter((enemy) => {
+
+        // Find newly dead enemies (dead but don't have death animation component yet)
+        const newlyDeadEnemies = enemies.filter((enemy) => {
             const health = enemy.getComponent<HealthComponent>('health')
-            return health?.isDead === true
+            const hasDeathAnimation = enemy.hasComponent('deathAnimation')
+            return health?.isDead === true && !hasDeathAnimation
         })
 
-        // Award XP for each dead enemy before removing them
-        if (deadEnemies.length > 0 && this.levelingSystem) {
+        // Award XP for newly dead enemies
+        if (newlyDeadEnemies.length > 0 && this.levelingSystem) {
             // Find the player entity to award XP to
             const playerEntities = this.world.getEntitiesWithComponents([
                 'player',
@@ -98,7 +97,7 @@ export class EnemySpawningSystem extends System {
             if (playerEntities.length > 0) {
                 const player = playerEntities[0]
 
-                for (const _ of deadEnemies) {
+                for (const _ of newlyDeadEnemies) {
                     // Award XP for each enemy type (currently only basic enemies)
                     const xpAwarded = enemyXPConfig.basicEnemy
                     this.levelingSystem.awardXP(player.id, xpAwarded)
@@ -109,36 +108,7 @@ export class EnemySpawningSystem extends System {
             }
         }
 
-        // Remove dead enemies from world
-        for (const deadEnemy of deadEnemies) {
-            // Clean up mesh if exists
-            const renderable =
-                deadEnemy.getComponent<RenderableComponent>('renderable')
-            if (renderable?.mesh) {
-                // Remove from scene (assuming parent is handling this)
-                if (renderable.mesh.parent) {
-                    renderable.mesh.parent.remove(renderable.mesh)
-                }
-
-                // Dispose geometry and materials if it's a Mesh
-                if (renderable.mesh instanceof Mesh) {
-                    if (renderable.mesh.geometry) {
-                        renderable.mesh.geometry.dispose()
-                    }
-                    if (renderable.mesh.material) {
-                        if (Array.isArray(renderable.mesh.material)) {
-                            for (const material of renderable.mesh.material) {
-                                material.dispose()
-                            }
-                        } else {
-                            renderable.mesh.material.dispose()
-                        }
-                    }
-                }
-
-                renderable.mesh = undefined
-            }
-            this.world.removeEntity(deadEnemy.id)
-        }
+        // Note: Dead enemies are now handled by DeathAnimationSystem
+        // They will be removed after their sinking animation completes
     }
 }

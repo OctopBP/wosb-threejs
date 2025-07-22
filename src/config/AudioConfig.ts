@@ -8,7 +8,7 @@ export const audioAssets: AudioAssets = {
     // Background music
     music: {
         background: {
-            url: '/assets/audio/music/Music.ogg',
+            url: 'assets/audio/music/Music.ogg',
             config: {
                 volume: 1,
                 loop: true,
@@ -20,7 +20,7 @@ export const audioAssets: AudioAssets = {
     sfx: {
         // Weapon shooting sound
         shoot: {
-            url: '/assets/audio/sfx/Shoot.ogg',
+            url: 'assets/audio/sfx/Shoot.ogg',
             config: {
                 volume: 1,
                 loop: false,
@@ -29,7 +29,7 @@ export const audioAssets: AudioAssets = {
 
         // Death/explosion sound
         death: {
-            url: '/assets/audio/sfx/Death.ogg',
+            url: 'assets/audio/sfx/Death.ogg',
             config: {
                 volume: 1.0,
                 loop: false,
@@ -38,7 +38,7 @@ export const audioAssets: AudioAssets = {
 
         // Level up sound
         level_up: {
-            url: '/assets/audio/sfx/LevelUp.ogg',
+            url: 'assets/audio/sfx/LevelUp.ogg',
             config: {
                 volume: 1,
                 loop: false,
@@ -58,7 +58,7 @@ export const defaultAudioSettings = {
     musicVolume: 0.5,
     sfxVolume: 0.5,
     uiVolume: 0.5,
-    muted: true,
+    muted: false,
 }
 
 /**

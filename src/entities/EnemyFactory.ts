@@ -17,6 +17,7 @@ import {
 } from '../config/EnemyConfig'
 import { createMovementConfig } from '../config/MovementPresets'
 import type {
+    AliveComponent,
     BossComponent,
     DamageableComponent,
     EnemyComponent,
@@ -99,6 +100,12 @@ export function createEnemyShip(
     // Enemy AI component - use enemy AI config
     const enemyAI = createEnemyAIConfig(targetId)
     entity.addComponent(enemyAI)
+
+    // Alive component - enemy starts alive
+    const alive: AliveComponent = {
+        type: 'alive',
+    }
+    entity.addComponent(alive)
 
     return entity
 }
@@ -189,6 +196,12 @@ export function createBossShip(
     // Enemy AI component - use boss AI config
     const enemyAI = createBossAIConfig(targetId)
     entity.addComponent(enemyAI)
+
+    // Alive component - boss starts alive
+    const alive: AliveComponent = {
+        type: 'alive',
+    }
+    entity.addComponent(alive)
 
     return entity
 }
