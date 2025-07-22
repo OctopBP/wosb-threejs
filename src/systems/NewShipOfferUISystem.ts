@@ -4,6 +4,12 @@ import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { GameStateSystem } from './GameStateSystem'
 
+// UI Text Constants
+const TOP_TEXT = 'Нужно что-то помощнее?'
+const BOTTOM_TEXT = 'Забери свой "Black Prince"\nбесплатно прямо сейчас'
+const BUTTON_TEXT = 'ЗАБРАТЬ'
+const OFFER_LINK = 'https://www.worldofseabattle.com'
+
 export class NewShipOfferUISystem extends System {
     private offerUI: HTMLElement | null = null
     private isUICreated = false
@@ -76,39 +82,38 @@ export class NewShipOfferUISystem extends System {
 
         // Create text above image
         const topText = document.createElement('h1')
-        topText.textContent = 'UPGRADE YOUR SHIP'
-        topText.style.color = '#FFD700'
-        topText.style.fontSize = '32px'
+        topText.textContent = TOP_TEXT
+        topText.style.color = '#FFFFFF'
+        topText.style.fontSize = '34px'
         topText.style.fontWeight = 'bold'
         topText.style.margin = '0 0 30px 0'
         topText.style.textShadow = '3px 3px 6px rgba(0, 0, 0, 0.8)'
         topText.style.letterSpacing = '2px'
 
+        // --- Logo + Button Container ---
+        const logoButtonContainer = document.createElement('div')
+        logoButtonContainer.style.position = 'relative'
+        logoButtonContainer.style.display = 'inline-block'
+        logoButtonContainer.style.width = '300px'
+        logoButtonContainer.style.margin = '20px 0'
+
         // Create prince logo image
         const logoImage = document.createElement('img')
         logoImage.src = '/assets/ui/prince_nologo_glow.png'
-        logoImage.style.width = '300px'
+        logoImage.style.width = '100%'
         logoImage.style.height = 'auto'
-        logoImage.style.margin = '20px 0'
+        logoImage.style.display = 'block'
         logoImage.style.filter = 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.5))'
-
-        // Create text below image
-        const bottomText = document.createElement('p')
-        bottomText.textContent =
-            'Your current ship is no match for the boss!\nGet the ultimate warship and dominate the seas!'
-        bottomText.style.color = '#FFFFFF'
-        bottomText.style.fontSize = '18px'
-        bottomText.style.margin = '30px 0 40px 0'
-        bottomText.style.opacity = '0.95'
-        bottomText.style.lineHeight = '1.5'
-        bottomText.style.whiteSpace = 'pre-line'
-        bottomText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
 
         // Create button using btn.png
         const buttonContainer = document.createElement('div')
-        buttonContainer.style.position = 'relative'
+        buttonContainer.style.position = 'absolute'
+        buttonContainer.style.left = '50%'
+        buttonContainer.style.bottom = '75px'
+        buttonContainer.style.transform = 'translateX(-50%) translateY(50%)'
         buttonContainer.style.cursor = 'pointer'
         buttonContainer.style.transition = 'transform 0.2s ease'
+        buttonContainer.style.zIndex = '2'
 
         const buttonImage = document.createElement('img')
         buttonImage.src = '/assets/ui/btn.png'
@@ -117,7 +122,7 @@ export class NewShipOfferUISystem extends System {
         buttonImage.style.filter = 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'
 
         const buttonText = document.createElement('div')
-        buttonText.textContent = 'GET IT NOW!'
+        buttonText.textContent = BUTTON_TEXT
         buttonText.style.position = 'absolute'
         buttonText.style.top = '50%'
         buttonText.style.left = '50%'
@@ -125,18 +130,21 @@ export class NewShipOfferUISystem extends System {
         buttonText.style.color = '#FFFFFF'
         buttonText.style.fontSize = '18px'
         buttonText.style.fontWeight = 'bold'
+        buttonText.style.paddingBottom = '6px'
         buttonText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
         buttonText.style.pointerEvents = 'none'
 
         // Add hover effects to button
         buttonContainer.addEventListener('mouseenter', () => {
-            buttonContainer.style.transform = 'scale(1.05)'
+            buttonContainer.style.transform =
+                'translateX(-50%) translateY(50%) scale(1.05)'
             buttonImage.style.filter =
                 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5)) brightness(1.1)'
         })
 
         buttonContainer.addEventListener('mouseleave', () => {
-            buttonContainer.style.transform = 'scale(1)'
+            buttonContainer.style.transform =
+                'translateX(-50%) translateY(50%) scale(1)'
             buttonImage.style.filter =
                 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'
         })
@@ -150,11 +158,25 @@ export class NewShipOfferUISystem extends System {
         buttonContainer.appendChild(buttonImage)
         buttonContainer.appendChild(buttonText)
 
+        // Assemble logo + button
+        logoButtonContainer.appendChild(logoImage)
+        logoButtonContainer.appendChild(buttonContainer)
+
+        // Create text below image
+        const bottomText = document.createElement('p')
+        bottomText.textContent = BOTTOM_TEXT
+        bottomText.style.color = '#FFFFFF'
+        bottomText.style.fontSize = '24px'
+        bottomText.style.margin = '30px 0 40px 0'
+        bottomText.style.opacity = '0.95'
+        bottomText.style.lineHeight = '1.5'
+        bottomText.style.whiteSpace = 'pre-line'
+        bottomText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
+
         // Assemble the UI
         contentContainer.appendChild(topText)
-        contentContainer.appendChild(logoImage)
+        contentContainer.appendChild(logoButtonContainer)
         contentContainer.appendChild(bottomText)
-        contentContainer.appendChild(buttonContainer)
         this.offerUI.appendChild(contentContainer)
 
         // Add to page
@@ -175,17 +197,8 @@ export class NewShipOfferUISystem extends System {
     }
 
     private handleGetItClick(): void {
-        console.log(
-            '🚀 "Get it" button clicked - This would typically redirect to app store',
-        )
-
-        // For demo purposes, restart the game (this now handles complete cleanup and player recreation)
-        if (this.gameStateSystem) {
-            this.gameStateSystem.restartGame()
-        }
-
-        // In a real playable ad, this would redirect to the app store:
-        // window.open('https://play.google.com/store/apps/details?id=your.game.package', '_blank')
+        // Open the app store or desired link in a new tab
+        window.open(OFFER_LINK, '_blank')
     }
 
     cleanup(): void {
