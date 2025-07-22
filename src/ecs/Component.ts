@@ -311,3 +311,13 @@ export interface DebugComponent extends Component {
     showWeaponRange: boolean
     showVelocityVectors: boolean
 }
+
+// Death animation component for sinking ship effects
+export interface DeathAnimationComponent extends Component {
+    type: 'deathAnimation'
+    sinkSpeed: number // Speed at which ship sinks underwater
+    originalY: number // Original Y position before sinking
+    sinkDuration: number // Total time to complete sinking animation
+    currentTime: number // Current time in animation
+    wreckageTriggered: boolean // Whether wreckage particles have been triggered
+}
