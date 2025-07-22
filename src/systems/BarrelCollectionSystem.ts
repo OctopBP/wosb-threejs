@@ -142,11 +142,18 @@ export class BarrelCollectionSystem extends System {
         const normalizedDy = dy / distance
         const normalizedDz = dz / distance
 
-        // Apply magnetic velocity toward player
-        const attractionForce = xpBarrel.attractionSpeed * deltaTime
-        barrelVelocity.dx = normalizedDx * attractionForce
-        barrelVelocity.dy = normalizedDy * attractionForce
-        barrelVelocity.dz = normalizedDz * attractionForce
+        // Calculate movement speed
+        const attractionSpeed = xpBarrel.attractionSpeed * deltaTime
+
+        // Apply movement directly to position
+        barrelPos.x += normalizedDx * attractionSpeed
+        barrelPos.y += normalizedDy * attractionSpeed
+        barrelPos.z += normalizedDz * attractionSpeed
+
+        // Also update velocity for consistency (though not used for movement)
+        barrelVelocity.dx = normalizedDx * xpBarrel.attractionSpeed
+        barrelVelocity.dy = normalizedDy * xpBarrel.attractionSpeed
+        barrelVelocity.dz = normalizedDz * xpBarrel.attractionSpeed
     }
 
     private updateBarrelAnimation(
