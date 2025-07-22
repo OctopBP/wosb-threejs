@@ -22,7 +22,8 @@ export interface EnemyAIConfig
 export interface EnemySpawningConfig {
     spawnInterval: number // seconds between spawns
     maxEnemies: number // maximum enemies on screen
-    spawnDistance: number // distance from player to spawn
+    minSpawnDistance: number // minimum distance from player to spawn
+    maxSpawnDistance: number // maximum distance from player to spawn
 }
 
 // Enemy movement configuration preset
@@ -52,7 +53,18 @@ export const basicEnemyAIPreset: EnemyAIConfig = {
 export const enemySpawningConfig: EnemySpawningConfig = {
     spawnInterval: 3.0, // Spawn every 3 seconds
     maxEnemies: 5, // Maximum 5 enemies at once
-    spawnDistance: 12.0, // Spawn 12 units away from player
+    minSpawnDistance: 12.0, // Minimum 12 units away from player
+    maxSpawnDistance: 20.0, // Maximum 20 units away from player
+}
+
+// Helper to get a random spawn distance within the configured range
+export function getRandomSpawnDistance(
+    config: EnemySpawningConfig = enemySpawningConfig,
+): number {
+    const { minSpawnDistance, maxSpawnDistance } = config
+    return (
+        Math.random() * (maxSpawnDistance - minSpawnDistance) + minSpawnDistance
+    )
 }
 
 // Helper functions to create configured components

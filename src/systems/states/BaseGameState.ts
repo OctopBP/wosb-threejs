@@ -1,4 +1,5 @@
 import type { GameStateConfig } from '../../config/GameStateConfig'
+import { getRandomSpawnDistanceForWaveOrBoss } from '../../config/GameStateConfig'
 import type {
     GameStateComponent,
     HealthComponent,
@@ -7,7 +8,6 @@ import type {
 import type { Entity } from '../../ecs/Entity'
 import type { World } from '../../ecs/World'
 import { createBossShip, createEnemyShip } from '../../entities/EnemyFactory'
-
 export interface GameStateHandler {
     /**
      * Handle the current state logic
@@ -71,8 +71,9 @@ export abstract class BaseGameState implements GameStateHandler {
         const player = this.getPlayerEntity(world)
         if (!player) return
 
-        // Use provided distance or default from config
-        const distance = spawnDistance || config.wave1.spawnDistance
+        // Use provided distance or random from config
+        const distance =
+            spawnDistance || getRandomSpawnDistanceForWaveOrBoss(config.wave1)
 
         // Choose spawn position
         let spawnX: number, spawnZ: number
@@ -107,9 +108,10 @@ export abstract class BaseGameState implements GameStateHandler {
         const player = this.getPlayerEntity(world)
         if (!player) return
 
-        // Spawn boss in front of player
+        // Spawn boss in front of player with random distance
+        const distance = getRandomSpawnDistanceForWaveOrBoss(config.boss)
         const spawnX = playerPosition.x
-        const spawnZ = playerPosition.z + config.boss.spawnDistance
+        const spawnZ = playerPosition.z + distance
 
         // Create boss ship
         const boss = createBossShip(

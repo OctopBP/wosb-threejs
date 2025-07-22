@@ -1,8 +1,8 @@
 import type { GameStateConfig } from '../../config/GameStateConfig'
+import { getRandomSpawnDistanceForWaveOrBoss } from '../../config/GameStateConfig'
 import type { GameStateComponent } from '../../ecs/Component'
 import type { World } from '../../ecs/World'
 import { BaseGameState } from './BaseGameState'
-
 export class Wave1State extends BaseGameState {
     handle(
         gameState: GameStateComponent,
@@ -13,7 +13,11 @@ export class Wave1State extends BaseGameState {
 
         // Spawn enemies for wave 1
         if (gameState.wave1EnemiesSpawned < waveConfig.enemyCount) {
-            this.spawnEnemyAroundPlayer(world, config, waveConfig.spawnDistance)
+            this.spawnEnemyAroundPlayer(
+                world,
+                config,
+                getRandomSpawnDistanceForWaveOrBoss(waveConfig),
+            )
             gameState.wave1EnemiesSpawned++
             console.log(
                 `🛡️ Wave 1: Spawned enemy ${gameState.wave1EnemiesSpawned}/${waveConfig.enemyCount}`,

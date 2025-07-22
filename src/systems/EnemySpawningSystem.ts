@@ -1,11 +1,9 @@
-import { Mesh } from 'three'
-import { enemySpawningConfig } from '../config/EnemyConfig'
+import {
+    enemySpawningConfig,
+    getRandomSpawnDistance,
+} from '../config/EnemyConfig'
 import { enemyXPConfig } from '../config/LevelingConfig'
-import type {
-    HealthComponent,
-    PositionComponent,
-    RenderableComponent,
-} from '../ecs/Component'
+import type { HealthComponent, PositionComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import { createEnemyShip } from '../entities/EnemyFactory'
@@ -15,7 +13,6 @@ export class EnemySpawningSystem extends System {
     private lastSpawnTime: number = 0
     private spawnInterval: number = enemySpawningConfig.spawnInterval
     private maxEnemies: number = enemySpawningConfig.maxEnemies
-    private spawnDistance: number = enemySpawningConfig.spawnDistance
     private levelingSystem: LevelingSystem | null = null
 
     constructor(world: World) {
@@ -62,10 +59,9 @@ export class EnemySpawningSystem extends System {
 
         // Choose a random spawn position around the player
         const spawnAngle = Math.random() * 2 * Math.PI
-        const spawnX =
-            playerPosition.x + Math.cos(spawnAngle) * this.spawnDistance
-        const spawnZ =
-            playerPosition.z + Math.sin(spawnAngle) * this.spawnDistance
+        const spawnDistance = getRandomSpawnDistance()
+        const spawnX = playerPosition.x + Math.cos(spawnAngle) * spawnDistance
+        const spawnZ = playerPosition.z + Math.sin(spawnAngle) * spawnDistance
 
         // Create enemy ship
         const enemy = createEnemyShip(
