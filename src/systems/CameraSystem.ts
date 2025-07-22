@@ -1,12 +1,10 @@
 import type { PerspectiveCamera } from 'three'
 import { Vector3 } from 'three'
-import type { CameraConfig, CameraState } from '../config/CameraConfig'
+import type { CameraConfig } from '../config/CameraConfig'
 import { defaultCameraConfig } from '../config/CameraConfig'
 import type {
     CameraStateComponent,
     CameraTargetComponent,
-    EnemyComponent,
-    PlayerComponent,
     PositionComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
@@ -139,7 +137,7 @@ export class CameraSystem extends System {
                             'cameraTarget',
                         )
                     if (targetComponent) {
-                        this.transitionToTarget(newTargetId, targetComponent)
+                        this.transitionToTarget(targetComponent)
                     }
                 }
             }
@@ -354,13 +352,20 @@ export class CameraSystem extends System {
     // Public API methods
 
     public transitionToState(stateName: string, duration?: number): void {
-        if (!this.cameraEntityId) return
+        if (!this.cameraEntityId) {
+            return
+        }
 
         const cameraEntity = this.world.getEntity(this.cameraEntityId)
-        if (!cameraEntity) return
+        if (!cameraEntity) {
+            return
+        }
+
         const cameraState =
             cameraEntity.getComponent<CameraStateComponent>('cameraState')
-        if (!cameraState) return
+        if (!cameraState) {
+            return
+        }
 
         const targetState =
             this.config.states[stateName as keyof typeof this.config.states]
@@ -385,7 +390,6 @@ export class CameraSystem extends System {
             )
         }
 
-        // Apply zoom if configured
         if (targetState.zoom) {
             this.triggerZoom(
                 targetState.zoom.targetFOV,
@@ -394,10 +398,7 @@ export class CameraSystem extends System {
         }
     }
 
-    public transitionToTarget(
-        targetId: number,
-        targetComponent: CameraTargetComponent,
-    ): void {
+    public transitionToTarget(targetComponent: CameraTargetComponent): void {
         const stateName =
             targetComponent.customCameraState ||
             this.getDefaultStateForTargetType(targetComponent.targetType)
