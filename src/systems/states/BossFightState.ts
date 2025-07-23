@@ -7,7 +7,6 @@ import { BaseGameState } from './BaseGameState'
 export class BossFightState extends BaseGameState {
     private bossSpawnTime: number = 0
     private hasReturnedCameraToPlayer: boolean = false
-    private bossEntityId: number | null = null
 
     handle(
         gameState: GameStateComponent,
@@ -19,7 +18,6 @@ export class BossFightState extends BaseGameState {
         if (!gameState.bossSpawned) {
             this.bossSpawnTime = 0
             this.hasReturnedCameraToPlayer = false
-            this.bossEntityId = null
         }
 
         // Spawn boss if not already spawned
@@ -29,24 +27,19 @@ export class BossFightState extends BaseGameState {
                 gameState.bossSpawned = true
                 this.bossSpawnTime = Date.now()
                 this.hasReturnedCameraToPlayer = false
-                this.bossEntityId = boss.id
                 console.log('💀 Boss Fight: Boss spawned!')
-                console.log('📷 Camera focused on boss for dramatic entrance')
+                console.log('📷 Camera focused on boss using bossPreview state')
             }
         }
 
         // Check if 1 second has passed since boss spawn and return camera to player
-        if (
-            gameState.bossSpawned &&
-            !this.hasReturnedCameraToPlayer &&
-            this.bossEntityId !== null
-        ) {
+        if (gameState.bossSpawned && !this.hasReturnedCameraToPlayer) {
             const timeElapsed = Date.now() - this.bossSpawnTime
             if (timeElapsed >= 1000) {
                 // 1 second
                 if (gameWorld) {
-                    // Remove camera target from boss to return focus to player
-                    gameWorld.removeCameraTarget(this.bossEntityId)
+                    // Transition camera back to player focus
+                    gameWorld.transitionToCameraState('playerFocus', 1.0) // 1 second transition back to player
                     console.log(
                         '📷 Camera returned to player after boss entrance',
                     )

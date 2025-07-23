@@ -132,13 +132,9 @@ export abstract class BaseGameState implements GameStateHandler {
         // Add boss to world
         world.addEntity(boss)
 
-        // Add camera target to boss with high priority for dramatic entrance
+        // Transition camera to boss preview state for dramatic entrance
         if (gameWorld) {
-            gameWorld.addCameraTarget(
-                boss.id,
-                'boss',
-                100, // High priority to override player camera
-            )
+            gameWorld.transitionToCameraState('bossPreview', 1.0) // 1 second transition to boss
         }
 
         return boss
