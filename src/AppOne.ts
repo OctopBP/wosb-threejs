@@ -158,7 +158,7 @@ export class AppOne {
         this.waterMaterial = waterMaterial
 
         // Add fog for atmosphere
-        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 15, 30)
+        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 25, 45)
 
         return scene
     }

@@ -41,7 +41,7 @@ export const defaultBarrelConfig: BarrelConfig = {
 
     // Collection behavior
     collectionRange: 3.0, // Player needs to be within 3 units to start attraction
-    attractionSpeed: 8.0, // Barrels move toward player at 8 units/second
+    attractionSpeed: 15.0, // Barrels move toward player at 8 units/second
 
     // Spawning and scattering
     spawnRadius: 2.0, // Scatter barrels within 2 units of death position

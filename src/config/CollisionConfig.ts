@@ -9,16 +9,16 @@ export const collisionPresets = {
     // Ship collision presets
     playerShip: {
         shape: 'box' as const,
-        width: 0.5,
-        height: 1,
-        depth: 1.4,
+        width: 1,
+        height: 2,
+        depth: 1.8,
     } satisfies BoxCollider,
 
     enemyShip: {
         shape: 'box' as const,
-        width: 0.8,
-        height: 1,
-        depth: 1.4,
+        width: 1.6,
+        height: 2,
+        depth: 2.8,
     } satisfies BoxCollider,
 
     bossShip: {
@@ -31,7 +31,7 @@ export const collisionPresets = {
     // Projectile collision presets
     bullet: {
         shape: 'sphere' as const,
-        radius: 0.2,
+        radius: 0.4,
     } satisfies SphereCollider,
 
     largeBullet: {

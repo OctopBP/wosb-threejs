@@ -17,29 +17,22 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
         ship_lvl_1: {
             kind: 'model',
             fileName: 'ship_lvl_1.glb',
-            scale: 0.75,
+            scale: 1.5,
         },
         ship_lvl_2: {
             kind: 'model',
             fileName: 'ship_lvl_2.glb',
-            scale: 0.75,
+            scale: 1.5,
         },
         ship_lvl_3: {
             kind: 'model',
             fileName: 'ship_lvl_3.glb',
-            scale: 0.75,
+            scale: 1.5,
         },
-        // Legacy ship alias for backward compatibility
-        ship: {
-            kind: 'model',
-            fileName: 'ship_lvl_1.glb',
-            scale: 0.75,
-        },
-        // Add primitive types for projectiles and obstacles
         enemy1: {
             kind: 'model',
             fileName: 'ship_lvl_2.glb',
-            scale: 0.75,
+            scale: 1.5,
         },
         boss: {
             kind: 'model',
@@ -53,14 +46,14 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
         },
         bullet: {
             kind: 'primitive',
-            scale: 0.75,
+            scale: 1.5,
             primitive: 'sphere',
             options: { diameter: 0.2, segments: 8 },
         },
         barrel: {
             kind: 'model',
             fileName: 'barrel.glb',
-            scale: 2,
+            scale: 3.5,
         },
     } as const
 
