@@ -8,19 +8,22 @@ import type {
 import type { Entity } from '../../ecs/Entity'
 import type { World } from '../../ecs/World'
 import { createBossShip, createEnemyShip } from '../../entities/EnemyFactory'
+import type { GameWorld } from '../../GameWorld'
+
 export interface GameStateHandler {
     /**
      * Handle the current state logic
      * @param gameState The current game state component
      * @param config Configuration for this state
      * @param world The ECS world
-     * @param levelingSystem Reference to the leveling system for XP awarding
+     * @param gameWorld Reference to the GameWorld for camera and other system access
      * @returns Next state to transition to, or null to stay in current state
      */
     handle(
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld?: GameWorld,
     ): string | null
 }
 
@@ -29,6 +32,7 @@ export abstract class BaseGameState implements GameStateHandler {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld?: GameWorld,
     ): string | null
 
     protected getPlayerEntity(world: World): Entity | null {
@@ -101,12 +105,16 @@ export abstract class BaseGameState implements GameStateHandler {
         world.addEntity(enemy)
     }
 
-    protected spawnBoss(world: World, config: GameStateConfig): void {
+    protected spawnBoss(
+        world: World,
+        config: GameStateConfig,
+        gameWorld?: GameWorld,
+    ): Entity | null {
         const playerPosition = this.getPlayerPosition(world)
-        if (!playerPosition) return
+        if (!playerPosition) return null
 
         const player = this.getPlayerEntity(world)
-        if (!player) return
+        if (!player) return null
 
         // Spawn boss in front of player with random distance
         const distance = getRandomSpawnDistanceForWaveOrBoss(config.boss)
@@ -123,5 +131,16 @@ export abstract class BaseGameState implements GameStateHandler {
 
         // Add boss to world
         world.addEntity(boss)
+
+        // Add camera target to boss with high priority for dramatic entrance
+        if (gameWorld) {
+            gameWorld.addCameraTarget(
+                boss.id,
+                'boss',
+                100, // High priority to override player camera
+            )
+        }
+
+        return boss
     }
 }

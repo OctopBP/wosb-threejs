@@ -63,6 +63,7 @@ export class GameStateSystem extends System {
                 gameState,
                 this.config,
                 this.world,
+                this.gameWorld || undefined,
             )
             if (nextState) {
                 gameState.currentState = nextState as GameState

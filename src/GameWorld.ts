@@ -483,6 +483,10 @@ export class GameWorld {
         this.cameraSystem.addCameraTarget(entityId, targetType, priority)
     }
 
+    removeCameraTarget(entityId: number): void {
+        this.cameraSystem.removeCameraTarget(entityId)
+    }
+
     getCurrentCameraState(): string | null {
         return this.cameraSystem.getCurrentState()
     }

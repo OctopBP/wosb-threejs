@@ -2,6 +2,7 @@ import type { GameStateConfig } from '../../config/GameStateConfig'
 import { getRandomSpawnDistanceForWaveOrBoss } from '../../config/GameStateConfig'
 import type { GameStateComponent } from '../../ecs/Component'
 import type { World } from '../../ecs/World'
+import type { GameWorld } from '../../GameWorld'
 import { BaseGameState } from './BaseGameState'
 
 export class Wave2State extends BaseGameState {
@@ -9,6 +10,7 @@ export class Wave2State extends BaseGameState {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld?: GameWorld,
     ): string | null {
         const waveConfig = config.wave2
 
