@@ -5,7 +5,7 @@ import type { World } from '../../ecs/World'
 import { BaseGameState } from './BaseGameState'
 
 export class Wave1State extends BaseGameState {
-    private initialEnemySpawned = false
+    private wave1EnemiesSpawned = false
 
     handle(
         gameState: GameStateComponent,
@@ -14,25 +14,8 @@ export class Wave1State extends BaseGameState {
     ): string | null {
         const waveConfig = config.wave1
 
-        // Spawn the first enemy immediately at game start
-        if (!this.initialEnemySpawned) {
-            this.spawnEnemyAroundPlayer(
-                world,
-                config,
-                getRandomSpawnDistanceForWaveOrBoss(waveConfig),
-            )
-            this.initialEnemySpawned = true
-            gameState.wave1EnemiesSpawned = 1
-            console.log('🛡️ Wave 1: Initial enemy spawned!')
-            return null
-        }
-
-        // Check if initial enemy is defeated, then spawn the rest
-        const aliveEnemies = this.getAliveEnemies(world, true) // exclude boss
-
-        // If initial enemy is defeated and we haven't spawned the wave yet
-        if (aliveEnemies.length === 0 && gameState.wave1EnemiesSpawned === 1) {
-            // Spawn all 3 remaining enemies immediately
+        // Spawn all wave 1 enemies immediately when entering this state
+        if (!this.wave1EnemiesSpawned) {
             for (let i = 0; i < waveConfig.enemyCount; i++) {
                 this.spawnEnemyAroundPlayer(
                     world,
@@ -41,15 +24,17 @@ export class Wave1State extends BaseGameState {
                 )
                 gameState.wave1EnemiesSpawned++
             }
+            this.wave1EnemiesSpawned = true
             console.log(
-                `🛡️ Wave 1: Spawned ${waveConfig.enemyCount} enemies after initial defeat!`,
+                `🛡️ Wave 1: Spawned all ${waveConfig.enemyCount} enemies immediately!`,
             )
-            return null
         }
 
         // Check if all wave 1 enemies are defeated
+        const aliveEnemies = this.getAliveEnemies(world, true) // exclude boss
+
         if (
-            gameState.wave1EnemiesSpawned === waveConfig.enemyCount + 1 && // +1 for initial enemy
+            gameState.wave1EnemiesSpawned === waveConfig.enemyCount &&
             aliveEnemies.length === 0
         ) {
             console.log('🎮 Game State: Wave 1 Complete! Starting Wave 2')

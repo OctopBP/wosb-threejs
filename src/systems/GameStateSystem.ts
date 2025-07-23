@@ -18,6 +18,7 @@ import type { LevelingSystem } from './LevelingSystem'
 import type { GameStateHandler } from './states'
 import {
     BossFightState,
+    InitialWaveState,
     NewShipOfferState,
     Wave1State,
     Wave2State,
@@ -40,6 +41,7 @@ export class GameStateSystem extends System {
     }
 
     private initializeStateHandlers(): void {
+        this.stateHandlers.set('initialWave', new InitialWaveState())
         this.stateHandlers.set('enemiesWave1', new Wave1State())
         this.stateHandlers.set('enemiesWave2', new Wave2State())
         this.stateHandlers.set('bossFight', new BossFightState())
@@ -70,16 +72,18 @@ export class GameStateSystem extends System {
             this.gameStartTime = performance.now() / 1000
         }
 
-        // Check if 20 seconds have passed and force boss fight if not already in boss fight
+        // Check if configured time has passed and force boss fight if not already in boss fight
         const currentTime = performance.now() / 1000
         const gameTime = currentTime - this.gameStartTime
 
         if (
-            gameTime >= 20.0 &&
+            gameTime >= this.config.boss.forceSpawnTimeSeconds &&
             gameState.currentState !== 'bossFight' &&
             gameState.currentState !== 'newShipOffer'
         ) {
-            console.log('⏰ 20 seconds reached! Forcing boss fight...')
+            console.log(
+                `⏰ ${this.config.boss.forceSpawnTimeSeconds} seconds reached! Forcing boss fight...`,
+            )
             gameState.currentState = 'bossFight'
         }
 
@@ -121,7 +125,9 @@ export class GameStateSystem extends System {
         this.gameStateEntity = this.world.createEntity()
         const gameState: GameStateComponent = {
             type: 'gameState',
-            currentState: 'enemiesWave1',
+            currentState: 'initialWave',
+            initialWaveEnemiesSpawned: 0,
+            initialWaveEnemiesDefeated: 0,
             wave1EnemiesSpawned: 0,
             wave1EnemiesDefeated: 0,
             wave2EnemiesSpawned: 0,
@@ -131,7 +137,7 @@ export class GameStateSystem extends System {
         }
         this.gameStateEntity.addComponent(gameState)
         this.world.addEntity(this.gameStateEntity)
-        console.log('🎮 Game State: Starting Wave 1')
+        console.log('🎮 Game State: Starting Initial Wave')
     }
 
     private getGameState(): GameStateComponent | null {
@@ -252,7 +258,9 @@ export class GameStateSystem extends System {
         this.gameStartTime = 0
 
         // Reset game state
-        gameState.currentState = 'enemiesWave1'
+        gameState.currentState = 'initialWave'
+        gameState.initialWaveEnemiesSpawned = 0
+        gameState.initialWaveEnemiesDefeated = 0
         gameState.wave1EnemiesSpawned = 0
         gameState.wave1EnemiesDefeated = 0
         gameState.wave2EnemiesSpawned = 0
@@ -302,7 +310,7 @@ export class GameStateSystem extends System {
             this.world.removeEntity(entity.id)
         }
 
-        console.log('🎮 Game restart cleanup complete - Wave 1 beginning')
+        console.log('🎮 Game restart cleanup complete - Initial Wave beginning')
 
         // Recreate the player entity fresh
         if (this.gameWorld) {

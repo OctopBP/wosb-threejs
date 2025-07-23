@@ -278,6 +278,7 @@ export interface EnemyArrowComponent extends Component {
 
 // Game state and boss components from dev branch
 export type GameState =
+    | 'initialWave'
     | 'enemiesWave1'
     | 'enemiesWave2'
     | 'bossFight'
@@ -287,6 +288,8 @@ export type GameState =
 export interface GameStateComponent extends Component {
     type: 'gameState'
     currentState: GameState
+    initialWaveEnemiesSpawned: number
+    initialWaveEnemiesDefeated: number
     wave1EnemiesSpawned: number
     wave1EnemiesDefeated: number
     wave2EnemiesSpawned: number
