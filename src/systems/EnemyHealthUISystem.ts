@@ -11,7 +11,7 @@ import type { World } from '../ecs/World'
 interface EnemyHealthUI {
     entityId: number
     container: HTMLElement
-    healthBar: HTMLElement
+    healthBarFiller: HTMLImageElement
 }
 
 export class EnemyHealthUISystem extends System {
@@ -29,7 +29,6 @@ export class EnemyHealthUISystem extends System {
         const enemyEntities = this.getEntities()
         const activeEnemyIds = new Set<number>()
 
-        // Update or create UI for each enemy
         for (const enemy of enemyEntities) {
             const health = enemy.getComponent<HealthComponent>('health')
             const position = enemy.getComponent<PositionComponent>('position')
@@ -40,34 +39,28 @@ export class EnemyHealthUISystem extends System {
 
             activeEnemyIds.add(enemy.id)
 
-            // Skip dead enemies
             if (health.isDead) {
                 this.removeEnemyUI(enemy.id)
                 continue
             }
 
-            // Get or create UI for this enemy
             let enemyUI = this.enemyUIMap.get(enemy.id)
             if (!enemyUI) {
                 enemyUI = this.createEnemyUI(enemy.id)
                 this.enemyUIMap.set(enemy.id, enemyUI)
             }
 
-            // Update health bar
             this.updateHealthBar(
                 enemyUI,
                 health.currentHealth,
                 health.maxHealth,
             )
 
-            // Position UI above enemy
             this.positionUI(enemyUI, position, renderable)
 
-            // Show UI
             enemyUI.container.style.display = 'block'
         }
 
-        // Remove UI for enemies that no longer exist
         for (const [entityId, _] of this.enemyUIMap.entries()) {
             if (!activeEnemyIds.has(entityId)) {
                 this.removeEnemyUI(entityId)
@@ -76,7 +69,6 @@ export class EnemyHealthUISystem extends System {
     }
 
     private createEnemyUI(entityId: number): EnemyHealthUI {
-        // Create UI container
         const container = document.createElement('div')
         container.style.position = 'absolute'
         container.style.pointerEvents = 'none'
@@ -88,35 +80,39 @@ export class EnemyHealthUISystem extends System {
         container.style.textAlign = 'center'
         container.style.textShadow = '1px 1px 2px rgba(0,0,0,0.8)'
 
-        // Create health bar container
         const healthBarContainer = document.createElement('div')
+        healthBarContainer.style.position = 'relative'
         healthBarContainer.style.width = '80px'
         healthBarContainer.style.height = '8px'
-        healthBarContainer.style.backgroundColor = 'rgba(0,0,0,0.6)'
-        healthBarContainer.style.border = '1px solid rgba(255,255,255,0.4)'
-        healthBarContainer.style.borderRadius = '3px'
-        healthBarContainer.style.overflow = 'hidden'
         healthBarContainer.style.margin = '0 auto 2px auto'
 
-        // Create health bar fill
-        const healthBar = document.createElement('div')
-        healthBar.style.height = '100%'
-        healthBar.style.width = '100%'
-        healthBar.style.transition =
-            'width 0.2s ease, background-color 0.2s ease'
-        healthBar.style.background = 'linear-gradient(90deg, #FF6B6B, #FF8E8E)'
+        const healthBarBg = document.createElement('img')
+        healthBarBg.src = 'assets/ui/bar_bg.png'
+        healthBarBg.style.width = '100%'
+        healthBarBg.style.height = '100%'
+        healthBarBg.style.position = 'absolute'
+        healthBarBg.style.top = '0'
+        healthBarBg.style.left = '0'
 
-        // Assemble UI
-        healthBarContainer.appendChild(healthBar)
+        const healthBarFiller = document.createElement('img')
+        healthBarFiller.src = 'assets/ui/enemy_bar_filler.png'
+        healthBarFiller.style.width = '100%'
+        healthBarFiller.style.height = '100%'
+        healthBarFiller.style.position = 'absolute'
+        healthBarFiller.style.top = '0'
+        healthBarFiller.style.left = '0'
+        healthBarFiller.style.transition = 'clip-path 0.2s ease'
+
+        healthBarContainer.appendChild(healthBarBg)
+        healthBarContainer.appendChild(healthBarFiller)
         container.appendChild(healthBarContainer)
 
-        // Add to page
         document.body.appendChild(container)
 
         return {
             entityId,
             container,
-            healthBar,
+            healthBarFiller,
         }
     }
 
@@ -125,25 +121,11 @@ export class EnemyHealthUISystem extends System {
         currentHealth: number,
         maxHealth: number,
     ): void {
-        const healthPercent = Math.max(0, currentHealth) / maxHealth
-        const healthWidth = `${healthPercent * 100}%`
-
-        enemyUI.healthBar.style.width = healthWidth
-
-        // Change color based on health percentage
-        if (healthPercent > 0.6) {
-            // Red (enemy healthy)
-            enemyUI.healthBar.style.background =
-                'linear-gradient(90deg, #FF6B6B, #FF8E8E)'
-        } else if (healthPercent > 0.3) {
-            // Orange (enemy wounded)
-            enemyUI.healthBar.style.background =
-                'linear-gradient(90deg, #FF9800, #FFB74D)'
-        } else {
-            // Dark red (enemy critical)
-            enemyUI.healthBar.style.background =
-                'linear-gradient(90deg, #D32F2F, #F44336)'
-        }
+        const healthPercent = Math.max(
+            0,
+            Math.min(1, currentHealth / maxHealth),
+        )
+        enemyUI.healthBarFiller.style.clipPath = `inset(0 ${(1 - healthPercent) * 100}% 0 0)`
     }
 
     private positionUI(
@@ -153,22 +135,16 @@ export class EnemyHealthUISystem extends System {
     ): void {
         if (!renderable.mesh) return
 
-        // Get the enemy's world position
         const enemyPosition = new Vector3(position.x, position.y, position.z)
-
-        // Add some height offset above the enemy
         enemyPosition.y += 1.5
 
-        // Project world position to screen coordinates
         const screenPosition = enemyPosition.clone().project(this.camera)
 
-        // Check if enemy is behind camera
         if (screenPosition.z > 1) {
             enemyUI.container.style.display = 'none'
             return
         }
 
-        // Convert normalized device coordinates to screen pixels
         const canvasRect = this.canvas.getBoundingClientRect()
         const x =
             (screenPosition.x * 0.5 + 0.5) * canvasRect.width + canvasRect.left
@@ -176,10 +152,9 @@ export class EnemyHealthUISystem extends System {
             (1 - (screenPosition.y * 0.5 + 0.5)) * canvasRect.height +
             canvasRect.top
 
-        // Position UI element
         enemyUI.container.style.left = `${x}px`
         enemyUI.container.style.top = `${y}px`
-        enemyUI.container.style.transform = 'translate(-50%, -100%)' // Center horizontally, place above
+        enemyUI.container.style.transform = 'translate(-50%, -100%)'
     }
 
     private removeEnemyUI(entityId: number): void {
@@ -193,7 +168,6 @@ export class EnemyHealthUISystem extends System {
     }
 
     cleanup(): void {
-        // Remove all enemy UI elements
         for (const [_, enemyUI] of this.enemyUIMap.entries()) {
             if (enemyUI.container.parentNode) {
                 enemyUI.container.parentNode.removeChild(enemyUI.container)
