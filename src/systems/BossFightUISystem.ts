@@ -1,5 +1,6 @@
 import type { GameStateComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 
 export class BossFightUISystem extends System {
@@ -83,8 +84,7 @@ export class BossFightUISystem extends System {
         this.faderOverlay.style.display = 'none'
         this.faderOverlay.style.zIndex = '9999' // Below other UI systems but above game
         this.faderOverlay.style.pointerEvents = 'none' // Allow interaction with game underneath
-        this.faderOverlay.style.backgroundImage =
-            'url(/assets/ui/fader_red.png)'
+        this.faderOverlay.style.backgroundImage = 'url(assets/ui/fader_red.png)'
         this.faderOverlay.style.backgroundSize = 'cover'
         this.faderOverlay.style.backgroundPosition = 'center'
         this.faderOverlay.style.backgroundRepeat = 'no-repeat'
