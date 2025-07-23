@@ -77,9 +77,6 @@ export class GameStateSystem extends System {
             gameState.currentState = 'bossFight'
         }
 
-        // Always clean up dead enemies and award XP
-        this.cleanupDeadEnemies()
-
         // Handle current state using appropriate handler
         const stateHandler = this.stateHandlers.get(gameState.currentState)
         if (stateHandler) {

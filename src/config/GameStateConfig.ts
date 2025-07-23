@@ -3,13 +3,11 @@ export interface WaveConfig {
     enemyCount: number
     minSpawnDistance: number
     maxSpawnDistance: number
-    xpMultiplier: number
 }
 
 export interface BossConfig {
     minSpawnDistance: number
     maxSpawnDistance: number
-    xpMultiplier: number
     forceSpawnTimeSeconds: number // Configurable boss timer
 }
 
@@ -28,26 +26,22 @@ export interface GameStateConfig {
 export const defaultGameStateConfig: GameStateConfig = {
     initialWave: {
         enemyCount: 1, // Single enemy at game start
-        minSpawnDistance: 8,
-        maxSpawnDistance: 12,
-        xpMultiplier: 1,
+        minSpawnDistance: 15,
+        maxSpawnDistance: 15,
     },
     wave1: {
         enemyCount: 3, // 3 enemies for first wave
-        minSpawnDistance: 8,
-        maxSpawnDistance: 15,
-        xpMultiplier: 1, // Normal XP for wave 1 enemies
+        minSpawnDistance: 15,
+        maxSpawnDistance: 20,
     },
     wave2: {
         enemyCount: 12, // 12 enemies for second wave
-        minSpawnDistance: 8,
-        maxSpawnDistance: 15,
-        xpMultiplier: 1, // Normal XP for wave 2 enemies
+        minSpawnDistance: 15,
+        maxSpawnDistance: 30,
     },
     boss: {
-        minSpawnDistance: 12,
-        maxSpawnDistance: 12, // Fixed distance for consistent boss encounter
-        xpMultiplier: 20, // 20x XP for boss
+        minSpawnDistance: 25,
+        maxSpawnDistance: 25, // Fixed distance for consistent boss encounter
         forceSpawnTimeSeconds: 20, // Boss appears after 20 seconds if waves aren't complete
     },
     spawning: {
