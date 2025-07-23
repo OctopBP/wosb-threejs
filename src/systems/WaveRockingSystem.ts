@@ -30,15 +30,15 @@ export class WaveRockingSystem extends System {
     // Wave configuration
     private readonly waveConfig: WaveConfig = {
         // Vertical bobbing (Y position)
-        verticalAmplitude: 0.15, // How much the ship bobs up/down
-        verticalFrequency: 1.8, // How fast the bobbing motion
+        verticalAmplitude: 0.2, // How much the ship bobs up/down
+        verticalFrequency: 2, // How fast the bobbing motion
 
         // Rolling motion (Z rotation)
-        rollAmplitude: 0.08, // How much the ship rolls side to side (radians)
+        rollAmplitude: 0.12, // How much the ship rolls side to side (radians)
         rollFrequency: 0.6, // How fast the rolling motion
 
         // Pitching motion (X rotation)
-        pitchAmplitude: 0.05, // How much the ship pitches forward/back (radians)
+        pitchAmplitude: 0.1, // How much the ship pitches forward/back (radians)
         pitchFrequency: 0.7, // How fast the pitching motion
 
         // Wave variation based on position

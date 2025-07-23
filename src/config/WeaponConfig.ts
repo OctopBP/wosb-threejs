@@ -3,13 +3,13 @@ import type { WeaponComponent } from '../ecs/Component'
 export type WeaponConfigPreset = Omit<WeaponComponent, 'type' | 'lastShotTime'>
 
 export const playerWeaponPreset: WeaponConfigPreset = {
-    damage: 25,
-    fireRate: 1.0,
-    projectileSpeed: 30.0,
-    range: 20.0,
+    damage: 25, // Will be overridden by leveling system
+    fireRate: 0.7, // Matches leveling config base fire rate (1.42 shots/sec)
+    projectileSpeed: 30.0, // Faster projectiles for better combat feel
+    range: 18.0, // Good range for engagement
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 16.0,
+    detectionRange: 15.0, // Good detection range
     requiresLineOfSight: false,
     shootingPoints: [
         { x: -0.3, y: 0.8 },
@@ -20,13 +20,13 @@ export const playerWeaponPreset: WeaponConfigPreset = {
 }
 
 export const enemyWeaponPreset: WeaponConfigPreset = {
-    damage: 10,
-    fireRate: 0.8,
-    projectileSpeed: 20.0,
-    range: 24.0,
+    damage: 15, // Balanced to bring player to 20-60% health before level-ups
+    fireRate: 0.7, // Slightly faster than player initially
+    projectileSpeed: 18.0, // Slower than player projectiles
+    range: 20.0, // Shorter range than player
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 20.0,
+    detectionRange: 15.0, // Shorter detection range
     requiresLineOfSight: false,
     shootingPoints: [
         { x: -0.4, y: 0.8 },
@@ -37,13 +37,13 @@ export const enemyWeaponPreset: WeaponConfigPreset = {
 }
 
 export const bossWeaponPreset: WeaponConfigPreset = {
-    damage: 50,
-    fireRate: 1.5,
-    projectileSpeed: 25.0,
-    range: 15.0,
+    damage: 40, // High damage to significantly lower player health
+    fireRate: 1.2,
+    projectileSpeed: 35.0,
+    range: 18.0, // Long range
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 18.0,
+    detectionRange: 20.0, // Very long detection range
     requiresLineOfSight: false,
     shootingPoints: [
         { x: -0.4, y: 2 },

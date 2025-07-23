@@ -5,6 +5,8 @@ import type { World } from '../../ecs/World'
 import { BaseGameState } from './BaseGameState'
 
 export class Wave2State extends BaseGameState {
+    private wave2EnemiesSpawned = false
+
     handle(
         gameState: GameStateComponent,
         config: GameStateConfig,
@@ -12,16 +14,19 @@ export class Wave2State extends BaseGameState {
     ): string | null {
         const waveConfig = config.wave2
 
-        // Spawn enemies for wave 2
-        if (gameState.wave2EnemiesSpawned < waveConfig.enemyCount) {
-            this.spawnEnemyAroundPlayer(
-                world,
-                config,
-                getRandomSpawnDistanceForWaveOrBoss(waveConfig),
-            )
-            gameState.wave2EnemiesSpawned++
+        // Spawn all wave 2 enemies immediately when entering this state
+        if (!this.wave2EnemiesSpawned) {
+            for (let i = 0; i < waveConfig.enemyCount; i++) {
+                this.spawnEnemyAroundPlayer(
+                    world,
+                    config,
+                    getRandomSpawnDistanceForWaveOrBoss(waveConfig),
+                )
+                gameState.wave2EnemiesSpawned++
+            }
+            this.wave2EnemiesSpawned = true
             console.log(
-                `🛡️ Wave 2: Spawned enemy ${gameState.wave2EnemiesSpawned}/${waveConfig.enemyCount}`,
+                `🛡️ Wave 2: Spawned all ${waveConfig.enemyCount} enemies immediately!`,
             )
         }
 

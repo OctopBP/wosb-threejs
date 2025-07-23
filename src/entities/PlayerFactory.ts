@@ -77,8 +77,8 @@ export function createPlayerShip(
     // Health component - player starts with full health
     const health: HealthComponent = {
         type: 'health',
-        maxHealth: 100,
-        currentHealth: 100,
+        maxHealth: 60, // Matches the new base health from leveling config
+        currentHealth: 60,
         isDead: false,
     }
     entity.addComponent(health)

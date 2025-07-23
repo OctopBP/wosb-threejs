@@ -25,15 +25,10 @@ export class EnemySpawningSystem extends System {
     }
 
     update(_deltaTime: number): void {
-        const currentTime = performance.now() / 1000
+        // Disabled: Wave-based spawning is now handled by GameStateSystem
+        // to implement specific scenario timing requirements
 
-        // Check if it's time to spawn a new enemy
-        if (currentTime - this.lastSpawnTime >= this.spawnInterval) {
-            this.trySpawnEnemy()
-            this.lastSpawnTime = currentTime
-        }
-
-        // Clean up dead enemies
+        // Still clean up dead enemies for XP awarding
         this.cleanupDeadEnemies()
     }
 

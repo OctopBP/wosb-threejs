@@ -5,6 +5,7 @@ import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
     HealthComponent,
+    LevelComponent,
     PositionComponent,
     ProjectileComponent,
     RenderableComponent,
@@ -110,6 +111,20 @@ export class WeaponSystem extends System {
         const isPlayer = entity.hasComponent('player')
         const isEnemy = entity.hasComponent('enemy')
 
+        // Special handling for level 3 player dual-targeting
+        if (isPlayer) {
+            const levelComponent = entity.getComponent<LevelComponent>('level')
+            if (levelComponent && levelComponent.currentLevel >= 3) {
+                this.handleLevel3DualTargeting(
+                    entityId,
+                    weapon,
+                    position,
+                    currentTime,
+                )
+                return
+            }
+        }
+
         // Find the closest target based on what type of entity this is
         let closestTarget: Entity | null = null
 
@@ -183,6 +198,94 @@ export class WeaponSystem extends System {
                 )
             }
         }
+    }
+
+    private handleLevel3DualTargeting(
+        entityId: number,
+        weapon: WeaponComponent,
+        position: PositionComponent,
+        currentTime: number,
+    ): void {
+        // Check if enough time has passed since last shot
+        const timeSinceLastShot = currentTime - weapon.lastShotTime
+        const fireInterval = 1 / weapon.fireRate
+
+        if (timeSinceLastShot < fireInterval) {
+            return // Not ready to fire yet
+        }
+
+        // Find up to 2 closest enemies in range
+        const enemies = this.world.getEntitiesWithComponents([
+            'enemy',
+            'position',
+            'health',
+        ])
+        const enemiesInRange: Array<{
+            entity: Entity
+            distance: number
+            position: PositionComponent
+        }> = []
+
+        for (const enemy of enemies) {
+            const enemyPosition =
+                enemy.getComponent<PositionComponent>('position')
+            const enemyHealth = enemy.getComponent<HealthComponent>('health')
+            if (!enemyPosition || !enemyHealth || enemyHealth.isDead) continue
+
+            const distance = this.calculateDistance(position, enemyPosition)
+            if (distance <= weapon.detectionRange) {
+                enemiesInRange.push({
+                    entity: enemy,
+                    distance,
+                    position: enemyPosition,
+                })
+            }
+        }
+
+        // Sort by distance and take the 2 closest
+        enemiesInRange.sort((a, b) => a.distance - b.distance)
+        const targetsToShoot = enemiesInRange
+            .slice(0, 2)
+            .filter((target) => target.distance <= weapon.range)
+
+        if (targetsToShoot.length === 0) {
+            if (this.debugAutoTargeting) {
+                console.log(
+                    '🎯 Level 3 Player: No enemies in range for dual targeting',
+                )
+            }
+            return
+        }
+
+        // Fire at each target simultaneously
+        for (let i = 0; i < targetsToShoot.length; i++) {
+            const target = targetsToShoot[i]
+            this.fireProjectileToTarget(
+                entityId,
+                weapon,
+                position,
+                target.position,
+            )
+
+            if (this.debugAutoTargeting) {
+                console.log(
+                    `🔥 Level 3 Player: Firing at target ${i + 1} at distance ${target.distance.toFixed(1)}`,
+                )
+            }
+        }
+
+        // Log dual targeting action
+        if (targetsToShoot.length === 2) {
+            console.log(
+                '💥 Level 3 Dual Shot: Firing at 2 enemies simultaneously!',
+            )
+        } else {
+            console.log(
+                `💥 Level 3 Shot: Firing at ${targetsToShoot.length} enemy`,
+            )
+        }
+
+        weapon.lastShotTime = currentTime
     }
 
     private findClosestTarget(

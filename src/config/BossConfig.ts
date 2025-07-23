@@ -23,25 +23,25 @@ export interface BossVisualConfig {
 
 // Boss movement configuration preset
 export const bossMovementPreset: MovementConfigPreset = {
-    maxSpeed: 3.0, // Slower than regular enemies
-    accelerationForce: 2.5,
-    decelerationForce: 1.5,
-    autoRotationStrength: 3,
-    inputResponsiveness: 0.8,
+    maxSpeed: 5.0, // Much faster than player (even at max level)
+    accelerationForce: 10.0, // Very quick acceleration
+    decelerationForce: 4.0,
+    autoRotationStrength: 8, // Fast rotation for combat
+    inputResponsiveness: 1.0,
     inputDeadZone: 0.1,
-    pointerSensitivity: 0.5,
+    pointerSensitivity: 0.8,
     linearDampening: 0.9,
 }
 
 // Boss health configuration
 export const basicBossHealthPreset: BossHealthConfig = {
-    maxHealth: 1000, // Much stronger than regular enemies
+    maxHealth: 1000, // Lower health for quicker boss fight resolution
 }
 
 // Boss AI configuration
 export const basicBossAIPreset: BossAIConfig = {
-    moveSpeed: 2.0, // Slower movement than regular enemies
-    shootingRange: 15.0, // Long shooting range
+    moveSpeed: 2.5, // Very fast AI movement
+    shootingRange: 18.0, // Long shooting range to prevent escape
 }
 
 // Boss visual configuration
