@@ -5,34 +5,34 @@ export type WeaponConfigPreset = Omit<WeaponComponent, 'type' | 'lastShotTime'>
 export const playerWeaponPreset: WeaponConfigPreset = {
     damage: 25, // Will be overridden by leveling system
     fireRate: 0.6, // Matches leveling config base fire rate (1.67 shots/sec)
-    projectileSpeed: 20.0, // Faster projectiles for better combat feel
-    range: 12.0, // Good range for engagement
+    projectileSpeed: 30.0, // Faster projectiles for better combat feel
+    range: 20.0, // Good range for engagement
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 10.0, // Good detection range
+    detectionRange: 16.0, // Good detection range
     requiresLineOfSight: false,
     shootingPoints: [
-        { x: -0.15, y: 0.4 },
-        { x: 0.15, y: 0.4 },
-        { x: -0.2, y: -0.25 },
-        { x: 0.2, y: -0.25 },
+        { x: -0.3, y: 0.8 },
+        { x: 0.3, y: 0.8 },
+        { x: -0.4, y: -0.5 },
+        { x: 0.4, y: -0.5 },
     ],
 }
 
 export const enemyWeaponPreset: WeaponConfigPreset = {
     damage: 15, // Balanced to bring player to 20-60% health before level-ups
     fireRate: 0.7, // Slightly faster than player initially
-    projectileSpeed: 12.0, // Slower than player projectiles
-    range: 10.0, // Shorter range than player
+    projectileSpeed: 20.0, // Slower than player projectiles
+    range: 20.0, // Shorter range than player
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 8.0, // Shorter detection range
+    detectionRange: 16.0, // Shorter detection range
     requiresLineOfSight: false,
     shootingPoints: [
-        { x: -0.2, y: 0.4 },
-        { x: 0.2, y: 0.4 },
-        { x: -0.2, y: -0.25 },
-        { x: 0.2, y: -0.25 },
+        { x: -0.4, y: 0.8 },
+        { x: 0.4, y: 0.8 },
+        { x: -0.4, y: -0.5 },
+        { x: 0.4, y: -0.5 },
     ],
 }
 

@@ -14,6 +14,7 @@ import type {
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+
 export class EnemyArrowSystem extends System {
     private scene: Scene
     private textureLoader: TextureLoader
