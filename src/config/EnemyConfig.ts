@@ -45,7 +45,7 @@ export const basicEnemyHealthPreset: EnemyHealthConfig = {
 
 // Basic enemy AI configuration
 export const basicEnemyAIPreset: EnemyAIConfig = {
-    moveSpeed: 2.5, // Faster AI movement speed
+    moveSpeed: 3, // Faster AI movement speed
     shootingRange: 6.0, // Closer range for more aggressive combat
 }
 

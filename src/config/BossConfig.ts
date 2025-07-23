@@ -35,7 +35,7 @@ export const bossMovementPreset: MovementConfigPreset = {
 
 // Boss health configuration
 export const basicBossHealthPreset: BossHealthConfig = {
-    maxHealth: 150, // Lower health for quicker boss fight resolution
+    maxHealth: 1000, // Lower health for quicker boss fight resolution
 }
 
 // Boss AI configuration

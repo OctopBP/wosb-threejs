@@ -18,17 +18,9 @@ export class BossFightState extends BaseGameState {
 
         // Spawn boss if not already spawned
         if (!gameState.bossSpawned) {
-            // Clean up any remaining enemies before spawning boss
-            const aliveEnemies = this.getAliveEnemies(world, true) // exclude boss
-            for (const enemy of aliveEnemies) {
-                world.removeEntity(enemy.id)
-            }
-
             this.spawnBoss(world, config)
             gameState.bossSpawned = true
-            console.log(
-                '💀 Boss Fight: Boss spawned! All remaining enemies cleared.',
-            )
+            console.log('💀 Boss Fight: Boss spawned!')
         }
 
         // Boss fight continues until player dies or boss is defeated

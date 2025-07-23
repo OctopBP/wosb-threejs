@@ -31,13 +31,13 @@ export const defaultGameStateConfig: GameStateConfig = {
     },
     wave1: {
         enemyCount: 3, // 3 enemies for first wave
-        minSpawnDistance: 15,
-        maxSpawnDistance: 20,
+        minSpawnDistance: 25,
+        maxSpawnDistance: 35,
     },
     wave2: {
         enemyCount: 12, // 12 enemies for second wave
-        minSpawnDistance: 15,
-        maxSpawnDistance: 30,
+        minSpawnDistance: 25,
+        maxSpawnDistance: 45,
     },
     boss: {
         minSpawnDistance: 25,

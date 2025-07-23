@@ -46,7 +46,7 @@ export interface LevelUpAnimationConfig {
 
 // Default XP progression configuration for a 6-level system
 export const defaultXPProgression: XPProgressionConfig = {
-    levelXpThresholds: [0, 30, 60], // Level 2 after 1 enemy (30 XP), Level 3 after 3 more enemies (30 XP total)
+    levelXpThresholds: [0, 25, 75],
 }
 
 // Enemy XP values configuration
@@ -61,7 +61,7 @@ export const defaultLevelingStats = {
     baseFireRate: 0.6, // Slower base fire rate for timing scenarios (1.67 shots per second)
     fireRatePerLevel: 0.2, // Level 2: 0.8 fire rate, Level 3: 1.0 fire rate
     baseMaxHealth: 60, // Lower base health to ensure damage before level-ups
-    healthPerLevel: 20, // +20 max health per level (60 -> 80 -> 100)
+    healthPerLevel: 60, // +60 max health per level (60 -> 120 -> 180)
     baseMaxSpeed: 2.5, // Slower than enemies initially
     speedPerLevel: 0.3, // Gradual speed increase per level
 }
