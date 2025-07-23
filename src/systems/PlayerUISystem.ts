@@ -75,8 +75,9 @@ export class PlayerUISystem extends System {
         this.uiContainer.style.zIndex = '1000'
         this.uiContainer.style.display = 'none'
         this.uiContainer.style.fontFamily = 'Arial, sans-serif'
-        this.uiContainer.style.fontSize = '14px'
+        this.uiContainer.style.fontSize = '16px'
         this.uiContainer.style.color = 'white'
+        this.uiContainer.style.paddingRight = '16px'
         this.uiContainer.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)'
 
         const mainContainer = document.createElement('div')
@@ -84,12 +85,12 @@ export class PlayerUISystem extends System {
         mainContainer.style.alignItems = 'center'
         mainContainer.style.gap = '0px'
         mainContainer.style.position = 'relative'
-        mainContainer.style.height = '32px'
+        mainContainer.style.height = '40px'
 
         const levelContainer = document.createElement('div')
         levelContainer.style.position = 'relative'
-        levelContainer.style.width = '30px'
-        levelContainer.style.height = '30px'
+        levelContainer.style.width = '36px'
+        levelContainer.style.height = '36px'
         levelContainer.style.zIndex = '2'
 
         const levelBackground = document.createElement('img')
@@ -97,6 +98,7 @@ export class PlayerUISystem extends System {
         levelBackground.style.width = '100%'
         levelBackground.style.height = '100%'
         levelBackground.style.display = 'block'
+        levelBackground.style.objectFit = 'contain'
 
         this.levelDisplay = document.createElement('div')
         this.levelDisplay.style.position = 'absolute'
@@ -104,7 +106,7 @@ export class PlayerUISystem extends System {
         this.levelDisplay.style.left = '50%'
         this.levelDisplay.style.transform = 'translate(-50%, -50%)'
         this.levelDisplay.style.fontWeight = 'bold'
-        this.levelDisplay.style.fontSize = '12px'
+        this.levelDisplay.style.fontSize = '15px'
         this.levelDisplay.style.textAlign = 'center'
 
         levelContainer.appendChild(levelBackground)
@@ -113,15 +115,15 @@ export class PlayerUISystem extends System {
         const barsContainer = document.createElement('div')
         barsContainer.style.display = 'flex'
         barsContainer.style.flexDirection = 'column'
-        barsContainer.style.marginLeft = '18px'
         barsContainer.style.zIndex = '1'
-        barsContainer.style.minWidth = '100px'
+        barsContainer.style.minWidth = '125px'
+        barsContainer.style.marginLeft = '-6px'
 
         const healthRow = document.createElement('div')
         healthRow.style.position = 'relative'
-        healthRow.style.width = '100px'
-        healthRow.style.height = '12px'
-        healthRow.style.marginBottom = '2px'
+        healthRow.style.width = '125px'
+        healthRow.style.height = '15px'
+        healthRow.style.marginBottom = '0px'
 
         const healthBarBg = document.createElement('img')
         healthBarBg.src = 'assets/ui/bar_bg.png'
@@ -145,8 +147,9 @@ export class PlayerUISystem extends System {
 
         const xpRow = document.createElement('div')
         xpRow.style.position = 'relative'
-        xpRow.style.width = '100px'
-        xpRow.style.height = '8px'
+        xpRow.style.width = '125px'
+        xpRow.style.height = '10px'
+        xpRow.style.marginTop = '-2px'
 
         const xpBarBg = document.createElement('img')
         xpBarBg.src = 'assets/ui/exp_bar_back.png'
@@ -221,7 +224,7 @@ export class PlayerUISystem extends System {
         if (!this.uiContainer || !renderable.mesh) return
 
         const shipPosition = new Vector3(position.x, position.y, position.z)
-        shipPosition.y += 2.0
+        shipPosition.y += 3.0
 
         const screenPosition = shipPosition.clone().project(this.camera)
 

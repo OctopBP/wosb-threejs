@@ -13,8 +13,8 @@ export const gunSmokeParticleConfig: ParticleSystemConfig = {
     burstInterval: -1,
 
     life: 1,
-    size: { min: 0.5, max: 1.5 },
-    speed: { min: 0.5, max: 1.5 },
+    size: { min: 1, max: 3 },
+    speed: { min: 1, max: 3 },
 
     spawnArea: {
         type: 'point',

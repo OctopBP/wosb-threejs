@@ -75,15 +75,15 @@ export class EnemyHealthUISystem extends System {
         container.style.zIndex = '999'
         container.style.display = 'none'
         container.style.fontFamily = 'Arial, sans-serif'
-        container.style.fontSize = '12px'
+        container.style.fontSize = '16px'
         container.style.color = 'white'
         container.style.textAlign = 'center'
         container.style.textShadow = '1px 1px 2px rgba(0,0,0,0.8)'
 
         const healthBarContainer = document.createElement('div')
         healthBarContainer.style.position = 'relative'
-        healthBarContainer.style.width = '80px'
-        healthBarContainer.style.height = '8px'
+        healthBarContainer.style.width = '100px'
+        healthBarContainer.style.height = '10px'
         healthBarContainer.style.margin = '0 auto 2px auto'
 
         const healthBarBg = document.createElement('img')
@@ -136,7 +136,7 @@ export class EnemyHealthUISystem extends System {
         if (!renderable.mesh) return
 
         const enemyPosition = new Vector3(position.x, position.y, position.z)
-        enemyPosition.y += 1.5
+        enemyPosition.y += 2
 
         const screenPosition = enemyPosition.clone().project(this.camera)
 

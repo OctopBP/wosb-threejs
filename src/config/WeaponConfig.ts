@@ -5,34 +5,34 @@ export type WeaponConfigPreset = Omit<WeaponComponent, 'type' | 'lastShotTime'>
 export const playerWeaponPreset: WeaponConfigPreset = {
     damage: 25,
     fireRate: 1.0,
-    projectileSpeed: 15.0,
-    range: 10.0,
+    projectileSpeed: 30.0,
+    range: 20.0,
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 8.0,
+    detectionRange: 16.0,
     requiresLineOfSight: false,
     shootingPoints: [
-        { x: -0.15, y: 0.4 },
-        { x: 0.15, y: 0.4 },
-        { x: -0.2, y: -0.25 },
-        { x: 0.2, y: -0.25 },
+        { x: -0.3, y: 0.8 },
+        { x: 0.3, y: 0.8 },
+        { x: -0.4, y: -0.5 },
+        { x: 0.4, y: -0.5 },
     ],
 }
 
 export const enemyWeaponPreset: WeaponConfigPreset = {
     damage: 10,
     fireRate: 0.8,
-    projectileSpeed: 10.0,
-    range: 12.0,
+    projectileSpeed: 20.0,
+    range: 24.0,
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 10.0,
+    detectionRange: 20.0,
     requiresLineOfSight: false,
     shootingPoints: [
-        { x: -0.2, y: 0.4 },
-        { x: 0.2, y: 0.4 },
-        { x: -0.2, y: -0.25 },
-        { x: 0.2, y: -0.25 },
+        { x: -0.4, y: 0.8 },
+        { x: 0.4, y: 0.8 },
+        { x: -0.4, y: -0.5 },
+        { x: 0.4, y: -0.5 },
     ],
 }
 
