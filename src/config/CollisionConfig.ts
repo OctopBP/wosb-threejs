@@ -39,6 +39,14 @@ export const collisionPresets = {
         radius: 0.4,
     } satisfies SphereCollider,
 
+    // Environmental collision presets
+    island: {
+        shape: 'box' as const,
+        width: 15,
+        height: 8,
+        depth: 15,
+    } satisfies BoxCollider,
+
     // Custom collision presets
     smallBox: {
         shape: 'box' as const,
@@ -155,6 +163,19 @@ export function createSphereCollision(
             shape: 'sphere',
             radius,
         },
+        offset,
+    }
+}
+
+// Environmental collision factory functions
+export function createIslandCollision(offset?: {
+    x: number
+    y: number
+    z: number
+}): CollisionComponent {
+    return {
+        type: 'collision',
+        collider: collisionPresets.island,
         offset,
     }
 }

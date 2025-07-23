@@ -1,3 +1,4 @@
+import { createIslandCollision } from '../config/CollisionConfig'
 import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
 
@@ -31,6 +32,10 @@ export function createIsland(
         upgrades: {},
     }
     entity.addComponent(renderable)
+
+    // Collision component - box collider for island
+    const collision = createIslandCollision()
+    entity.addComponent(collision)
 
     return entity
 }
