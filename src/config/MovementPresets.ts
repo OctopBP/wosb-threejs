@@ -6,7 +6,7 @@ export type MovementConfigPreset = Omit<MovementConfigComponent, 'type'>
 export const balancedPreset: MovementConfigPreset = {
     accelerationForce: 8.0,
     decelerationForce: 2.0,
-    maxSpeed: 3.0,
+    maxSpeed: 2.5, // Matches the new base speed from leveling config
     autoRotationStrength: 2, // High value for near-instant rotation
     inputResponsiveness: 1.0,
     inputDeadZone: 0.1,

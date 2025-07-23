@@ -28,10 +28,10 @@ export interface EnemySpawningConfig {
 
 // Enemy movement configuration preset
 export const enemyMovementPreset: MovementConfigPreset = {
-    maxSpeed: 7.0,
-    accelerationForce: 6.0,
-    decelerationForce: 2.0,
-    autoRotationStrength: 5,
+    maxSpeed: 4.0, // Faster than player's initial speed (2.5)
+    accelerationForce: 8.0, // Quick acceleration to catch player
+    decelerationForce: 3.0,
+    autoRotationStrength: 6, // Good rotation for combat
     inputResponsiveness: 1.0,
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,
@@ -40,21 +40,21 @@ export const enemyMovementPreset: MovementConfigPreset = {
 
 // Basic enemy health configuration
 export const basicEnemyHealthPreset: EnemyHealthConfig = {
-    maxHealth: 50, // As specified in requirements
+    maxHealth: 50, // Dies in 2 hits at level 1 (25 damage), 1 hit at level 2 (50 damage)
 }
 
 // Basic enemy AI configuration
 export const basicEnemyAIPreset: EnemyAIConfig = {
-    moveSpeed: 1.0,
-    shootingRange: 5.0,
+    moveSpeed: 1.2, // Faster AI movement speed
+    shootingRange: 6.0, // Closer range for more aggressive combat
 }
 
 // Enemy spawning configuration
 export const enemySpawningConfig: EnemySpawningConfig = {
-    spawnInterval: 3.0, // Spawn every 3 seconds
-    maxEnemies: 5, // Maximum 5 enemies at once
-    minSpawnDistance: 12.0, // Minimum 12 units away from player
-    maxSpawnDistance: 20.0, // Maximum 20 units away from player
+    spawnInterval: 1.0, // Faster spawning for scenario timing
+    maxEnemies: 15, // Allow for larger waves
+    minSpawnDistance: 8.0, // Closer spawning for faster engagement
+    maxSpawnDistance: 15.0, // Smaller max distance for quicker encounters
 }
 
 // Helper to get a random spawn distance within the configured range

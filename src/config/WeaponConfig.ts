@@ -3,13 +3,13 @@ import type { WeaponComponent } from '../ecs/Component'
 export type WeaponConfigPreset = Omit<WeaponComponent, 'type' | 'lastShotTime'>
 
 export const playerWeaponPreset: WeaponConfigPreset = {
-    damage: 25,
-    fireRate: 1.0,
-    projectileSpeed: 15.0,
-    range: 10.0,
+    damage: 25, // Will be overridden by leveling system
+    fireRate: 0.6, // Matches leveling config base fire rate (1.67 shots/sec)
+    projectileSpeed: 20.0, // Faster projectiles for better combat feel
+    range: 12.0, // Good range for engagement
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 8.0,
+    detectionRange: 10.0, // Good detection range
     requiresLineOfSight: false,
     shootingPoints: [
         { x: -0.15, y: 0.4 },
@@ -20,13 +20,13 @@ export const playerWeaponPreset: WeaponConfigPreset = {
 }
 
 export const enemyWeaponPreset: WeaponConfigPreset = {
-    damage: 10,
-    fireRate: 0.8,
-    projectileSpeed: 10.0,
-    range: 12.0,
+    damage: 15, // Balanced to bring player to 20-60% health before level-ups
+    fireRate: 0.7, // Slightly faster than player initially
+    projectileSpeed: 12.0, // Slower than player projectiles
+    range: 10.0, // Shorter range than player
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 10.0,
+    detectionRange: 8.0, // Shorter detection range
     requiresLineOfSight: false,
     shootingPoints: [
         { x: -0.2, y: 0.4 },
@@ -37,13 +37,13 @@ export const enemyWeaponPreset: WeaponConfigPreset = {
 }
 
 export const bossWeaponPreset: WeaponConfigPreset = {
-    damage: 50,
-    fireRate: 1.5,
+    damage: 30, // High damage to significantly lower player health
+    fireRate: 1.2, // Fast fire rate
     projectileSpeed: 25.0,
-    range: 15.0,
+    range: 18.0, // Long range
     projectileType: 'bullet',
     isAutoTargeting: true,
-    detectionRange: 18.0,
+    detectionRange: 20.0, // Very long detection range
     requiresLineOfSight: false,
     shootingPoints: [
         { x: -0.4, y: 2 },

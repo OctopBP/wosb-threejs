@@ -25,20 +25,20 @@ export interface GameStateConfig {
 // Default game state configuration
 export const defaultGameStateConfig: GameStateConfig = {
     wave1: {
-        enemyCount: 3,
-        minSpawnDistance: 12,
-        maxSpawnDistance: 20,
+        enemyCount: 3, // 3 enemies for first half of the game (after initial enemy)
+        minSpawnDistance: 8,
+        maxSpawnDistance: 15,
         xpMultiplier: 1, // Normal XP for wave 1 enemies
     },
     wave2: {
-        enemyCount: 5,
-        minSpawnDistance: 12,
-        maxSpawnDistance: 20,
+        enemyCount: 12, // 12 enemies for second half of the game
+        minSpawnDistance: 8,
+        maxSpawnDistance: 15,
         xpMultiplier: 1, // Normal XP for wave 2 enemies
     },
     boss: {
-        minSpawnDistance: 15,
-        maxSpawnDistance: 15,
+        minSpawnDistance: 12,
+        maxSpawnDistance: 12, // Fixed distance for consistent boss encounter
         xpMultiplier: 20, // 20x XP for boss
     },
     spawning: {

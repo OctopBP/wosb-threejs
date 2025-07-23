@@ -28,6 +28,7 @@ export class GameStateSystem extends System {
     private gameWorld: GameWorld | null = null
     public config: GameStateConfig
     private stateHandlers: Map<string, GameStateHandler> = new Map()
+    private gameStartTime: number = 0 // Track game start time
 
     constructor(
         world: World,
@@ -39,12 +40,10 @@ export class GameStateSystem extends System {
     }
 
     private initializeStateHandlers(): void {
-        this.stateHandlers = new Map([
-            ['enemiesWave1', new Wave1State()],
-            ['enemiesWave2', new Wave2State()],
-            ['bossFight', new BossFightState()],
-            ['newShipOffer', new NewShipOfferState()],
-        ])
+        this.stateHandlers.set('enemiesWave1', new Wave1State())
+        this.stateHandlers.set('enemiesWave2', new Wave2State())
+        this.stateHandlers.set('bossFight', new BossFightState())
+        this.stateHandlers.set('newShipOffer', new NewShipOfferState())
     }
 
     // Method to set the leveling system reference (called from GameWorld constructor)
@@ -65,6 +64,24 @@ export class GameStateSystem extends System {
     update(_deltaTime: number): void {
         const gameState = this.getGameState()
         if (!gameState) return
+
+        // Initialize game start time on first update
+        if (this.gameStartTime === 0) {
+            this.gameStartTime = performance.now() / 1000
+        }
+
+        // Check if 20 seconds have passed and force boss fight if not already in boss fight
+        const currentTime = performance.now() / 1000
+        const gameTime = currentTime - this.gameStartTime
+
+        if (
+            gameTime >= 20.0 &&
+            gameState.currentState !== 'bossFight' &&
+            gameState.currentState !== 'newShipOffer'
+        ) {
+            console.log('⏰ 20 seconds reached! Forcing boss fight...')
+            gameState.currentState = 'bossFight'
+        }
 
         // Always clean up dead enemies and award XP
         this.cleanupDeadEnemies()
@@ -230,6 +247,9 @@ export class GameStateSystem extends System {
         if (!gameState) return
 
         console.log('🎮 Starting complete game restart...')
+
+        // Reset timing
+        this.gameStartTime = 0
 
         // Reset game state
         gameState.currentState = 'enemiesWave1'
