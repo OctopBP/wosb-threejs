@@ -9,7 +9,7 @@ export const collisionPresets = {
     // Ship collision presets
     playerShip: {
         shape: 'box' as const,
-        width: 0.4,
+        width: 0.5,
         height: 1,
         depth: 1.4,
     } satisfies BoxCollider,

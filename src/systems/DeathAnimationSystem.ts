@@ -34,10 +34,14 @@ export class DeathAnimationSystem extends System {
             const position = entity.getComponent<PositionComponent>('position')
             const health = entity.getComponent<HealthComponent>('health')
 
-            if (!deathAnimation || !position || !health) continue
+            if (!deathAnimation || !position || !health) {
+                continue
+            }
 
             // Only animate dead entities
-            if (!health.isDead) continue
+            if (!health.isDead) {
+                continue
+            }
 
             // Update animation time
             deathAnimation.currentTime += deltaTime
@@ -233,15 +237,14 @@ export class DeathAnimationSystem extends System {
      * Initialize death animation for a dead entity
      */
     public startDeathAnimation(
-        entityId: number,
+        entity: Entity,
         sinkSpeed = 3.0,
         sinkDuration = 4.0,
     ): void {
-        const entity = this.world.getEntity(entityId)
-        if (!entity) return
-
         const position = entity.getComponent<PositionComponent>('position')
-        if (!position) return
+        if (!position) {
+            return
+        }
 
         // Add death animation component
         const deathAnimation: DeathAnimationComponent = {

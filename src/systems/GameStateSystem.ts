@@ -5,16 +5,12 @@ import type {
     GameState,
     GameStateComponent,
     HealthComponent,
-    PositionComponent,
     RenderableComponent,
-    XPBarrelComponent,
 } from '../ecs/Component'
 import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
-import { spawnBarrelsAroundPosition } from '../entities/BarrelFactory'
 import type { GameWorld } from '../GameWorld'
-import type { LevelingSystem } from './LevelingSystem'
 import type { GameStateHandler } from './states'
 import {
     BossFightState,
@@ -24,7 +20,6 @@ import {
 } from './states'
 export class GameStateSystem extends System {
     private gameStateEntity: Entity | null = null
-    private levelingSystem: LevelingSystem | null = null
     private gameWorld: GameWorld | null = null
     public config: GameStateConfig
     private stateHandlers: Map<string, GameStateHandler> = new Map()
@@ -47,11 +42,6 @@ export class GameStateSystem extends System {
         ])
     }
 
-    // Method to set the leveling system reference (called from GameWorld constructor)
-    setLevelingSystem(levelingSystem: LevelingSystem): void {
-        this.levelingSystem = levelingSystem
-    }
-
     // Method to set the GameWorld reference (called from GameWorld constructor)
     setGameWorld(gameWorld: GameWorld): void {
         this.gameWorld = gameWorld
@@ -65,9 +55,6 @@ export class GameStateSystem extends System {
     update(_deltaTime: number): void {
         const gameState = this.getGameState()
         if (!gameState) return
-
-        // Always clean up dead enemies and award XP
-        this.cleanupDeadEnemies()
 
         // Handle current state using appropriate handler
         const stateHandler = this.stateHandlers.get(gameState.currentState)
@@ -124,85 +111,6 @@ export class GameStateSystem extends System {
                 'gameState',
             ) || null
         )
-    }
-
-    private cleanupDeadEnemies(): void {
-        const enemies = this.world.getEntitiesWithComponents([
-            'enemy',
-            'health',
-        ])
-
-        // Find newly dead enemies (dead but don't have death animation component yet)
-        const newlyDeadEnemies = enemies.filter((enemy) => {
-            const health = enemy.getComponent<HealthComponent>('health')
-            const hasDeathAnimation = enemy.hasComponent('deathAnimation')
-            return health?.isDead === true && !hasDeathAnimation
-        })
-
-        if (newlyDeadEnemies.length > 0) {
-            // Award XP for newly dead enemies (dev logic)
-            if (this.levelingSystem) {
-                // Find the player entity to award XP to
-                const playerEntities = this.world.getEntitiesWithComponents([
-                    'player',
-                ])
-                if (playerEntities.length > 0) {
-                    const player = playerEntities[0]
-                    for (const deadEnemy of newlyDeadEnemies) {
-                        // Check if it's a boss or regular enemy and use configured XP multipliers
-                        const isBoss = deadEnemy.hasComponent('boss')
-                        const xpMultiplier = isBoss
-                            ? this.config.boss.xpMultiplier
-                            : 1
-                        // You may need to import or define enemyXPConfig.basicEnemy if not already present
-                        // For now, let's assume a value of 1 for demonstration
-                        const xpAwarded = 1 * xpMultiplier
-                        this.levelingSystem.awardXP(player.id, xpAwarded)
-                    }
-                }
-            }
-
-            // Spawn XP barrels for each dead enemy (HEAD logic)
-            for (const deadEnemy of newlyDeadEnemies) {
-                // Get enemy position for barrel spawning
-                const enemyPosition =
-                    deadEnemy.getComponent<PositionComponent>('position')
-                if (!enemyPosition) continue
-
-                // Check if it's a boss or regular enemy
-                const isBoss = deadEnemy.hasComponent('boss')
-
-                // Spawn barrels around the enemy's death position
-                const barrels = spawnBarrelsAroundPosition(
-                    enemyPosition.x,
-                    enemyPosition.y,
-                    enemyPosition.z,
-                    isBoss,
-                )
-
-                // Add barrels to the world
-                for (const barrel of barrels) {
-                    this.world.addEntity(barrel)
-                }
-
-                const firstBarrel =
-                    barrels[0]?.getComponent<XPBarrelComponent>('xpBarrel')
-                const totalXP = barrels.length * (firstBarrel?.xpValue || 0)
-
-                if (isBoss) {
-                    console.log(
-                        `💀 Boss defeated! Spawned ${barrels.length} barrels worth ${totalXP} total XP`,
-                    )
-                } else {
-                    console.log(
-                        `💀 Enemy defeated! Spawned ${barrels.length} barrels worth ${totalXP} total XP`,
-                    )
-                }
-            }
-        }
-
-        // Note: Dead enemies are now handled by DeathAnimationSystem
-        // They will be removed after their sinking animation completes
     }
 
     private checkPlayerDeath(gameState: GameStateComponent): void {

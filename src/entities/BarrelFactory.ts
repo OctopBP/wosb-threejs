@@ -1,7 +1,6 @@
 import type { BarrelConfig } from '../config/BarrelConfig'
 import { bossBarrelConfig, defaultBarrelConfig } from '../config/BarrelConfig'
 import type {
-    BarrelAnimationState,
     CollectableComponent,
     CollisionComponent,
     PositionComponent,

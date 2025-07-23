@@ -1,4 +1,4 @@
-import type { Object3D } from 'three'
+import type { Material, Object3D } from 'three'
 import type { VisualUpgradeConfig } from '../config/LevelingConfig'
 import type { ModelType } from '../config/ModelConfig'
 
@@ -315,6 +315,10 @@ export interface DebugComponent extends Component {
 // Animation states for barrels
 export type BarrelAnimationState = 'flying' | 'floating' | 'attracting'
 
+export interface SpawnBarrelComponent extends Component {
+    type: 'spawnBarrel'
+}
+
 // XP Barrel component for collectable barrels that award experience
 export interface XPBarrelComponent extends Component {
     type: 'xpBarrel'
@@ -353,7 +357,7 @@ export interface DeathAnimationComponent extends Component {
     currentTime: number // Current time in animation
     wreckageTriggered: boolean // Whether wreckage particles have been triggered
     dissolveShaderApplied: boolean // Whether dissolve shader has been applied
-    originalMaterial?: any // Store original material for cleanup
+    originalMaterial?: Material // Store original material for cleanup
 }
 
 // Alive component - entities with this component are alive and should participate in normal systems

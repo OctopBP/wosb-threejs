@@ -7,6 +7,7 @@ import type {
     PositionComponent,
     ProjectileComponent,
     RenderableComponent,
+    SpawnBarrelComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
@@ -114,6 +115,10 @@ export class CollisionSystem extends System {
                             target.removeComponent('alive')
                         }
 
+                        target.addComponent<SpawnBarrelComponent>({
+                            type: 'spawnBarrel',
+                        })
+
                         // Play death/explosion sound
                         this.playDeathSound()
 
@@ -123,7 +128,7 @@ export class CollisionSystem extends System {
                             this.deathAnimationSystem
                         ) {
                             this.deathAnimationSystem.startDeathAnimation(
-                                target.id,
+                                target,
                             )
                         }
                     }
