@@ -12,8 +12,13 @@ const OFFER_LINK = 'https://www.worldofseabattle.com'
 
 export class NewShipOfferUISystem extends System {
     private offerUI: HTMLElement | null = null
+    private contentContainer: HTMLElement | null = null
+    private topText: HTMLElement | null = null
+    private logoButtonContainer: HTMLElement | null = null
+    private bottomText: HTMLElement | null = null
     private isUICreated = false
     private gameStateSystem: GameStateSystem | null = null
+    private isVisible = false
 
     constructor(world: World) {
         super(world, [])
@@ -64,38 +69,53 @@ export class NewShipOfferUISystem extends System {
         this.offerUI.style.width = '100%'
         this.offerUI.style.height = '100%'
         this.offerUI.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
-        this.offerUI.style.display = 'none'
+        this.offerUI.style.display = 'flex'
         this.offerUI.style.justifyContent = 'center'
         this.offerUI.style.alignItems = 'center'
         this.offerUI.style.flexDirection = 'column'
         this.offerUI.style.zIndex = '10000'
         this.offerUI.style.fontFamily = 'Arial, sans-serif'
+        this.offerUI.style.opacity = '0'
+        this.offerUI.style.visibility = 'hidden'
+        this.offerUI.style.transition =
+            'opacity 0.3s ease-out, visibility 0.3s ease-out'
 
         // Create main content container
-        const contentContainer = document.createElement('div')
-        contentContainer.style.display = 'flex'
-        contentContainer.style.flexDirection = 'column'
-        contentContainer.style.alignItems = 'center'
-        contentContainer.style.textAlign = 'center'
-        contentContainer.style.maxWidth = '500px'
-        contentContainer.style.width = '90%'
+        this.contentContainer = document.createElement('div')
+        this.contentContainer.style.display = 'flex'
+        this.contentContainer.style.flexDirection = 'column'
+        this.contentContainer.style.alignItems = 'center'
+        this.contentContainer.style.textAlign = 'center'
+        this.contentContainer.style.maxWidth = '500px'
+        this.contentContainer.style.width = '90%'
+        this.contentContainer.style.transform = 'scale(0.8) translateY(30px)'
+        this.contentContainer.style.transition =
+            'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
 
         // Create text above image
-        const topText = document.createElement('h1')
-        topText.textContent = TOP_TEXT
-        topText.style.color = '#FFFFFF'
-        topText.style.fontSize = '34px'
-        topText.style.fontWeight = 'bold'
-        topText.style.margin = '0 0 30px 0'
-        topText.style.textShadow = '3px 3px 6px rgba(0, 0, 0, 0.8)'
-        topText.style.letterSpacing = '2px'
+        this.topText = document.createElement('h1')
+        this.topText.textContent = TOP_TEXT
+        this.topText.style.color = '#FFFFFF'
+        this.topText.style.fontSize = '34px'
+        this.topText.style.fontWeight = 'bold'
+        this.topText.style.margin = '0 0 30px 0'
+        this.topText.style.textShadow = '3px 3px 6px rgba(0, 0, 0, 0.8)'
+        this.topText.style.letterSpacing = '2px'
+        this.topText.style.opacity = '0'
+        this.topText.style.transform = 'translateY(-20px)'
+        this.topText.style.transition =
+            'opacity 0.5s ease-out, transform 0.5s ease-out'
 
         // --- Logo + Button Container ---
-        const logoButtonContainer = document.createElement('div')
-        logoButtonContainer.style.position = 'relative'
-        logoButtonContainer.style.display = 'inline-block'
-        logoButtonContainer.style.width = '300px'
-        logoButtonContainer.style.margin = '20px 0'
+        this.logoButtonContainer = document.createElement('div')
+        this.logoButtonContainer.style.position = 'relative'
+        this.logoButtonContainer.style.display = 'inline-block'
+        this.logoButtonContainer.style.width = '300px'
+        this.logoButtonContainer.style.margin = '20px 0'
+        this.logoButtonContainer.style.opacity = '0'
+        this.logoButtonContainer.style.transform = 'scale(0.9)'
+        this.logoButtonContainer.style.transition =
+            'opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
 
         // Create prince logo image
         const logoImage = document.createElement('img')
@@ -159,25 +179,28 @@ export class NewShipOfferUISystem extends System {
         buttonContainer.appendChild(buttonText)
 
         // Assemble logo + button
-        logoButtonContainer.appendChild(logoImage)
-        logoButtonContainer.appendChild(buttonContainer)
+        this.logoButtonContainer.appendChild(logoImage)
+        this.logoButtonContainer.appendChild(buttonContainer)
 
         // Create text below image
-        const bottomText = document.createElement('p')
-        bottomText.textContent = BOTTOM_TEXT
-        bottomText.style.color = '#FFFFFF'
-        bottomText.style.fontSize = '24px'
-        bottomText.style.margin = '30px 0 40px 0'
-        bottomText.style.opacity = '0.95'
-        bottomText.style.lineHeight = '1.5'
-        bottomText.style.whiteSpace = 'pre-line'
-        bottomText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
+        this.bottomText = document.createElement('p')
+        this.bottomText.textContent = BOTTOM_TEXT
+        this.bottomText.style.color = '#FFFFFF'
+        this.bottomText.style.fontSize = '24px'
+        this.bottomText.style.margin = '30px 0 40px 0'
+        this.bottomText.style.opacity = '0'
+        this.bottomText.style.lineHeight = '1.5'
+        this.bottomText.style.whiteSpace = 'pre-line'
+        this.bottomText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
+        this.bottomText.style.transform = 'translateY(20px)'
+        this.bottomText.style.transition =
+            'opacity 0.7s ease-out, transform 0.7s ease-out'
 
         // Assemble the UI
-        contentContainer.appendChild(topText)
-        contentContainer.appendChild(logoButtonContainer)
-        contentContainer.appendChild(bottomText)
-        this.offerUI.appendChild(contentContainer)
+        this.contentContainer.appendChild(this.topText)
+        this.contentContainer.appendChild(this.logoButtonContainer)
+        this.contentContainer.appendChild(this.bottomText)
+        this.offerUI.appendChild(this.contentContainer)
 
         // Add to page
         document.body.appendChild(this.offerUI)
@@ -185,14 +208,78 @@ export class NewShipOfferUISystem extends System {
     }
 
     private showUI(): void {
-        if (this.offerUI) {
-            this.offerUI.style.display = 'flex'
+        if (this.offerUI && !this.isVisible) {
+            this.isVisible = true
+
+            // Show the overlay
+            this.offerUI.style.visibility = 'visible'
+            this.offerUI.style.opacity = '1'
+
+            // Animate content container
+            if (this.contentContainer) {
+                setTimeout(() => {
+                    this.contentContainer!.style.transform =
+                        'scale(1) translateY(0)'
+                }, 100)
+            }
+
+            // Stagger the text animations
+            if (this.topText) {
+                setTimeout(() => {
+                    this.topText!.style.opacity = '1'
+                    this.topText!.style.transform = 'translateY(0)'
+                }, 200)
+            }
+
+            if (this.logoButtonContainer) {
+                setTimeout(() => {
+                    this.logoButtonContainer!.style.opacity = '1'
+                    this.logoButtonContainer!.style.transform = 'scale(1)'
+                }, 400)
+            }
+
+            if (this.bottomText) {
+                setTimeout(() => {
+                    this.bottomText!.style.opacity = '1'
+                    this.bottomText!.style.transform = 'translateY(0)'
+                }, 600)
+            }
         }
     }
 
     private hideUI(): void {
-        if (this.offerUI) {
-            this.offerUI.style.display = 'none'
+        if (this.offerUI && this.isVisible) {
+            this.isVisible = false
+
+            // Reset all animations to initial state
+            if (this.topText) {
+                this.topText.style.opacity = '0'
+                this.topText.style.transform = 'translateY(-20px)'
+            }
+
+            if (this.logoButtonContainer) {
+                this.logoButtonContainer.style.opacity = '0'
+                this.logoButtonContainer.style.transform = 'scale(0.9)'
+            }
+
+            if (this.bottomText) {
+                this.bottomText.style.opacity = '0'
+                this.bottomText.style.transform = 'translateY(20px)'
+            }
+
+            if (this.contentContainer) {
+                this.contentContainer.style.transform =
+                    'scale(0.8) translateY(30px)'
+            }
+
+            // Hide the overlay
+            this.offerUI.style.opacity = '0'
+
+            setTimeout(() => {
+                if (this.offerUI) {
+                    this.offerUI.style.visibility = 'hidden'
+                }
+            }, 300)
         }
     }
 
@@ -206,5 +293,6 @@ export class NewShipOfferUISystem extends System {
             this.offerUI.parentNode.removeChild(this.offerUI)
         }
         this.isUICreated = false
+        this.isVisible = false
     }
 }
