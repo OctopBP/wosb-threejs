@@ -36,13 +36,8 @@ export class AudioUISystem extends System {
             border: none;
             border-radius: 8px;
             background: rgba(0, 0, 0, 0.7);
-            color: white;
-            font-size: 24px;
             cursor: pointer;
             z-index: 1001;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             transition: all 0.2s ease;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -51,12 +46,16 @@ export class AudioUISystem extends System {
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
+            background-size: 30px 30px;
+            background-repeat: no-repeat;
+            background-position: center;
         `
 
         this.muteButton.addEventListener('mouseenter', () => {
             if (this.muteButton) {
                 this.muteButton.style.background = 'rgba(255, 255, 255, 0.1)'
                 this.muteButton.style.transform = 'scale(1.05)'
+                this.updateButtonIcon()
             }
         })
 
@@ -64,6 +63,7 @@ export class AudioUISystem extends System {
             if (this.muteButton) {
                 this.muteButton.style.background = 'rgba(0, 0, 0, 0.7)'
                 this.muteButton.style.transform = 'scale(1)'
+                this.updateButtonIcon()
             }
         })
 
@@ -79,8 +79,19 @@ export class AudioUISystem extends System {
         if (!this.muteButton || !this.audioSystem) return
 
         const isMuted = this.audioSystem.isMuted()
-        this.muteButton.textContent = isMuted ? '🔇' : '🔊'
         this.muteButton.title = isMuted ? 'Unmute' : 'Mute'
+        this.updateButtonIcon()
+    }
+
+    private updateButtonIcon(): void {
+        if (!this.muteButton || !this.audioSystem) return
+
+        const isMuted = this.audioSystem.isMuted()
+        const iconPath = isMuted
+            ? '/assets/ui/nosound.png'
+            : '/assets/ui/sound.png'
+
+        this.muteButton.style.backgroundImage = `url('${iconPath}')`
     }
 
     private toggleMute(): void {
