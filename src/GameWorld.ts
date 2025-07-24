@@ -28,6 +28,7 @@ import {
     BossFightUISystem,
     EnemyAISystem,
     GameStateSystem,
+    GoalUISystem,
     NewShipOfferUISystem,
 } from './systems'
 import { AccelerationSystem } from './systems/AccelerationSystem'
@@ -76,6 +77,7 @@ export class GameWorld {
     private enemyHealthUISystem: EnemyHealthUISystem
     private newShipOfferUISystem: NewShipOfferUISystem
     private bossFightUISystem: BossFightUISystem
+    private goalUISystem: GoalUISystem
     private cameraSystem: CameraSystem
     private rangeIndicatorSystem: RangeIndicatorSystem
     private enemyArrowSystem: EnemyArrowSystem
@@ -126,6 +128,7 @@ export class GameWorld {
         )
         this.newShipOfferUISystem = new NewShipOfferUISystem(this.world)
         this.bossFightUISystem = new BossFightUISystem(this.world)
+        this.goalUISystem = new GoalUISystem(this.world, gameStateConfig)
         this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
@@ -172,6 +175,7 @@ export class GameWorld {
         this.world.addSystem(this.levelingSystem) // Handle XP gain and level-ups
         this.world.addSystem(this.playerUISystem) // Update leveling and health UI
         this.world.addSystem(this.enemyHealthUISystem) // Update enemy health UI
+        this.world.addSystem(this.goalUISystem) // Display current goal and progress
         this.world.addSystem(this.rangeIndicatorSystem) // Update range indicator
         this.world.addSystem(this.enemyArrowSystem) // Update enemy arrows
         this.world.addSystem(this.newShipOfferUISystem) // Handle new ship offer UI
