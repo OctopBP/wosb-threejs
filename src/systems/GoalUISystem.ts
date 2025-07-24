@@ -1,11 +1,11 @@
 import type { GameStateConfig } from '../config/GameStateConfig'
 import type { GameStateComponent, HealthComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 
 export class GoalUISystem extends System {
     private goalContainer: HTMLElement | null = null
-    private counterContainer: HTMLElement | null = null
     private goalText: HTMLElement | null = null
     private counterText: HTMLElement | null = null
     private isUICreated = false
@@ -50,37 +50,37 @@ export class GoalUISystem extends System {
     private createUI(): void {
         if (this.isUICreated) return
 
-        // Create goal text container (center)
+        // Create goal container (top center, flex row)
         this.goalContainer = document.createElement('div')
         this.goalContainer.style.position = 'fixed'
-        this.goalContainer.style.top = '60px'
+        this.goalContainer.style.top = '10px'
         this.goalContainer.style.left = '50%'
         this.goalContainer.style.transform = 'translateX(-50%)'
         this.goalContainer.style.zIndex = '1002'
         this.goalContainer.style.pointerEvents = 'none'
         this.goalContainer.style.fontFamily = 'Arial, sans-serif'
-        this.goalContainer.style.fontSize = '24px'
+        this.goalContainer.style.fontSize = '18px'
         this.goalContainer.style.fontWeight = 'bold'
-        this.goalContainer.style.color = '#FFD700'
-        this.goalContainer.style.textShadow = '3px 3px 6px rgba(0, 0, 0, 0.8)'
+        this.goalContainer.style.color = '#ffffff'
+        this.goalContainer.style.textShadow = '3px 3px 6px rgba(0, 0, 0, 0.5)'
         this.goalContainer.style.textAlign = 'center'
         this.goalContainer.style.letterSpacing = '1px'
+        this.goalContainer.style.display = 'flex'
+        this.goalContainer.style.alignItems = 'center'
+        this.goalContainer.style.gap = '16px'
 
+        // Goal text
         this.goalText = document.createElement('div')
+        this.goalText.style.flex = 'none'
         this.goalContainer.appendChild(this.goalText)
 
-        // Create counter container (left)
-        this.counterContainer = document.createElement('div')
-        this.counterContainer.style.position = 'fixed'
-        this.counterContainer.style.top = '120px'
-        this.counterContainer.style.left = '30px'
-        this.counterContainer.style.zIndex = '1002'
-        this.counterContainer.style.pointerEvents = 'none'
-        this.counterContainer.style.display = 'flex'
-        this.counterContainer.style.alignItems = 'center'
-        this.counterContainer.style.gap = '12px'
+        // Counter (icon + text, in a flex row)
+        const counterWrapper = document.createElement('div')
+        counterWrapper.style.display = 'flex'
+        counterWrapper.style.alignItems = 'center'
+        counterWrapper.style.gap = '12px'
 
-        // Create counter background with enemy icon
+        // Counter background with enemy icon
         const counterBg = document.createElement('div')
         counterBg.style.position = 'relative'
         counterBg.style.width = '80px'
@@ -90,7 +90,7 @@ export class GoalUISystem extends System {
         counterBg.style.backgroundRepeat = 'no-repeat'
         counterBg.style.backgroundPosition = 'center'
 
-        // Create enemy icon
+        // Enemy icon
         const enemyIcon = document.createElement('img')
         enemyIcon.src = 'assets/ui/enemy_icon.png'
         enemyIcon.style.position = 'absolute'
@@ -100,23 +100,26 @@ export class GoalUISystem extends System {
         enemyIcon.style.width = '24px'
         enemyIcon.style.height = '24px'
         enemyIcon.style.objectFit = 'contain'
-
         counterBg.appendChild(enemyIcon)
 
-        // Create counter text
+        // Counter text
         this.counterText = document.createElement('div')
         this.counterText.style.fontFamily = 'Arial, sans-serif'
         this.counterText.style.fontSize = '18px'
         this.counterText.style.fontWeight = 'bold'
         this.counterText.style.color = '#FFFFFF'
         this.counterText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
+        this.counterText.style.position = 'absolute'
+        this.counterText.style.right = '8px'
+        this.counterText.style.top = '50%'
+        this.counterText.style.transform = 'translateY(-50%)'
+        counterBg.appendChild(this.counterText)
 
-        this.counterContainer.appendChild(counterBg)
-        this.counterContainer.appendChild(this.counterText)
+        counterWrapper.appendChild(counterBg)
+        this.goalContainer.appendChild(counterWrapper)
 
         // Add to page
         document.body.appendChild(this.goalContainer)
-        document.body.appendChild(this.counterContainer)
         this.isUICreated = true
     }
 
@@ -129,7 +132,7 @@ export class GoalUISystem extends System {
 
         switch (gameState.currentState) {
             case 'initialWave':
-                goalMessage = `Kill ${this.config.initialWave.enemyCount} enemy`
+                goalMessage = `Defeat ${this.config.initialWave.enemyCount} enemy`
                 totalCount = this.config.initialWave.enemyCount
                 killedCount = this.calculateKilledEnemies(
                     gameState,
@@ -138,13 +141,13 @@ export class GoalUISystem extends System {
                 break
 
             case 'enemiesWave1':
-                goalMessage = `Kill ${this.config.wave1.enemyCount} enemies`
+                goalMessage = `Defeat ${this.config.wave1.enemyCount} enemies`
                 totalCount = this.config.wave1.enemyCount
                 killedCount = this.calculateKilledEnemies(gameState, 'wave1')
                 break
 
             case 'enemiesWave2':
-                goalMessage = `Kill ${this.config.wave2.enemyCount} enemies`
+                goalMessage = `Defeat ${this.config.wave2.enemyCount} enemies`
                 totalCount = this.config.wave2.enemyCount
                 killedCount = this.calculateKilledEnemies(gameState, 'wave2')
                 break
@@ -211,10 +214,7 @@ export class GoalUISystem extends System {
 
     private showUI(): void {
         if (this.goalContainer) {
-            this.goalContainer.style.display = 'block'
-        }
-        if (this.counterContainer) {
-            this.counterContainer.style.display = 'flex'
+            this.goalContainer.style.display = 'flex'
         }
     }
 
@@ -222,17 +222,11 @@ export class GoalUISystem extends System {
         if (this.goalContainer) {
             this.goalContainer.style.display = 'none'
         }
-        if (this.counterContainer) {
-            this.counterContainer.style.display = 'none'
-        }
     }
 
     cleanup(): void {
         if (this.goalContainer?.parentNode) {
             this.goalContainer.parentNode.removeChild(this.goalContainer)
-        }
-        if (this.counterContainer?.parentNode) {
-            this.counterContainer.parentNode.removeChild(this.counterContainer)
         }
         this.isUICreated = false
     }
