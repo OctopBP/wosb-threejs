@@ -1,69 +1,72 @@
 // Island configuration based on islands.glb model data
 export interface IslandData {
-    name: string
+    // name: string
     position: { x: number; y: number; z: number }
-    rotation?: { x: number; y: number; z: number; w: number }
-    scale: { x: number; y: number; z: number }
+    // scale: { x: number; y: number; z: number }
     collisionRadius: number
 }
 
 // Island positions extracted from islands.glb glTF file
 export const ISLAND_DATA: IslandData[] = [
     {
-        name: 's4',
-        position: { x: -32.89, y: 0.01, z: -20.77 },
-        rotation: { x: 0.0, y: -0.918339252, z: 0.0, w: -0.395794153 },
-        scale: { x: 1.0, y: 1.0, z: 1.0 },
-        collisionRadius: 8.0,
-    },
-    {
-        name: 's1',
-        position: { x: 44.85, y: 0.01, z: -10.71 },
-        rotation: { x: 0.0, y: 0.5945439, z: 0.0, w: 0.8040632 },
-        scale: { x: 1.0, y: 1.0, z: 1.0 },
-        collisionRadius: 8.0,
-    },
-    {
-        name: 's2',
-        position: { x: 37.33, y: 0.01, z: 81.77 },
-        rotation: { x: 0.0, y: -0.06110829, z: 0.0, w: 0.998131156 },
-        scale: { x: 1.0, y: 1.0, z: 1.0 },
-        collisionRadius: 8.0,
-    },
-    {
-        name: 's3',
-        position: { x: -28.63, y: 0.01, z: 48.69 },
-        rotation: { x: 0.0, y: 0.3904391, z: 0.0, w: 0.9206288 },
-        scale: { x: 1.0, y: 1.0, z: 1.0 },
-        collisionRadius: 8.0,
-    },
-    {
-        name: 'm_1',
-        position: { x: 42.5, y: 0.06, z: -3.95 },
-        rotation: { x: 0.0, y: -0.168478966, z: 0.0, w: 0.985705256 },
-        scale: { x: 1.58, y: 1.0, z: 1.58 },
-        collisionRadius: 12.0,
-    },
-    {
-        name: 'm2',
-        position: { x: 42.89, y: 0.06, z: 62.39 },
-        rotation: { x: 0.0, y: -0.730440259, z: 0.0, w: 0.682976544 },
-        scale: { x: 2.24, y: 1.0, z: 1.58 },
+        position: { x: 5, y: 0.01, z: -25 },
         collisionRadius: 15.0,
     },
     {
-        name: 'm3',
-        position: { x: -49.31, y: 0.0, z: 46.45 },
-        rotation: { x: 0.0, y: 0.7446364, z: 0.0, w: 0.667470336 },
-        scale: { x: 2.44, y: 2.44, z: 2.44 },
-        collisionRadius: 18.0,
+        position: { x: -25, y: 0.01, z: -38 },
+        collisionRadius: 35.0,
     },
     {
-        name: 'm4',
-        position: { x: -42.12, y: 0.0, z: -8.83 },
-        rotation: { x: 0.0, y: -0.968601346, z: 0.0, w: 0.24861902 },
-        scale: { x: 2.44, y: 2.44, z: 2.44 },
-        collisionRadius: 18.0,
+        position: { x: 20, y: 0.01, z: -15 },
+        collisionRadius: 20.0,
+    },
+    {
+        position: { x: 52, y: 0.01, z: 22 },
+        collisionRadius: 30.0,
+    },
+    {
+        position: { x: -16, y: 0.01, z: 16 },
+        collisionRadius: 10.0,
+    },
+    {
+        position: { x: -22, y: 0.01, z: 54 },
+        collisionRadius: 12.0,
+    },
+    {
+        position: { x: 17, y: 0.01, z: 60 },
+        collisionRadius: 10.0,
+    },
+    {
+        position: { x: -65, y: 0.01, z: -30 },
+        collisionRadius: 40.0,
+    },
+    {
+        position: { x: -82, y: 0.01, z: 10 },
+        collisionRadius: 40.0,
+    },
+    {
+        position: { x: -80, y: 0.01, z: 48 },
+        collisionRadius: 40.0,
+    },
+    {
+        position: { x: 70, y: 0.01, z: 65 },
+        collisionRadius: 40.0,
+    },
+    {
+        position: { x: 45, y: 0.01, z: 100 },
+        collisionRadius: 35.0,
+    },
+    {
+        position: { x: 5, y: 0.01, z: 130 },
+        collisionRadius: 60.0,
+    },
+    {
+        position: { x: -30, y: 0.01, z: 100 },
+        collisionRadius: 30.0,
+    },
+    {
+        position: { x: -52, y: 0.01, z: 80 },
+        collisionRadius: 20.0,
     },
 ]
 
@@ -74,7 +77,7 @@ export const PATHFINDING_CONFIG = {
         minX: -80,
         maxX: 80,
         minZ: -40,
-        maxZ: 100,
+        maxZ: 120,
     },
     islandPadding: 2.0, // Extra padding around islands for safety
 } as const
