@@ -194,6 +194,14 @@ export function createModelCollision(
     }
 }
 
+// Factory function specifically for island mesh colliders
+export function createIslandMeshCollision(
+    scale: number = 1.0,
+    offset?: { x: number; y: number; z: number },
+): CollisionComponent {
+    return createModelCollision('island', 'geometry', scale, offset)
+}
+
 // Preset model colliders for common use cases
 export const modelCollisionPresets = {
     playerShipModel: {
@@ -224,6 +232,15 @@ export const modelCollisionPresets = {
         scale: 3.5,
     } satisfies ModelCollider,
 
+    // Island mesh collider preset - uses geometry precision for accurate collision
+    islandMesh: {
+        shape: 'model' as const,
+        modelType: 'island' as ModelType,
+        precision: 'geometry' as const,
+        scale: 1.0,
+    } satisfies ModelCollider,
+
+    // Keep the original island model preset for compatibility
     islandModel: {
         shape: 'model' as const,
         modelType: 'island' as ModelType,
@@ -250,7 +267,13 @@ export const modelCollisionPresets = {
  * entity.addComponent(collision)
  * ```
  *
- * Example 2: Model collider with offset
+ * Example 2: Island mesh collider (recommended for islands)
+ * ```typescript
+ * const collision = createIslandMeshCollision(1.0)
+ * entity.addComponent(collision)
+ * ```
+ *
+ * Example 3: Model collider with offset
  * ```typescript
  * const collision = createModelCollision(
  *     'boss',
@@ -261,17 +284,17 @@ export const modelCollisionPresets = {
  * entity.addComponent(collision)
  * ```
  *
- * Example 3: High-precision collision for complex shapes
+ * Example 4: High-precision collision for complex shapes
  * ```typescript
  * const collision = createModelCollision('island', 'geometry', 1.0)
  * entity.addComponent(collision)
  * ```
  *
- * Example 4: Using preset model colliders
+ * Example 5: Using preset model colliders
  * ```typescript
  * const collision: CollisionComponent = {
  *     type: 'collision',
- *     collider: modelCollisionPresets.barrelModel,
+ *     collider: modelCollisionPresets.islandMesh,
  *     offset: { x: 0, y: 0.5, z: 0 }
  * }
  * entity.addComponent(collision)
@@ -280,7 +303,7 @@ export const modelCollisionPresets = {
  * Performance considerations:
  * - boundingBox: Fastest, good for most rectangular/box-like objects
  * - boundingSphere: Fast, good for round objects like barrels
- * - geometry: Slowest, only use for very complex shapes where accuracy is critical
+ * - geometry: Slowest, recommended ONLY for islands and complex static obstacles
  *
  * The collision system caches collision data per model+scale combination,
  * so multiple entities using the same model collider are efficient.
