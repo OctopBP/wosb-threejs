@@ -1,8 +1,6 @@
 // Island configuration based on islands.glb model data
 export interface IslandData {
-    // name: string
     position: { x: number; y: number; z: number }
-    // scale: { x: number; y: number; z: number }
     collisionRadius: number
 }
 
@@ -69,68 +67,3 @@ export const ISLAND_DATA: IslandData[] = [
         collisionRadius: 20.0,
     },
 ]
-
-// Grid configuration for pathfinding
-export const PATHFINDING_CONFIG = {
-    gridSize: 2.0, // Size of each grid cell in world units
-    worldBounds: {
-        minX: -80,
-        maxX: 80,
-        minZ: -40,
-        maxZ: 120,
-    },
-    islandPadding: 2.0, // Extra padding around islands for safety
-} as const
-
-// Calculate grid dimensions
-export const GRID_WIDTH = Math.ceil(
-    (PATHFINDING_CONFIG.worldBounds.maxX -
-        PATHFINDING_CONFIG.worldBounds.minX) /
-        PATHFINDING_CONFIG.gridSize,
-)
-export const GRID_HEIGHT = Math.ceil(
-    (PATHFINDING_CONFIG.worldBounds.maxZ -
-        PATHFINDING_CONFIG.worldBounds.minZ) /
-        PATHFINDING_CONFIG.gridSize,
-)
-
-// Grid cell types
-export enum CellType {
-    SEA = 0,
-    ISLAND = 1,
-}
-
-// Convert world coordinates to grid coordinates
-export function worldToGrid(
-    worldX: number,
-    worldZ: number,
-): { x: number; z: number } {
-    const gridX = Math.floor(
-        (worldX - PATHFINDING_CONFIG.worldBounds.minX) /
-            PATHFINDING_CONFIG.gridSize,
-    )
-    const gridZ = Math.floor(
-        (worldZ - PATHFINDING_CONFIG.worldBounds.minZ) /
-            PATHFINDING_CONFIG.gridSize,
-    )
-    return { x: gridX, z: gridZ }
-}
-
-// Convert grid coordinates to world coordinates (center of cell)
-export function gridToWorld(
-    gridX: number,
-    gridZ: number,
-): { x: number; z: number } {
-    const worldX =
-        PATHFINDING_CONFIG.worldBounds.minX +
-        (gridX + 0.5) * PATHFINDING_CONFIG.gridSize
-    const worldZ =
-        PATHFINDING_CONFIG.worldBounds.minZ +
-        (gridZ + 0.5) * PATHFINDING_CONFIG.gridSize
-    return { x: worldX, z: worldZ }
-}
-
-// Check if grid coordinates are within bounds
-export function isValidGridPosition(gridX: number, gridZ: number): boolean {
-    return gridX >= 0 && gridX < GRID_WIDTH && gridZ >= 0 && gridZ < GRID_HEIGHT
-}

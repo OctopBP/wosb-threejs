@@ -49,7 +49,6 @@ import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
-import { PathfindingSystem } from './systems/PathfindingSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -72,7 +71,6 @@ export class GameWorld {
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
     private environmentCollisionSystem: EnvironmentCollisionSystem
-    private pathfindingSystem: PathfindingSystem
     private deathAnimationSystem: DeathAnimationSystem
     private renderSystem: RenderSystem
     private gameStateSystem: GameStateSystem
@@ -123,7 +121,6 @@ export class GameWorld {
         this.environmentCollisionSystem = new EnvironmentCollisionSystem(
             this.world,
         )
-        this.pathfindingSystem = new PathfindingSystem(this.world)
         this.deathAnimationSystem = new DeathAnimationSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
         this.gameStateSystem = new GameStateSystem(this.world, gameStateConfig)
@@ -161,7 +158,6 @@ export class GameWorld {
         this.deathAnimationSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)
-        this.enemyAISystem.setPathfindingSystem(this.pathfindingSystem)
 
         // Setup audio system
         this.setupAudioSystem()
