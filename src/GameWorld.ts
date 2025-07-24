@@ -46,6 +46,7 @@ import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
+import { ProceduralTextureSystem } from './systems/ProceduralTextureSystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
@@ -85,6 +86,7 @@ export class GameWorld {
     private audioUISystem: AudioUISystem
     private particleSystem: ParticleSystem
     private debugSystem: DebugSystem
+    private proceduralTextureSystem: ProceduralTextureSystem
     private playerEntity: Entity | null = null
     private debugEntity: Entity | null = null
     private lastTime: number = 0
@@ -135,6 +137,7 @@ export class GameWorld {
         this.audioSystem = new AudioSystem(this.world)
         this.audioUISystem = new AudioUISystem(this.world)
         this.particleSystem = new ParticleSystem(this.world, scene, camera)
+        this.proceduralTextureSystem = new ProceduralTextureSystem(this.world)
         this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other
@@ -184,6 +187,7 @@ export class GameWorld {
         this.world.addSystem(this.debugSystem) // Render debug gizmos
         this.world.addSystem(this.particleSystem) // Render particles
         this.world.addSystem(this.renderSystem) // Render the results
+        this.world.addSystem(this.proceduralTextureSystem) // For future animation
     }
 
     init(): void {
@@ -627,5 +631,9 @@ export class GameWorld {
      */
     isAudioInitialized(): boolean {
         return this.audioInitialized
+    }
+
+    getProceduralTextureSystem(): ProceduralTextureSystem {
+        return this.proceduralTextureSystem
     }
 }

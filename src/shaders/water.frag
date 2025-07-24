@@ -16,12 +16,17 @@ uniform float uFresnelPower;
 
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
+varying vec2 vUv;
 
 uniform samplerCube uEnvironmentMap;
+uniform sampler2D bwTexture;
 
 #include <fog_pars_fragment>
 
 void main() {
+  // Sample the procedural black and white texture
+  float bw = texture2D(bwTexture, vUv).r;
+
   // Calculate vector from camera to the vertex
   vec3 viewDirection = normalize(vWorldPosition - cameraPosition);
   vec3 reflectedDirection = reflect(viewDirection, vNormal);
@@ -48,6 +53,9 @@ void main() {
 
   // Mix the final color with the reflection color
   vec3 finalColor = mix(mixedColor2, reflectionColor.rgb, fresnel);
+
+  // Mix the bw value into the final color for demonstration
+  finalColor = mix(finalColor, vec3(bw), 0.2); // 0.2 = blend amount
 
   gl_FragColor = vec4(finalColor, uOpacity);
 

@@ -11,6 +11,7 @@ uniform float uWavesIterations;
 
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
+varying vec2 vUv;
 
 #include <fog_pars_vertex>
 
@@ -89,6 +90,7 @@ void main() {
 
   vNormal = objectNormal;
   vWorldPosition = modelPosition.xyz;
+  vUv = uv;
 
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   gl_Position = projectionMatrix * mvPosition;
