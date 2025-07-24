@@ -1,4 +1,5 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
+import { Mesh, ShaderMaterial } from 'three'
 import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
 import { audioAssets, defaultAudioSettings } from './config/AudioConfig'
 import type { GameStateConfig } from './config/GameStateConfig'
@@ -51,6 +52,7 @@ import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
+import { TrailTextureSystem } from './systems/TrailTextureSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WaveRockingSystem } from './systems/WaveRockingSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
@@ -85,6 +87,7 @@ export class GameWorld {
     private audioUISystem: AudioUISystem
     private particleSystem: ParticleSystem
     private debugSystem: DebugSystem
+    private trailTextureSystem: TrailTextureSystem
     private playerEntity: Entity | null = null
     private debugEntity: Entity | null = null
     private lastTime: number = 0
@@ -136,6 +139,7 @@ export class GameWorld {
         this.audioUISystem = new AudioUISystem(this.world)
         this.particleSystem = new ParticleSystem(this.world, scene, camera)
         this.debugSystem = new DebugSystem(this.world, scene)
+        this.trailTextureSystem = new TrailTextureSystem(this.world, renderer)
 
         // Connect systems that need references to each other
         this.gameStateSystem.setGameWorld(this)
@@ -183,6 +187,7 @@ export class GameWorld {
         this.world.addSystem(this.cameraSystem) // Update camera system
         this.world.addSystem(this.debugSystem) // Render debug gizmos
         this.world.addSystem(this.particleSystem) // Render particles
+        this.world.addSystem(this.trailTextureSystem) // Update ship trails texture
         this.world.addSystem(this.renderSystem) // Render the results
     }
 
@@ -230,6 +235,30 @@ export class GameWorld {
 
         // Update all systems
         this.world.update(clampedDeltaTime)
+
+        // Update water material with trail texture (after trail system has updated)
+        this.updateWaterTrailTexture()
+
+        // Update debug visualization if it exists
+        const debugVisualization =
+            this.scene.getObjectByName('TrailTextureDebug')
+        if (debugVisualization instanceof Mesh) {
+            this.trailTextureSystem.updateDebugVisualization(debugVisualization)
+        }
+    }
+
+    private updateWaterTrailTexture(): void {
+        // Find water mesh in scene and update its material
+        const water = this.scene.getObjectByName('Water')
+        if (water && water instanceof Mesh && water.material) {
+            const material = water.material as any
+            if (material.uniforms) {
+                material.uniforms.uTrailTexture.value =
+                    this.trailTextureSystem.getTrailTexture()
+                material.uniforms.uTrailWorldSize.value =
+                    this.trailTextureSystem.getWorldSize()
+            }
+        }
     }
 
     // Method to access GameStateSystem for configuration changes
@@ -540,6 +569,7 @@ export class GameWorld {
     }
 
     cleanup(): void {
+        this.trailTextureSystem.cleanup()
         this.world.clear()
         this.playerEntity = null
     }
@@ -620,6 +650,33 @@ export class GameWorld {
      */
     getAudioSystem(): AudioSystem {
         return this.audioSystem
+    }
+
+    /**
+     * Get the trail texture system for external use
+     */
+    getTrailTextureSystem(): TrailTextureSystem {
+        return this.trailTextureSystem
+    }
+
+    /**
+     * Toggle trail texture debug visualization
+     */
+    toggleTrailTextureDebug(enabled: boolean): void {
+        const existingDebug = this.scene.getObjectByName('TrailTextureDebug')
+
+        if (enabled && !existingDebug) {
+            const debugMesh = this.trailTextureSystem.createDebugVisualization()
+            this.scene.add(debugMesh)
+        } else if (!enabled && existingDebug) {
+            this.scene.remove(existingDebug)
+            if (existingDebug instanceof Mesh) {
+                existingDebug.geometry?.dispose()
+                if (existingDebug.material instanceof ShaderMaterial) {
+                    existingDebug.material.dispose()
+                }
+            }
+        }
     }
 
     /**

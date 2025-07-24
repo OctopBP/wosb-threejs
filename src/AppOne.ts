@@ -16,6 +16,7 @@ import {
     ShaderMaterial,
     UniformsLib,
     UniformsUtils,
+    Vector2,
     Vector3,
     WebGLRenderer,
 } from 'three'
@@ -134,6 +135,11 @@ export class AppOne {
             uFresnelScale: { value: 0.7 },
             uFresnelPower: { value: 0.5 },
             uEnvironmentMap: { value: envMap },
+            // Ship trails texture uniforms
+            uTrailTexture: { value: null },
+            uTrailWorldSize: { value: new Vector2(100, 100) },
+            uFoamIntensity: { value: 0.3 },
+            uFoamNoiseScale: { value: 5.0 },
         }
         const waterMaterial = new ShaderMaterial({
             vertexShader: waterVertexShader,
@@ -651,6 +657,51 @@ export class AppOne {
                 .onChange((v: string) => {
                     uniforms.uPeakColor.value.set(v)
                 })
+
+            // Trail texture controls
+            const trailFolder = waterFolder.addFolder('Ship Trails')
+            trailFolder
+                .add(uniforms.uFoamIntensity, 'value', 0, 1, 0.01)
+                .name('Foam Intensity')
+            trailFolder
+                .add(uniforms.uFoamNoiseScale, 'value', 1, 20, 0.1)
+                .name('Foam Noise Scale')
+
+            // Add trail system controls
+            const trailSystem = this.gameWorld.getTrailTextureSystem()
+            trailFolder
+                .add(
+                    { fadeAmount: trailSystem.getFadeAmount() },
+                    'fadeAmount',
+                    0.001,
+                    0.1,
+                    0.001,
+                )
+                .name('Trail Fade Amount')
+                .onChange((value: number) => trailSystem.setFadeAmount(value))
+            trailFolder
+                .add(
+                    { trailRadius: trailSystem.getTrailRadius() },
+                    'trailRadius',
+                    0.5,
+                    10,
+                    0.1,
+                )
+                .name('Trail Radius')
+                .onChange((value: number) => trailSystem.setTrailRadius(value))
+
+            // Debug visualization toggle
+            const debugState = { showTrailTexture: false }
+            trailFolder
+                .add(debugState, 'showTrailTexture')
+                .name('Show Trail Texture')
+                .onChange((enabled: boolean) => {
+                    this.gameWorld.toggleTrailTextureDebug(enabled)
+                    console.log(
+                        `🔍 Trail Texture Debug: ${enabled ? 'Enabled' : 'Disabled'}`,
+                    )
+                })
+
             console.log('Water folder created with uniforms:', uniforms)
         } else {
             waterFolder
