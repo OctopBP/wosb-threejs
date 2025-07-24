@@ -8,7 +8,9 @@ import type {
     ProjectileComponent,
     RenderableComponent,
     SpawnBarrelComponent,
+    VelocityComponent,
 } from '../ecs/Component'
+import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { AudioSystem } from './AudioSystem'
@@ -40,6 +42,7 @@ export class CollisionSystem extends System {
     }
 
     update(_deltaTime: number): void {
+        // Handle projectile-to-damageable collisions
         const projectiles = this.world.getEntitiesWithComponents([
             'projectile',
             'position',
@@ -51,7 +54,26 @@ export class CollisionSystem extends System {
             'collision',
         ])
 
+        // Handle ship-to-static object collisions
+        const ships = this.world.getEntitiesWithComponents([
+            'position',
+            'collision',
+            'velocity',
+        ])
+        const staticObjects = this.world
+            .getEntitiesWithComponents(['position', 'collision', 'renderable'])
+            .filter((entity) => {
+                // Islands and other static objects don't have velocity or damageable components
+                return (
+                    !entity.hasComponent('velocity') &&
+                    !entity.hasComponent('damageable')
+                )
+            })
+
         const projectilesToRemove: number[] = []
+
+        // Check ship-to-static object collisions first and resolve them
+        this.handleShipStaticCollisions(ships, staticObjects)
 
         for (const projectile of projectiles) {
             const projectileComp =
@@ -256,5 +278,148 @@ export class CollisionSystem extends System {
 
         // Use the death sound for all death events
         this.audioSystem.playSfx('death')
+    }
+
+    /**
+     * Handle collisions between ships and static objects (like islands)
+     * Prevents ships from moving through static objects by adjusting their positions
+     */
+    private handleShipStaticCollisions(
+        ships: Entity[],
+        staticObjects: Entity[],
+    ): void {
+        for (const ship of ships) {
+            const shipPos = ship.getComponent<PositionComponent>('position')
+            const shipCollision =
+                ship.getComponent<CollisionComponent>('collision')
+            const shipVelocity =
+                ship.getComponent<VelocityComponent>('velocity')
+
+            if (!shipPos || !shipCollision || !shipVelocity) continue
+
+            for (const staticObj of staticObjects) {
+                const staticPos =
+                    staticObj.getComponent<PositionComponent>('position')
+                const staticCollision =
+                    staticObj.getComponent<CollisionComponent>('collision')
+
+                if (!staticPos || !staticCollision) continue
+
+                // Check if ship and static object are colliding
+                if (
+                    this.checkEntityCollision(
+                        shipPos,
+                        shipCollision,
+                        staticPos,
+                        staticCollision,
+                    )
+                ) {
+                    // Resolve collision by moving ship away from static object
+                    this.resolveShipStaticCollision(
+                        shipPos,
+                        shipCollision,
+                        staticPos,
+                        staticCollision,
+                    )
+
+                    // Stop ship movement to prevent getting stuck
+                    shipVelocity.dx *= 0.1
+                    shipVelocity.dz *= 0.1
+                }
+            }
+        }
+    }
+
+    /**
+     * Check collision between two entities with collision components
+     */
+    private checkEntityCollision(
+        pos1: PositionComponent,
+        collision1: CollisionComponent,
+        pos2: PositionComponent,
+        collision2: CollisionComponent,
+    ): boolean {
+        // Apply offsets
+        const offset1X = collision1.offset?.x || 0
+        const offset1Y = collision1.offset?.y || 0
+        const offset1Z = collision1.offset?.z || 0
+
+        const offset2X = collision2.offset?.x || 0
+        const offset2Y = collision2.offset?.y || 0
+        const offset2Z = collision2.offset?.z || 0
+
+        const x1 = pos1.x + offset1X
+        const y1 = pos1.y + offset1Y
+        const z1 = pos1.z + offset1Z
+
+        const x2 = pos2.x + offset2X
+        const y2 = pos2.y + offset2Y
+        const z2 = pos2.z + offset2Z
+
+        // Box-to-box collision (most common case for ships and islands)
+        if (
+            collision1.collider.shape === 'box' &&
+            collision2.collider.shape === 'box'
+        ) {
+            const halfWidth1 = collision1.collider.width / 2
+            const halfHeight1 = collision1.collider.height / 2
+            const halfDepth1 = collision1.collider.depth / 2
+
+            const halfWidth2 = collision2.collider.width / 2
+            const halfHeight2 = collision2.collider.height / 2
+            const halfDepth2 = collision2.collider.depth / 2
+
+            return (
+                Math.abs(x1 - x2) < halfWidth1 + halfWidth2 &&
+                Math.abs(y1 - y2) < halfHeight1 + halfHeight2 &&
+                Math.abs(z1 - z2) < halfDepth1 + halfDepth2
+            )
+        }
+
+        // For now, just handle box-to-box collisions
+        // Can be extended for sphere-to-box, sphere-to-sphere, etc.
+        return false
+    }
+
+    /**
+     * Resolve collision by moving ship away from static object
+     */
+    private resolveShipStaticCollision(
+        shipPos: PositionComponent,
+        shipCollision: CollisionComponent,
+        staticPos: PositionComponent,
+        staticCollision: CollisionComponent,
+    ): void {
+        // Calculate the direction to push the ship away from the static object
+        const dx = shipPos.x - staticPos.x
+        const dz = shipPos.z - staticPos.z
+
+        // Calculate the minimum distance needed to separate the objects
+        if (
+            shipCollision.collider.shape === 'box' &&
+            staticCollision.collider.shape === 'box'
+        ) {
+            const shipHalfWidth = shipCollision.collider.width / 2
+            const shipHalfDepth = shipCollision.collider.depth / 2
+            const staticHalfWidth = staticCollision.collider.width / 2
+            const staticHalfDepth = staticCollision.collider.depth / 2
+
+            const minSeparationX = shipHalfWidth + staticHalfWidth
+            const minSeparationZ = shipHalfDepth + staticHalfDepth
+
+            // Determine which axis has the smallest overlap and resolve along that axis
+            const overlapX = minSeparationX - Math.abs(dx)
+            const overlapZ = minSeparationZ - Math.abs(dz)
+
+            if (overlapX < overlapZ) {
+                // Resolve along X axis
+                const pushDirection = dx >= 0 ? 1 : -1
+                shipPos.x = staticPos.x + pushDirection * minSeparationX
+            } else {
+                // Resolve along Z axis
+                const pushDirection = dz >= 0 ? 1 : -1
+                shipPos.z = staticPos.z + pushDirection * minSeparationZ
+            }
+        }
     }
 }
