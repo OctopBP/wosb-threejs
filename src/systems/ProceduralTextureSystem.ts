@@ -1,12 +1,16 @@
 import * as THREE from 'three'
 import type { World } from '../ecs'
-
 import type { PositionComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 
-const WATER_SIZE = 150
-const WATER_CENTER_X = 0
-const WATER_CENTER_Z = 35
+const PROCEDURAL_TEXTURE_CONFIG = {
+    textureSize: 512,
+    waterSize: 150,
+    waterCenterX: 0,
+    waterCenterZ: 35,
+    spotRadius: 0.004, // in UV space
+    fadeValue: 1, // 0-255, higher = faster fade
+}
 
 export class ProceduralTextureSystem extends System {
     private texture: THREE.Texture
@@ -17,11 +21,13 @@ export class ProceduralTextureSystem extends System {
     constructor(world: World) {
         super(world, ['position'])
 
-        this.size = 512
+        this.size = PROCEDURAL_TEXTURE_CONFIG.textureSize
         this.canvas = document.createElement('canvas')
         this.canvas.width = this.canvas.height = this.size
         const ctx = this.canvas.getContext('2d')
-        if (!ctx) throw new Error('Failed to get canvas context')
+        if (!ctx) {
+            throw new Error('Failed to get canvas context')
+        }
         this.ctx = ctx
         this.texture = new THREE.Texture(this.canvas)
         this.texture.needsUpdate = true
@@ -35,13 +41,25 @@ export class ProceduralTextureSystem extends System {
     }
 
     private worldToUV(x: number, z: number): { u: number; v: number } {
-        // Map world X/Z to [0,1] UV (water is 150x150, centered at 0,0,35)
-        const u = (x - (WATER_CENTER_X - WATER_SIZE / 2)) / WATER_SIZE
-        const v = (z - (WATER_CENTER_Z - WATER_SIZE / 2)) / WATER_SIZE
+        // Map world X/Z to [0,1] UV (water is waterSize x waterSize, centered at waterCenterX, waterCenterZ)
+        const u =
+            (x -
+                (PROCEDURAL_TEXTURE_CONFIG.waterCenterX -
+                    PROCEDURAL_TEXTURE_CONFIG.waterSize / 2)) /
+            PROCEDURAL_TEXTURE_CONFIG.waterSize
+        const v =
+            (z -
+                (PROCEDURAL_TEXTURE_CONFIG.waterCenterZ -
+                    PROCEDURAL_TEXTURE_CONFIG.waterSize / 2)) /
+            PROCEDURAL_TEXTURE_CONFIG.waterSize
         return { u, v }
     }
 
-    private drawWhiteSpot(u: number, v: number, radius: number = 0.004) {
+    private drawWhiteSpot(
+        u: number,
+        v: number,
+        radius: number = PROCEDURAL_TEXTURE_CONFIG.spotRadius,
+    ) {
         // radius in UV space (0-1), convert to pixels
         const px = u * this.size
         const py = v * this.size
@@ -54,7 +72,7 @@ export class ProceduralTextureSystem extends System {
 
     update(): void {
         // True per-pixel fade: subtract a value from each pixel's RGB
-        const fadeValue = 1 // 0-255, higher = faster fade
+        const fadeValue = PROCEDURAL_TEXTURE_CONFIG.fadeValue
         const imageData = this.ctx.getImageData(0, 0, this.size, this.size)
         const data = imageData.data
         for (let i = 0; i < data.length; i += 4) {
