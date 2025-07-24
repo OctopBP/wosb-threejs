@@ -1,8 +1,10 @@
 import type {
     BoxCollider,
     CollisionComponent,
+    ModelCollider,
     SphereCollider,
 } from '../ecs/Component'
+import type { ModelType } from './ModelConfig'
 
 // Collision presets for different entity types
 export const collisionPresets = {
@@ -172,3 +174,114 @@ export function getCollisionPreset(
         collider: preset,
     }
 }
+
+// Factory function for creating model-based collision components
+export function createModelCollision(
+    modelType: ModelType,
+    precision: 'boundingBox' | 'boundingSphere' | 'geometry' = 'boundingBox',
+    scale?: number,
+    offset?: { x: number; y: number; z: number },
+): CollisionComponent {
+    return {
+        type: 'collision',
+        collider: {
+            shape: 'model',
+            modelType,
+            precision,
+            scale,
+        } satisfies ModelCollider,
+        offset,
+    }
+}
+
+// Preset model colliders for common use cases
+export const modelCollisionPresets = {
+    playerShipModel: {
+        shape: 'model' as const,
+        modelType: 'ship_lvl_1' as ModelType,
+        precision: 'boundingBox' as const,
+        scale: 1.5,
+    } satisfies ModelCollider,
+
+    enemyShipModel: {
+        shape: 'model' as const,
+        modelType: 'ship_lvl_2' as ModelType,
+        precision: 'boundingBox' as const,
+        scale: 1.5,
+    } satisfies ModelCollider,
+
+    bossShipModel: {
+        shape: 'model' as const,
+        modelType: 'boss' as ModelType,
+        precision: 'boundingBox' as const,
+        scale: 0.5,
+    } satisfies ModelCollider,
+
+    barrelModel: {
+        shape: 'model' as const,
+        modelType: 'barrel' as ModelType,
+        precision: 'boundingSphere' as const,
+        scale: 3.5,
+    } satisfies ModelCollider,
+
+    islandModel: {
+        shape: 'model' as const,
+        modelType: 'island' as ModelType,
+        precision: 'geometry' as const,
+        scale: 1.0,
+    } satisfies ModelCollider,
+}
+
+/**
+ * USAGE EXAMPLES FOR MODEL COLLIDERS
+ *
+ * Model colliders allow you to use actual 3D model geometry for collision detection
+ * instead of simple shapes like boxes and spheres. This provides more accurate
+ * collision detection at the cost of additional computation.
+ *
+ * Available precision levels:
+ * - 'boundingBox': Fast, uses the model's bounding box (recommended for most cases)
+ * - 'boundingSphere': Fast, uses the model's bounding sphere
+ * - 'geometry': Slower but most accurate, uses actual mesh geometry
+ *
+ * Example 1: Basic model collider
+ * ```typescript
+ * const collision = createModelCollision('ship_lvl_1', 'boundingBox', 1.5)
+ * entity.addComponent(collision)
+ * ```
+ *
+ * Example 2: Model collider with offset
+ * ```typescript
+ * const collision = createModelCollision(
+ *     'boss',
+ *     'boundingSphere',
+ *     0.5,
+ *     { x: 0, y: 1, z: 0 }
+ * )
+ * entity.addComponent(collision)
+ * ```
+ *
+ * Example 3: High-precision collision for complex shapes
+ * ```typescript
+ * const collision = createModelCollision('island', 'geometry', 1.0)
+ * entity.addComponent(collision)
+ * ```
+ *
+ * Example 4: Using preset model colliders
+ * ```typescript
+ * const collision: CollisionComponent = {
+ *     type: 'collision',
+ *     collider: modelCollisionPresets.barrelModel,
+ *     offset: { x: 0, y: 0.5, z: 0 }
+ * }
+ * entity.addComponent(collision)
+ * ```
+ *
+ * Performance considerations:
+ * - boundingBox: Fastest, good for most rectangular/box-like objects
+ * - boundingSphere: Fast, good for round objects like barrels
+ * - geometry: Slowest, only use for very complex shapes where accuracy is critical
+ *
+ * The collision system caches collision data per model+scale combination,
+ * so multiple entities using the same model collider are efficient.
+ */

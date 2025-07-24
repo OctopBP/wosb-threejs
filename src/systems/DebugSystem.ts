@@ -1,5 +1,6 @@
 import type { Object3D, Scene } from 'three'
 import {
+    Box3,
     BoxGeometry,
     BufferGeometry,
     LineBasicMaterial,
@@ -7,6 +8,7 @@ import {
     Mesh,
     MeshBasicMaterial,
     RingGeometry,
+    Sphere,
     SphereGeometry,
     Vector3,
     WireframeGeometry,
@@ -14,12 +16,14 @@ import {
 import type {
     CollisionComponent,
     DebugComponent,
+    ModelCollider,
     PositionComponent,
     VelocityComponent,
     WeaponComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import { getModelClone } from '../ModelPreloader'
 
 interface DebugGizmo {
     mesh: Object3D
@@ -206,7 +210,7 @@ export class DebugSystem extends System {
                 entityId,
                 type: 'collisionShape',
             })
-        } else {
+        } else if (collision.collider.shape === 'box') {
             // Create a box wireframe to represent collision boundaries
             const width = collision.collider.width
             const height = collision.collider.height
@@ -235,7 +239,127 @@ export class DebugSystem extends System {
                 entityId,
                 type: 'collisionShape',
             })
+        } else if (collision.collider.shape === 'model') {
+            // Create wireframe visualization for model collider
+            this.renderModelCollisionShape(
+                entityId,
+                position,
+                collision.collider,
+                offsetX,
+                offsetY,
+                offsetZ,
+            )
         }
+    }
+
+    private renderModelCollisionShape(
+        entityId: number,
+        position: PositionComponent,
+        modelCollider: ModelCollider,
+        offsetX: number,
+        offsetY: number,
+        offsetZ: number,
+    ): void {
+        const model = getModelClone(modelCollider.modelType)
+        if (!model) return
+
+        // Apply scale if specified
+        if (modelCollider.scale) {
+            model.scale.setScalar(modelCollider.scale)
+        }
+
+        let mesh: LineSegments
+
+        switch (modelCollider.precision) {
+            case 'boundingBox': {
+                const boundingBox = new Box3().setFromObject(model)
+                const size = boundingBox.getSize(new Vector3())
+                const geometry = new BoxGeometry(size.x, size.y, size.z)
+                const wireframe = new WireframeGeometry(geometry)
+                mesh = new LineSegments(wireframe, this.collisionShapeMaterial)
+
+                const center = boundingBox.getCenter(new Vector3())
+                mesh.position.set(
+                    position.x + offsetX + center.x,
+                    position.y + offsetY + center.y,
+                    position.z + offsetZ + center.z,
+                )
+                break
+            }
+
+            case 'boundingSphere': {
+                const boundingSphere = new Sphere()
+                new Box3()
+                    .setFromObject(model)
+                    .getBoundingSphere(boundingSphere)
+                const geometry = new SphereGeometry(
+                    boundingSphere.radius,
+                    16,
+                    12,
+                )
+                const wireframe = new WireframeGeometry(geometry)
+                mesh = new LineSegments(wireframe, this.collisionShapeMaterial)
+
+                mesh.position.set(
+                    position.x + offsetX + boundingSphere.center.x,
+                    position.y + offsetY + boundingSphere.center.y,
+                    position.z + offsetZ + boundingSphere.center.z,
+                )
+                break
+            }
+
+            case 'geometry': {
+                // For geometry precision, create wireframe from the first mesh found
+                let wireframeGeometry: WireframeGeometry | null = null
+                model.traverse((child) => {
+                    if (
+                        child instanceof Mesh &&
+                        child.geometry &&
+                        !wireframeGeometry
+                    ) {
+                        wireframeGeometry = new WireframeGeometry(
+                            child.geometry,
+                        )
+                    }
+                })
+
+                // Fallback to bounding box if no mesh geometry found
+                if (!wireframeGeometry) {
+                    const boundingBox = new Box3().setFromObject(model)
+                    const size = boundingBox.getSize(new Vector3())
+                    const geometry = new BoxGeometry(size.x, size.y, size.z)
+                    wireframeGeometry = new WireframeGeometry(geometry)
+                }
+
+                mesh = new LineSegments(
+                    wireframeGeometry,
+                    this.collisionShapeMaterial,
+                )
+
+                mesh.position.set(
+                    position.x + offsetX,
+                    position.y + offsetY,
+                    position.z + offsetZ,
+                )
+                break
+            }
+
+            default:
+                return
+        }
+
+        mesh.rotation.set(
+            position.rotationX,
+            position.rotationY,
+            position.rotationZ,
+        )
+
+        this.scene.add(mesh)
+        this.debugGizmos.push({
+            mesh,
+            entityId,
+            type: 'collisionShape',
+        })
     }
 
     private renderWeaponRange(

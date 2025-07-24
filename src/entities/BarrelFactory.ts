@@ -1,10 +1,12 @@
 import type { BarrelConfig } from '../config/BarrelConfig'
 import { bossBarrelConfig, defaultBarrelConfig } from '../config/BarrelConfig'
+import { createModelCollision } from '../config/CollisionConfig'
 import type {
-    CollectableComponent,
     CollisionComponent,
+    HealthComponent,
     PositionComponent,
     RenderableComponent,
+    SpawnBarrelComponent,
     VelocityComponent,
     XPBarrelComponent,
 } from '../ecs/Component'
@@ -75,12 +77,13 @@ export function createXPBarrel(
     entity.addComponent(xpBarrel)
 
     // Collectable component
-    const collectable: CollectableComponent = {
-        type: 'collectable',
-        collectionRange: config.collectionRange,
-        autoCollect: true, // Automatically collect when in range
-        requiresInput: false, // No input required
-        collectedBy: [],
+    const collectable: CollisionComponent = {
+        type: 'collision',
+        collider: {
+            shape: 'sphere',
+            radius: config.collectionRange, // Collision radius matches collection range
+        },
+        offset: { x: 0, y: 0.5, z: 0 }, // Slightly above water
     }
     entity.addComponent(collectable)
 
@@ -129,4 +132,120 @@ export function spawnBarrelsAroundPosition(
     }
 
     return barrels
+}
+
+export function createBarrel(position: {
+    x: number
+    y: number
+    z: number
+}): Entity {
+    const entity = new Entity()
+
+    // Position component
+    const positionComp: PositionComponent = {
+        type: 'position',
+        x: position.x,
+        y: position.y,
+        z: position.z,
+        rotationX: 0,
+        rotationY: Math.random() * Math.PI * 2, // Random rotation for variety
+        rotationZ: 0,
+    }
+    entity.addComponent(positionComp)
+
+    // Velocity component for potential movement
+    const velocity: VelocityComponent = {
+        type: 'velocity',
+        dx: 0,
+        dy: 0,
+        dz: 0,
+        angularVelocityX: 0,
+        angularVelocityY: 0,
+        angularVelocityZ: 0,
+    }
+    entity.addComponent(velocity)
+
+    // Health component
+    const health: HealthComponent = {
+        type: 'health',
+        maxHealth: 10,
+        currentHealth: 10,
+        isDead: false,
+    }
+    entity.addComponent(health)
+
+    // Renderable component
+    const renderable: RenderableComponent = {
+        type: 'renderable',
+        meshId: `barrel_${entity.id}`,
+        mesh: undefined,
+        meshType: 'barrel',
+        visible: true,
+        upgrades: {},
+    }
+    entity.addComponent(renderable)
+
+    // Model-based collision component using barrel model with bounding sphere precision
+    // This provides more accurate collision detection than a simple sphere
+    const collision = createModelCollision(
+        'barrel',
+        'boundingSphere', // Good for round objects like barrels
+        3.5, // Scale to match the rendered barrel size
+        { x: 0, y: 0, z: 0 }, // No offset needed for centered barrel
+    )
+    entity.addComponent(collision)
+
+    // XP Barrel component
+    const xpBarrel: XPBarrelComponent = {
+        type: 'xpBarrel',
+        xpValue: 5 + Math.floor(Math.random() * 10), // 5-14 XP
+        collectionRange: 2.0,
+        isCollected: false,
+        spawnTime: Date.now(),
+        lifespan: 30000, // 30 seconds
+        isBeingAttracted: false,
+        attractionSpeed: 5.0,
+        animationState: 'floating',
+        startPosition: { x: position.x, y: position.y, z: position.z },
+        targetPosition: { x: position.x, y: position.y, z: position.z },
+        flightTime: 0,
+        flightProgress: 0,
+        arcHeight: 2.0,
+    }
+    entity.addComponent(xpBarrel)
+
+    // Spawn barrel component to track that this was spawned from barrel system
+    const spawnBarrel: SpawnBarrelComponent = {
+        type: 'spawnBarrel',
+    }
+    entity.addComponent(spawnBarrel)
+
+    return entity
+}
+
+// Alternative factory function using the preset model collider
+export function createBarrelWithPreset(position: {
+    x: number
+    y: number
+    z: number
+}): Entity {
+    const entity = createBarrel(position)
+
+    // Remove the existing collision component
+    entity.removeComponent('collision')
+
+    // Add collision using the preset
+    const collision: CollisionComponent = {
+        type: 'collision',
+        collider: {
+            shape: 'model',
+            modelType: 'barrel',
+            precision: 'boundingSphere',
+            scale: 3.5,
+        },
+        offset: { x: 0, y: 0, z: 0 },
+    }
+    entity.addComponent(collision)
+
+    return entity
 }

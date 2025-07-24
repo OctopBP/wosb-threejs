@@ -1,9 +1,10 @@
-import { Mesh, Vector3 } from 'three'
+import { Box3, Mesh, Sphere, Vector3 } from 'three'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import type {
     CollisionComponent,
     DamageableComponent,
     HealthComponent,
+    ModelCollider,
     PositionComponent,
     ProjectileComponent,
     RenderableComponent,
@@ -11,14 +12,22 @@ import type {
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
+import { getCollisionModelClone } from '../ModelPreloader'
 import type { AudioSystem } from './AudioSystem'
 import type { DeathAnimationSystem } from './DeathAnimationSystem'
 import type { ParticleSystem } from './ParticleSystem'
+
+interface ModelCollisionCache {
+    boundingBox: Box3
+    boundingSphere: Sphere
+    geometry?: Mesh[]
+}
 
 export class CollisionSystem extends System {
     private audioSystem: AudioSystem | null = null
     private particleSystem: ParticleSystem | null = null
     private deathAnimationSystem: DeathAnimationSystem | null = null
+    private modelCollisionCache: Map<string, ModelCollisionCache> = new Map()
 
     constructor(world: World) {
         super(world, []) // We'll manually query for different component combinations
@@ -167,7 +176,7 @@ export class CollisionSystem extends System {
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
 
             return distance <= radius
-        } else {
+        } else if (targetCollision.collider.shape === 'box') {
             // Box collision
             const halfWidth = targetCollision.collider.width / 2
             const halfHeight = targetCollision.collider.height / 2
@@ -178,7 +187,127 @@ export class CollisionSystem extends System {
             const dz = Math.abs(projectilePos.z - targetZ)
 
             return dx <= halfWidth && dy <= halfHeight && dz <= halfDepth
+        } else if (targetCollision.collider.shape === 'model') {
+            // Model collision
+            return this.checkModelCollision(
+                projectilePos,
+                targetPos,
+                targetCollision.collider,
+                targetCollision.offset,
+            )
         }
+
+        return false
+    }
+
+    private checkModelCollision(
+        projectilePos: PositionComponent,
+        targetPos: PositionComponent,
+        modelCollider: ModelCollider,
+        offset?: { x: number; y: number; z: number },
+    ): boolean {
+        const collisionData = this.getModelCollisionData(modelCollider)
+        if (!collisionData) return false
+
+        // Apply offset if specified
+        const offsetX = offset?.x || 0
+        const offsetY = offset?.y || 0
+        const offsetZ = offset?.z || 0
+
+        const targetPosition = new Vector3(
+            targetPos.x + offsetX,
+            targetPos.y + offsetY,
+            targetPos.z + offsetZ,
+        )
+        const projectilePosition = new Vector3(
+            projectilePos.x,
+            projectilePos.y,
+            projectilePos.z,
+        )
+
+        switch (modelCollider.precision) {
+            case 'boundingBox': {
+                const boundingBox = collisionData.boundingBox.clone()
+                boundingBox.translate(targetPosition)
+                return boundingBox.containsPoint(projectilePosition)
+            }
+
+            case 'boundingSphere': {
+                const boundingSphere = collisionData.boundingSphere.clone()
+                boundingSphere.center.add(targetPosition)
+                return boundingSphere.containsPoint(projectilePosition)
+            }
+
+            case 'geometry': {
+                if (!collisionData.geometry) return false
+
+                // For geometry-based collision, we'll use a more complex approach
+                // This is a simplified version - for production you might want to use
+                // a more sophisticated collision detection library like cannon.js
+                for (const mesh of collisionData.geometry) {
+                    const meshBoundingBox = new Box3().setFromObject(mesh)
+                    meshBoundingBox.translate(targetPosition)
+                    if (meshBoundingBox.containsPoint(projectilePosition)) {
+                        return true
+                    }
+                }
+                return false
+            }
+
+            default:
+                return false
+        }
+    }
+
+    private getModelCollisionData(
+        modelCollider: ModelCollider,
+    ): ModelCollisionCache | null {
+        const cacheKey = `${modelCollider.modelType}_${modelCollider.scale || 1}`
+
+        if (this.modelCollisionCache.has(cacheKey)) {
+            return this.modelCollisionCache.get(cacheKey)!
+        }
+
+        // Load model and compute collision data
+        const model = getCollisionModelClone(modelCollider.modelType)
+        if (!model) return null
+
+        const collisionData: ModelCollisionCache = {
+            boundingBox: new Box3(),
+            boundingSphere: new Sphere(),
+        }
+
+        // Apply scale if specified
+        if (modelCollider.scale) {
+            model.scale.setScalar(modelCollider.scale)
+        }
+
+        // Compute bounding box and sphere
+        collisionData.boundingBox.setFromObject(model)
+        collisionData.boundingBox.getBoundingSphere(
+            collisionData.boundingSphere,
+        )
+
+        // For geometry precision, collect all mesh objects
+        if (modelCollider.precision === 'geometry') {
+            const meshes: Mesh[] = []
+            model.traverse((child) => {
+                if (child instanceof Mesh) {
+                    meshes.push(child)
+                }
+            })
+            collisionData.geometry = meshes
+        }
+
+        this.modelCollisionCache.set(cacheKey, collisionData)
+        return collisionData
+    }
+
+    /**
+     * Clear the model collision cache (useful for memory management)
+     */
+    clearModelCollisionCache(): void {
+        this.modelCollisionCache.clear()
     }
 
     private applyDamage(health: HealthComponent, damage: number): void {

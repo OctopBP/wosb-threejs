@@ -137,10 +137,17 @@ export type SphereCollider = {
     radius: number
 }
 
+export type ModelCollider = {
+    shape: 'model'
+    modelType: ModelType
+    precision: 'boundingBox' | 'boundingSphere' | 'geometry'
+    scale?: number
+}
+
 // Collision component for configurable collision shapes
 export interface CollisionComponent extends Component {
     type: 'collision'
-    collider: BoxCollider | SphereCollider
+    collider: BoxCollider | SphereCollider | ModelCollider
     // Optional offset from entity position
     offset?: {
         x: number

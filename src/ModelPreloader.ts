@@ -32,7 +32,39 @@ export function preloadModels(): Promise<void> {
     return Promise.all(promises).then(() => undefined)
 }
 
-export function getModelClone(key: ModelType): Group | undefined {
-    const cached = modelCache[key]
-    return cached ? cached.clone(true) : undefined
+export function getModelClone(modelType: ModelType): Group | null {
+    const cachedModel = modelCache[modelType]
+    if (!cachedModel) {
+        console.warn(`Model '${modelType}' not found in cache`)
+        return null
+    }
+    return cachedModel.clone()
+}
+
+/**
+ * Get a model clone specifically for collision detection purposes
+ * This function is separate from the main getModelClone to avoid
+ * interfering with the rendering system
+ */
+export function getCollisionModelClone(modelType: ModelType): Group | null {
+    const cachedModel = modelCache[modelType]
+    if (!cachedModel) {
+        console.warn(`Collision model '${modelType}' not found in cache`)
+        return null
+    }
+    return cachedModel.clone()
+}
+
+/**
+ * Check if a model type is available in the cache
+ */
+export function isModelLoaded(modelType: ModelType): boolean {
+    return !!modelCache[modelType]
+}
+
+/**
+ * Get available model types that are currently loaded
+ */
+export function getLoadedModelTypes(): ModelType[] {
+    return Object.keys(modelCache) as ModelType[]
 }
