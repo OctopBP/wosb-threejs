@@ -216,34 +216,34 @@ export class NewShipOfferUISystem extends System {
             this.offerUI.style.opacity = '1'
 
             // Animate content container
-            if (this.contentContainer) {
-                setTimeout(() => {
-                    this.contentContainer!.style.transform =
+            setTimeout(() => {
+                if (this.contentContainer) {
+                    this.contentContainer.style.transform =
                         'scale(1) translateY(0)'
-                }, 100)
-            }
+                }
+            }, 100)
 
             // Stagger the text animations
-            if (this.topText) {
-                setTimeout(() => {
-                    this.topText!.style.opacity = '1'
-                    this.topText!.style.transform = 'translateY(0)'
-                }, 200)
-            }
+            setTimeout(() => {
+                if (this.topText) {
+                    this.topText.style.opacity = '1'
+                    this.topText.style.transform = 'translateY(0)'
+                }
+            }, 200)
 
-            if (this.logoButtonContainer) {
-                setTimeout(() => {
-                    this.logoButtonContainer!.style.opacity = '1'
-                    this.logoButtonContainer!.style.transform = 'scale(1)'
-                }, 400)
-            }
+            setTimeout(() => {
+                if (this.logoButtonContainer) {
+                    this.logoButtonContainer.style.opacity = '1'
+                    this.logoButtonContainer.style.transform = 'scale(1)'
+                }
+            }, 400)
 
-            if (this.bottomText) {
-                setTimeout(() => {
-                    this.bottomText!.style.opacity = '1'
-                    this.bottomText!.style.transform = 'translateY(0)'
-                }, 600)
-            }
+            setTimeout(() => {
+                if (this.bottomText) {
+                    this.bottomText.style.opacity = '1'
+                    this.bottomText.style.transform = 'translateY(0)'
+                }
+            }, 600)
         }
     }
 
