@@ -1,23 +1,31 @@
 import type {
     EnemyAIComponent,
+    PathfindingComponent,
     PositionComponent,
     VelocityComponent,
     WeaponComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
-
 import type { World } from '../ecs/World'
+import type { PathfindingSystem } from './PathfindingSystem'
 
 export class EnemyAISystem extends System {
+    private pathfindingSystem: PathfindingSystem | null = null
+
     constructor(world: World) {
         super(world, [
             'enemy',
             'enemyAI',
+            'pathfinding',
             'position',
             'velocity',
             'weapon',
             'alive',
         ])
+    }
+
+    setPathfindingSystem(pathfindingSystem: PathfindingSystem): void {
+        this.pathfindingSystem = pathfindingSystem
     }
 
     update(_deltaTime: number): void {
@@ -40,14 +48,23 @@ export class EnemyAISystem extends System {
 
         for (const enemy of enemies) {
             const enemyAI = enemy.getComponent<EnemyAIComponent>('enemyAI')
+            const pathfinding =
+                enemy.getComponent<PathfindingComponent>('pathfinding')
             const position = enemy.getComponent<PositionComponent>('position')
             const velocity = enemy.getComponent<VelocityComponent>('velocity')
             const weapon = enemy.getComponent<WeaponComponent>('weapon')
 
-            if (!enemyAI || !position || !velocity || !weapon) continue
+            if (!enemyAI || !pathfinding || !position || !velocity || !weapon)
+                continue
 
-            // Update AI behavior
-            this.updateMovement(enemyAI, position, velocity, playerPosition)
+            // Update AI behavior with pathfinding
+            this.updateMovementWithPathfinding(
+                enemyAI,
+                pathfinding,
+                position,
+                velocity,
+                playerPosition,
+            )
 
             // Only handle shooting for manual weapons - auto-targeting weapons are handled by WeaponSystem
             if (!weapon.isAutoTargeting) {
@@ -56,7 +73,133 @@ export class EnemyAISystem extends System {
         }
     }
 
-    private updateMovement(
+    private updateMovementWithPathfinding(
+        ai: EnemyAIComponent,
+        pathfinding: PathfindingComponent,
+        position: PositionComponent,
+        velocity: VelocityComponent,
+        playerPosition: PositionComponent,
+    ): void {
+        if (!this.pathfindingSystem) {
+            // Fallback to direct movement if pathfinding system not available
+            this.updateDirectMovement(ai, position, velocity, playerPosition)
+            return
+        }
+
+        const currentTime = performance.now() / 1000
+
+        // Check if we need to recalculate the path
+        const shouldRecalculatePath =
+            !pathfinding.currentPath ||
+            currentTime - pathfinding.lastPathfindTime >
+                pathfinding.pathfindingCooldown
+
+        if (shouldRecalculatePath) {
+            // Calculate new path to player
+            const path = this.pathfindingSystem.findPath(
+                position.x,
+                position.z,
+                playerPosition.x,
+                playerPosition.z,
+            )
+
+            if (path && path.length > 1) {
+                // Remove the first waypoint (current position)
+                pathfinding.currentPath = path.slice(1)
+                pathfinding.currentWaypointIndex = 0
+                pathfinding.lastPathfindTime = currentTime
+            } else {
+                // No path found, use direct movement as fallback
+                this.updateDirectMovement(
+                    ai,
+                    position,
+                    velocity,
+                    playerPosition,
+                )
+                return
+            }
+        }
+
+        // Follow the current path
+        if (pathfinding.currentPath && pathfinding.currentPath.length > 0) {
+            this.followPath(ai, pathfinding, position, velocity)
+        } else {
+            // No path available, stop moving
+            velocity.dx = 0
+            velocity.dz = 0
+        }
+    }
+
+    private followPath(
+        ai: EnemyAIComponent,
+        pathfinding: PathfindingComponent,
+        position: PositionComponent,
+        velocity: VelocityComponent,
+    ): void {
+        if (
+            !pathfinding.currentPath ||
+            pathfinding.currentWaypointIndex >= pathfinding.currentPath.length
+        ) {
+            velocity.dx = 0
+            velocity.dz = 0
+            return
+        }
+
+        const currentWaypoint =
+            pathfinding.currentPath[pathfinding.currentWaypointIndex]
+
+        // Calculate direction to current waypoint
+        const dx = currentWaypoint.x - position.x
+        const dz = currentWaypoint.z - position.z
+        const distance = Math.sqrt(dx * dx + dz * dz)
+
+        // Check if we've reached the current waypoint
+        if (distance <= pathfinding.waypointReachDistance) {
+            pathfinding.currentWaypointIndex++
+
+            // If we've reached the last waypoint, we're done
+            if (
+                pathfinding.currentWaypointIndex >=
+                pathfinding.currentPath.length
+            ) {
+                velocity.dx = 0
+                velocity.dz = 0
+                return
+            }
+
+            // Move to next waypoint
+            const nextWaypoint =
+                pathfinding.currentPath[pathfinding.currentWaypointIndex]
+            const nextDx = nextWaypoint.x - position.x
+            const nextDz = nextWaypoint.z - position.z
+            const nextDistance = Math.sqrt(nextDx * nextDx + nextDz * nextDz)
+
+            if (nextDistance > 0.1) {
+                const dirX = nextDx / nextDistance
+                const dirZ = nextDz / nextDistance
+
+                velocity.dx = dirX * ai.moveSpeed
+                velocity.dz = dirZ * ai.moveSpeed
+
+                // Face movement direction
+                position.rotationY = Math.atan2(dirX, dirZ) + Math.PI
+            }
+        } else {
+            // Move toward current waypoint
+            if (distance > 0.1) {
+                const dirX = dx / distance
+                const dirZ = dz / distance
+
+                velocity.dx = dirX * ai.moveSpeed
+                velocity.dz = dirZ * ai.moveSpeed
+
+                // Face movement direction
+                position.rotationY = Math.atan2(dirX, dirZ) + Math.PI
+            }
+        }
+    }
+
+    private updateDirectMovement(
         ai: EnemyAIComponent,
         position: PositionComponent,
         velocity: VelocityComponent,

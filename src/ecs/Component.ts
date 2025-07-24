@@ -171,6 +171,21 @@ export interface EnemyAIComponent extends Component {
     targetId: number | null
 }
 
+// Pathfinding component for entities that use grid-based navigation
+export interface PathfindingComponent extends Component {
+    type: 'pathfinding'
+    // Current path as world coordinates
+    currentPath: { x: number; z: number }[] | null
+    // Current target waypoint index
+    currentWaypointIndex: number
+    // Distance threshold to consider waypoint reached
+    waypointReachDistance: number
+    // Time of last pathfinding calculation
+    lastPathfindTime: number
+    // Minimum time between pathfinding recalculations (for performance)
+    pathfindingCooldown: number
+}
+
 // XP (Experience Points) component for tracking player progression
 export interface XPComponent extends Component {
     type: 'xp'

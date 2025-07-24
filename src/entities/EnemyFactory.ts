@@ -21,6 +21,7 @@ import type {
     BossComponent,
     DamageableComponent,
     EnemyComponent,
+    PathfindingComponent,
     PositionComponent,
     RenderableComponent,
     VelocityComponent,
@@ -100,6 +101,17 @@ export function createEnemyShip(
     // Enemy AI component - use enemy AI config
     const enemyAI = createEnemyAIConfig(targetId)
     entity.addComponent(enemyAI)
+
+    // Pathfinding component - for navigation around islands
+    const pathfinding: PathfindingComponent = {
+        type: 'pathfinding',
+        currentPath: null,
+        currentWaypointIndex: 0,
+        waypointReachDistance: 2.0,
+        lastPathfindTime: 0,
+        pathfindingCooldown: 1.0, // Recalculate path at most once per second
+    }
+    entity.addComponent(pathfinding)
 
     // Alive component - enemy starts alive
     const alive: AliveComponent = {

@@ -63,6 +63,22 @@ export const collisionPresets = {
         shape: 'sphere' as const,
         radius: 1.6,
     } satisfies SphereCollider,
+
+    // Island collision presets
+    smallIsland: {
+        shape: 'sphere' as const,
+        radius: 8.0,
+    } satisfies SphereCollider,
+
+    mediumIsland: {
+        shape: 'sphere' as const,
+        radius: 12.0,
+    } satisfies SphereCollider,
+
+    largeIsland: {
+        shape: 'sphere' as const,
+        radius: 18.0,
+    } satisfies SphereCollider,
 }
 
 // Factory functions for creating collision components
@@ -170,5 +186,20 @@ export function getCollisionPreset(
     return {
         type: 'collision',
         collider: preset,
+    }
+}
+
+// Island collision factory functions
+export function createIslandCollision(
+    radius: number,
+    offset?: { x: number; y: number; z: number },
+): CollisionComponent {
+    return {
+        type: 'collision',
+        collider: {
+            shape: 'sphere',
+            radius,
+        },
+        offset,
     }
 }

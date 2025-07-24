@@ -16,7 +16,10 @@ import type {
 import type { Entity } from './ecs/Entity'
 import { World } from './ecs/World'
 import { createDebugEntity } from './entities/DebugFactory'
-import { createIsland } from './entities/IslandFactory'
+import {
+    createAllIslandColliders,
+    createIsland,
+} from './entities/IslandFactory'
 import {
     createPlayerShip,
     equipPlayerWeapon,
@@ -41,10 +44,12 @@ import { DeathAnimationSystem } from './systems/DeathAnimationSystem'
 import { DebugSystem } from './systems/DebugSystem'
 import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
+import { EnvironmentCollisionSystem } from './systems/EnvironmentCollisionSystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
+import { PathfindingSystem } from './systems/PathfindingSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
@@ -66,6 +71,8 @@ export class GameWorld {
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
+    private environmentCollisionSystem: EnvironmentCollisionSystem
+    private pathfindingSystem: PathfindingSystem
     private deathAnimationSystem: DeathAnimationSystem
     private renderSystem: RenderSystem
     private gameStateSystem: GameStateSystem
@@ -113,6 +120,10 @@ export class GameWorld {
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
+        this.environmentCollisionSystem = new EnvironmentCollisionSystem(
+            this.world,
+        )
+        this.pathfindingSystem = new PathfindingSystem(this.world)
         this.deathAnimationSystem = new DeathAnimationSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
         this.gameStateSystem = new GameStateSystem(this.world, gameStateConfig)
@@ -150,6 +161,7 @@ export class GameWorld {
         this.deathAnimationSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)
+        this.enemyAISystem.setPathfindingSystem(this.pathfindingSystem)
 
         // Setup audio system
         this.setupAudioSystem()
@@ -164,6 +176,7 @@ export class GameWorld {
         this.world.addSystem(this.rotationSystem) //Handle rotation
         this.world.addSystem(this.accelerationSystem) //Apply acceleration/deceleration
         this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
+        this.world.addSystem(this.environmentCollisionSystem) // Handle player collision with islands
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
         this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity
@@ -216,7 +229,16 @@ export class GameWorld {
         // Create and add islands to the scene
         const island = createIsland(0, 0, 0, 1.0)
         this.world.addEntity(island)
-        console.log('🏝️ Islands created and added to scene')
+
+        // Create island collision entities
+        const islandColliders = createAllIslandColliders()
+        for (const collider of islandColliders) {
+            this.world.addEntity(collider)
+        }
+
+        console.log(
+            '🏝️ Islands and collision entities created and added to scene',
+        )
     }
 
     update(time: number): void {
