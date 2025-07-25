@@ -14,6 +14,7 @@ import {
     PlaneGeometry,
     Scene,
     ShaderMaterial,
+    TextureLoader,
     UniformsLib,
     UniformsUtils,
     Vector3,
@@ -121,6 +122,7 @@ export class AppOne {
             skyTexturePath, // pz
             skyTexturePath, // nz
         ])
+        const foamTexture = new TextureLoader().load('assets/textures/foam.jpg')
         const waterUniforms = {
             uTime: { value: 0 },
             uWavesAmplitude: { value: 0.1 },
@@ -143,6 +145,7 @@ export class AppOne {
             bwTexture: {
                 value: this.gameWorld.getProceduralTextureSystem().getTexture(),
             },
+            foamTexture: { value: foamTexture },
         }
         const waterMaterial = new ShaderMaterial({
             vertexShader: waterVertexShader,
