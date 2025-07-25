@@ -26,12 +26,11 @@ import {
 import {
     AudioUISystem,
     BossFightUISystem,
-    EnemyAISystem,
+    EnemyAIPhysicsSystem,
     GameStateSystem,
     GoalUISystem,
     NewShipOfferUISystem,
 } from './systems'
-import { AccelerationSystem } from './systems/AccelerationSystem'
 import { AudioSystem } from './systems/AudioSystem'
 import { BarrelCollectionSystem } from './systems/BarrelCollectionSystem'
 import { BarrelSpawnSystem } from './systems/BarrelSpawnSystem'
@@ -43,8 +42,8 @@ import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
-import { MovementSystem } from './systems/MovementSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
+import { PhysicsMovementSystem } from './systems/PhysicsMovementSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProceduralTextureSystem } from './systems/ProceduralTextureSystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
@@ -52,6 +51,7 @@ import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
+import { ShipCollisionSystem } from './systems/ShipCollisionSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WaveRockingSystem } from './systems/WaveRockingSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
@@ -60,8 +60,8 @@ export class GameWorld {
     private inputSystem: InputSystem
     private virtualJoystickSystem: VirtualJoystickSystem
     private rotationSystem: RotationSystem
-    private accelerationSystem: AccelerationSystem
-    private movementSystem: MovementSystem
+    private physicsMovementSystem: PhysicsMovementSystem
+    private shipCollisionSystem: ShipCollisionSystem
     private waveRockingSystem: WaveRockingSystem
     private weaponSystem: WeaponSystem
     private projectileMovementSystem: ProjectileMovementSystem
@@ -70,7 +70,7 @@ export class GameWorld {
     private deathAnimationSystem: DeathAnimationSystem
     private renderSystem: RenderSystem
     private gameStateSystem: GameStateSystem
-    private enemyAISystem: EnemyAISystem
+    private enemyAIPhysicsSystem: EnemyAIPhysicsSystem
     private levelingSystem: LevelingSystem
     private barrelSpawnSystem: BarrelSpawnSystem
     private barrelCollectionSystem: BarrelCollectionSystem
@@ -108,8 +108,8 @@ export class GameWorld {
             canvas,
         )
         this.rotationSystem = new RotationSystem(this.world)
-        this.accelerationSystem = new AccelerationSystem(this.world)
-        this.movementSystem = new MovementSystem(this.world)
+        this.physicsMovementSystem = new PhysicsMovementSystem(this.world)
+        this.shipCollisionSystem = new ShipCollisionSystem(this.world)
         this.waveRockingSystem = new WaveRockingSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
@@ -118,7 +118,7 @@ export class GameWorld {
         this.deathAnimationSystem = new DeathAnimationSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
         this.gameStateSystem = new GameStateSystem(this.world, gameStateConfig)
-        this.enemyAISystem = new EnemyAISystem(this.world)
+        this.enemyAIPhysicsSystem = new EnemyAIPhysicsSystem(this.world)
         this.levelingSystem = new LevelingSystem(this.world)
         this.barrelSpawnSystem = new BarrelSpawnSystem(this.world)
         this.barrelCollectionSystem = new BarrelCollectionSystem(this.world)
@@ -163,10 +163,10 @@ export class GameWorld {
         this.world.addSystem(this.virtualJoystickSystem) //Handle virtual joystick UI
         this.world.addSystem(this.inputSystem) //Handle input events and process to direction
         this.world.addSystem(this.gameStateSystem) //Manage game state and spawn enemies
-        this.world.addSystem(this.enemyAISystem) //Update enemy AI (movement and targeting)
+        this.world.addSystem(this.enemyAIPhysicsSystem) //Update enemy AI (movement and targeting) with physics
         this.world.addSystem(this.rotationSystem) //Handle rotation
-        this.world.addSystem(this.accelerationSystem) //Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
+        this.world.addSystem(this.physicsMovementSystem) //Apply physics-based movement
+        this.world.addSystem(this.shipCollisionSystem) //Handle ship-to-ship collisions
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
         this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity

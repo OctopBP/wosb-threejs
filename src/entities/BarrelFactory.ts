@@ -1,8 +1,13 @@
 import type { BarrelConfig } from '../config/BarrelConfig'
 import { bossBarrelConfig, defaultBarrelConfig } from '../config/BarrelConfig'
+import {
+    barrelPhysicsPreset,
+    createPhysicsComponent,
+} from '../config/PhysicsConfig'
 import type {
     CollectableComponent,
     CollisionComponent,
+    PhysicsComponent,
     PositionComponent,
     RenderableComponent,
     VelocityComponent,
@@ -42,6 +47,10 @@ export function createXPBarrel(
         angularVelocityZ: 0,
     }
     entity.addComponent(velocity)
+
+    // Physics component - barrel physics (light and bouncy)
+    const physics = createPhysicsComponent(barrelPhysicsPreset)
+    entity.addComponent(physics)
 
     // Calculate random target position around the enemy
     const angle = Math.random() * Math.PI * 2 // Random direction

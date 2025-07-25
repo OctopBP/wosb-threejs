@@ -363,6 +363,20 @@ export interface DeathAnimationComponent extends Component {
     originalMaterial?: Material // Store original material for cleanup
 }
 
+// Physics component for physics-based movement
+export interface PhysicsComponent extends Component {
+    type: 'physics'
+    mass: number // Mass of the entity (affects acceleration and collision response)
+    friction: number // Friction coefficient (0-1, affects deceleration)
+    restitution: number // Bounciness factor (0-1, affects collision response)
+    drag: number // Air/water resistance coefficient
+    // Collision forces
+    lastCollisionForce: { x: number; y: number; z: number }
+    // Physics state flags
+    isKinematic: boolean // If true, entity is not affected by physics forces but can affect others
+    enableCollisionResponse: boolean // If true, entity responds to collisions
+}
+
 // Alive component - entities with this component are alive and should participate in normal systems
 export interface AliveComponent extends Component {
     type: 'alive'

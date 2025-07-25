@@ -6,6 +6,10 @@ import {
 } from '../config/LevelingConfig'
 import type { MovementConfigPreset } from '../config/MovementPresets'
 import { createMovementConfig } from '../config/MovementPresets'
+import {
+    createPhysicsComponent,
+    playerPhysicsPreset,
+} from '../config/PhysicsConfig'
 import { createPlayerWeaponConfig } from '../config/WeaponConfig'
 import type {
     AliveComponent,
@@ -13,6 +17,7 @@ import type {
     HealthComponent,
     InputComponent,
     MovementConfigComponent,
+    PhysicsComponent,
     PlayerComponent,
     PositionComponent,
     RenderableComponent,
@@ -73,6 +78,10 @@ export function createPlayerShip(
     // Movement configuration using balanced preset
     const movementConfig = createMovementConfig(configOverrides)
     entity.addComponent(movementConfig)
+
+    // Physics component - player ship physics
+    const physics = createPhysicsComponent(playerPhysicsPreset)
+    entity.addComponent(physics)
 
     // Health component - player starts with full health
     const health: HealthComponent = {

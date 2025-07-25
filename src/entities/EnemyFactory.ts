@@ -16,11 +16,17 @@ import {
     enemyMovementPreset,
 } from '../config/EnemyConfig'
 import { createMovementConfig } from '../config/MovementPresets'
+import {
+    bossPhysicsPreset,
+    createPhysicsComponent,
+    enemyPhysicsPreset,
+} from '../config/PhysicsConfig'
 import type {
     AliveComponent,
     BossComponent,
     DamageableComponent,
     EnemyComponent,
+    PhysicsComponent,
     PositionComponent,
     RenderableComponent,
     VelocityComponent,
@@ -61,6 +67,10 @@ export function createEnemyShip(
     // Movement configuration - use enemy preset
     const movementConfig = createMovementConfig(enemyMovementPreset)
     entity.addComponent(movementConfig)
+
+    // Physics component - enemy ship physics
+    const physics = createPhysicsComponent(enemyPhysicsPreset)
+    entity.addComponent(physics)
 
     // Health component - use enemy health config
     const health = createEnemyHealthConfig()
@@ -149,6 +159,10 @@ export function createBossShip(
     // Movement configuration - use boss preset
     const bossMovementConfig = createMovementConfig(bossMovementPreset)
     entity.addComponent(bossMovementConfig)
+
+    // Physics component - boss ship physics
+    const physics = createPhysicsComponent(bossPhysicsPreset)
+    entity.addComponent(physics)
 
     // Health component - use boss health config
     const health = createBossHealthConfig()
