@@ -14,6 +14,7 @@ import {
     PlaneGeometry,
     Scene,
     ShaderMaterial,
+    TextureLoader,
     UniformsLib,
     UniformsUtils,
     Vector3,
@@ -46,19 +47,19 @@ export class AppOne {
         this.renderer.shadowMap.type = PCFSoftShadowMap
         this.renderer.setClearColor(0x87ceeb, 1) // Sky blue background
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            this.handleResize()
-        })
-
-        this.scene = this.createScene()
         this.camera = this.createCamera()
+        this.scene = this.createScene()
         this.gameWorld = new GameWorld(
             this.scene,
             this.renderer,
             this.canvas,
             this.camera,
         )
+        this.createWater()
+
+        window.addEventListener('resize', () => {
+            this.handleResize()
+        })
     }
 
     debug(debugOn: boolean = true) {
@@ -104,6 +105,13 @@ export class AppOne {
         directionalLight.shadow.camera.bottom = -25
         scene.add(directionalLight)
 
+        // Add fog for atmosphere
+        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 25, 45)
+
+        return scene
+    }
+
+    private createWater() {
         const waterGeometry = new PlaneGeometry(150, 150, 512, 512)
         const skyTexturePath = 'assets/textures/sky.png'
         const envMap = new CubeTextureLoader().load([
@@ -114,7 +122,7 @@ export class AppOne {
             skyTexturePath, // pz
             skyTexturePath, // nz
         ])
-
+        const foamTexture = new TextureLoader().load('assets/textures/foam.jpg')
         const waterUniforms = {
             uTime: { value: 0 },
             uWavesAmplitude: { value: 0.1 },
@@ -134,6 +142,10 @@ export class AppOne {
             uFresnelScale: { value: 0.7 },
             uFresnelPower: { value: 0.5 },
             uEnvironmentMap: { value: envMap },
+            bwTexture: {
+                value: this.gameWorld.getProceduralTextureSystem().getTexture(),
+            },
+            foamTexture: { value: foamTexture },
         }
         const waterMaterial = new ShaderMaterial({
             vertexShader: waterVertexShader,
@@ -145,22 +157,15 @@ export class AppOne {
             depthTest: true,
             fog: true,
         })
-
         const water = new Mesh(waterGeometry, waterMaterial)
         water.rotation.x = -Math.PI / 2
         water.position.set(0, 0, 35)
         water.receiveShadow = true
         water.name = 'Water'
         water.renderOrder = 1
-        scene.add(water)
-        // Store references for GUI
+        this.scene.add(water)
         this.waterMesh = water
         this.waterMaterial = waterMaterial
-
-        // Add fog for atmosphere
-        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 25, 45)
-
-        return scene
     }
 
     private createCamera(): PerspectiveCamera {
@@ -679,6 +684,11 @@ export class AppOne {
             if (water && (water.material as ShaderMaterial).uniforms?.uTime) {
                 ;(water.material as ShaderMaterial).uniforms.uTime.value =
                     time * 0.001
+            }
+            if (this.waterMaterial) {
+                this.waterMaterial.uniforms.bwTexture.value = this.gameWorld
+                    .getProceduralTextureSystem()
+                    .getTexture()
             }
             this.gameWorld.update(time)
             this.renderer.render(this.scene, this.camera)
