@@ -13,6 +13,8 @@ export interface BossAIConfig
     extends Omit<EnemyAIComponent, 'type' | 'lastShotTime' | 'targetId'> {
     moveSpeed: number
     shootingRange: number
+    slowRange: number // Distance where boss starts to slow down
+    stopRange: number // Distance where boss completely stops
 }
 
 // Boss visual configuration
@@ -42,6 +44,8 @@ export const basicBossHealthPreset: BossHealthConfig = {
 export const basicBossAIPreset: BossAIConfig = {
     moveSpeed: 2.5, // Very fast AI movement
     shootingRange: 18.0, // Long shooting range to prevent escape
+    slowRange: 6.0, // Larger slow range for boss (it's bigger)
+    stopRange: 3.0, // Larger stop range for boss (it's bigger)
 }
 
 // Boss visual configuration

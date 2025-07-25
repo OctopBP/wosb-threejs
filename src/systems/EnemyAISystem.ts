@@ -67,22 +67,31 @@ export class EnemyAISystem extends System {
         const dz = playerPosition.z - position.z
         const distance = Math.sqrt(dx * dx + dz * dz)
 
-        if (distance > 0.1) {
+        if (distance <= ai.stopRange) {
+            // Stop moving if within stop range
+            velocity.dx = 0
+            velocity.dz = 0
+        } else {
             // Normalize direction
             const dirX = dx / distance
             const dirZ = dz / distance
 
+            // Calculate speed based on distance
+            let moveForce = ai.moveSpeed
+
+            if (distance <= ai.slowRange) {
+                // Gradually slow down between stopRange and slowRange
+                const slowDownFactor =
+                    (distance - ai.stopRange) / (ai.slowRange - ai.stopRange)
+                moveForce = ai.moveSpeed * slowDownFactor
+            }
+
             // Apply movement towards player
-            const moveForce = ai.moveSpeed
             velocity.dx = dirX * moveForce
             velocity.dz = dirZ * moveForce
 
             // Face the player
             position.rotationY = Math.atan2(dirX, dirZ) + Math.PI
-        } else {
-            // Stop moving if very close to player
-            velocity.dx = 0
-            velocity.dz = 0
         }
     }
 

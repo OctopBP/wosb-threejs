@@ -166,6 +166,8 @@ export interface EnemyAIComponent extends Component {
     // AI behavior state
     moveSpeed: number
     shootingRange: number
+    slowRange: number // Distance where enemies start to slow down
+    stopRange: number // Distance where enemies completely stop
     lastShotTime: number
     // Target tracking
     targetId: number | null

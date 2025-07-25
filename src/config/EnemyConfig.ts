@@ -16,6 +16,8 @@ export interface EnemyAIConfig
     > {
     moveSpeed: number
     shootingRange: number // This will be less important since weapon handles targeting
+    slowRange: number // Distance where enemies start to slow down
+    stopRange: number // Distance where enemies completely stop
 }
 
 // Enemy spawning configuration
@@ -47,6 +49,8 @@ export const basicEnemyHealthPreset: EnemyHealthConfig = {
 export const basicEnemyAIPreset: EnemyAIConfig = {
     moveSpeed: 3, // Faster AI movement speed
     shootingRange: 6.0, // Closer range for more aggressive combat
+    slowRange: 4.0, // Start slowing when 4 units away from player
+    stopRange: 1.5, // Stop completely when 1.5 units away from player
 }
 
 // Enemy spawning configuration
