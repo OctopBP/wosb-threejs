@@ -1,4 +1,4 @@
-import type { Material, Object3D } from 'three'
+import type { Material, Object3D, Vector2 } from 'three'
 import type { VisualUpgradeConfig } from '../config/LevelingConfig'
 import type { ModelType } from '../config/ModelConfig'
 
@@ -37,21 +37,31 @@ export interface VelocityComponent extends Component {
 export interface InputComponent extends Component {
     type: 'input'
     // Raw input state
-    moveForward: boolean
-    moveBackward: boolean
+    moveUp: boolean
+    moveDown: boolean
     moveLeft: boolean
     moveRight: boolean
     pointerX: number
     pointerY: number
-    isTouching: boolean
     isPointerDown: boolean
 
     // Processed output - direction vector
-    direction: {
-        x: number // -1 to 1 (left/right)
-        y: number // -1 to 1 (forward/backward)
-    }
+    direction: Vector2
     hasInput: boolean
+}
+
+// Speed component for forward movement
+export interface SpeedComponent extends Component {
+    type: 'speed'
+    currentSpeed: number
+    maxSpeed: number
+}
+
+// Rotation speed component for ship turning
+export interface RotationSpeedComponent extends Component {
+    type: 'rotationSpeed'
+    currentRotationSpeed: number
+    maxRotationSpeed: number
 }
 
 // Movement configuration component
@@ -63,15 +73,16 @@ export interface MovementConfigComponent extends Component {
     maxSpeed: number
 
     // Rotation settings
-    autoRotationStrength: number // How much the ship auto-rotates towards movement direction
+    rotationAcceleration: number // How fast the ship accelerates its rotation
+    maxRotationSpeed: number // Maximum rotation speed in radians per second
 
     // Input processing settings
-    inputResponsiveness: number
     inputDeadZone: number
     pointerSensitivity: number
 
     // Movement dampening
     linearDampening: number
+    rotationDampening: number
 }
 
 // Renderable component for Three.js mesh

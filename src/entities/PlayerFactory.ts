@@ -1,3 +1,4 @@
+import { Vector2 } from 'three'
 import { createPlayerShipCollision } from '../config/CollisionConfig'
 import {
     createLevelComponent,
@@ -16,7 +17,8 @@ import type {
     PlayerComponent,
     PositionComponent,
     RenderableComponent,
-    VelocityComponent,
+    RotationSpeedComponent,
+    SpeedComponent,
     WeaponComponent,
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
@@ -37,35 +39,35 @@ export function createPlayerShip(
     }
     entity.addComponent(position)
 
-    // Velocity component - no initial movement
-    const velocity: VelocityComponent = {
-        type: 'velocity',
-        dx: 0,
-        dy: 0,
-        dz: 0,
-        angularVelocityX: 0,
-        angularVelocityY: 0,
-        angularVelocityZ: 0,
+    // Speed component - no initial movement
+    const speed: SpeedComponent = {
+        type: 'speed',
+        currentSpeed: 0,
+        maxSpeed: 2.5, // Will be overridden by movement config, but good default
     }
-    entity.addComponent(velocity)
+    entity.addComponent(speed)
+
+    // Rotation speed component - no initial rotation
+    const rotationSpeed: RotationSpeedComponent = {
+        type: 'rotationSpeed',
+        currentRotationSpeed: 0,
+        maxRotationSpeed: 4.0, // Will be overridden by movement config, but good default
+    }
+    entity.addComponent(rotationSpeed)
 
     // Input component - no initial input with direction output
     const input: InputComponent = {
         type: 'input',
         // Raw input state
-        moveForward: false,
-        moveBackward: false,
+        moveUp: false,
+        moveDown: false,
         moveLeft: false,
         moveRight: false,
         pointerX: 0,
         pointerY: 0,
-        isTouching: false,
         isPointerDown: false,
         // Processed direction output
-        direction: {
-            x: 0, // left/right direction
-            y: 0, // forward/backward direction
-        },
+        direction: new Vector2(),
         hasInput: false,
     }
     entity.addComponent(input)

@@ -10,7 +10,8 @@ import type {
     MovementConfigComponent,
     PositionComponent,
     RangeIndicatorComponent,
-    VelocityComponent,
+    RotationSpeedComponent,
+    SpeedComponent,
     WeaponComponent,
 } from './ecs'
 import type { Entity } from './ecs/Entity'
@@ -504,14 +505,29 @@ export class GameWorld {
         return position ? { x: position.x, y: position.y, z: position.z } : null
     }
 
-    getPlayerVelocity(): { dx: number; dy: number; dz: number } | null {
+    getPlayerSpeed(): {
+        currentSpeed: number
+        forwardX: number
+        forwardZ: number
+    } | null {
         if (!this.playerEntity) return null
 
-        const velocity =
-            this.playerEntity.getComponent<VelocityComponent>('velocity')
-        return velocity
-            ? { dx: velocity.dx, dy: velocity.dy, dz: velocity.dz }
-            : null
+        const speed = this.playerEntity.getComponent<SpeedComponent>('speed')
+        const position =
+            this.playerEntity.getComponent<PositionComponent>('position')
+
+        if (!speed || !position) return null
+
+        // Calculate forward direction
+        const forwardAngle = position.rotationY + Math.PI
+        const forwardX = Math.sin(forwardAngle)
+        const forwardZ = Math.cos(forwardAngle)
+
+        return {
+            currentSpeed: speed.currentSpeed,
+            forwardX,
+            forwardZ,
+        }
     }
 
     getPlayerInputDirection() {
