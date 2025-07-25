@@ -45,7 +45,7 @@ export const defaultGameStateConfig: GameStateConfig = {
         forceSpawnTimeSeconds: 20, // Boss appears after 20 seconds if waves aren't complete
     },
     spawning: {
-        spawnHeightOffset: 0.1, // Y position for spawned entities
+        spawnHeightOffset: -0.2, // Y position for spawned entities
         spawnAngleRandomness: true, // Whether to randomize spawn angles
     },
 }

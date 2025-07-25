@@ -29,7 +29,7 @@ export function createPlayerShip(
     const position: PositionComponent = {
         type: 'position',
         x: 0,
-        y: 0.1, // Slightly above the ground
+        y: -0.1,
         z: 0,
         rotationX: 0,
         rotationY: Math.PI, // Face forward (compensate for model facing backwards by default)
