@@ -1,3 +1,4 @@
+import { Vector2 } from 'three'
 import { createPlayerShipCollision } from '../config/CollisionConfig'
 import {
     createLevelComponent,
@@ -58,19 +59,15 @@ export function createPlayerShip(
     const input: InputComponent = {
         type: 'input',
         // Raw input state
-        moveForward: false,
-        moveBackward: false,
+        moveUp: false,
+        moveDown: false,
         moveLeft: false,
         moveRight: false,
         pointerX: 0,
         pointerY: 0,
-        isTouching: false,
         isPointerDown: false,
         // Processed direction output
-        direction: {
-            x: 0, // left/right direction
-            y: 0, // forward/backward direction
-        },
+        direction: new Vector2(),
         hasInput: false,
     }
     entity.addComponent(input)

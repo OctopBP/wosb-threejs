@@ -1,5 +1,6 @@
 import type { InputComponent, MovementConfigComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 import type { VirtualJoystickSystem } from './VirtualJoystickSystem'
 
@@ -83,12 +84,15 @@ export class InputSystem extends System {
             const input = entity.getComponent<InputComponent>('input')
             const config =
                 entity.getComponent<MovementConfigComponent>('movementConfig')
-            if (!input || !config) continue
+
+            if (!input || !config) {
+                continue
+            }
 
             // Update raw keyboard input (WASD and Arrow keys only)
-            input.moveForward =
+            input.moveUp =
                 this.isKeyPressed('keyw') || this.isKeyPressed('arrowup')
-            input.moveBackward =
+            input.moveDown =
                 this.isKeyPressed('keys') || this.isKeyPressed('arrowdown')
             input.moveLeft =
                 this.isKeyPressed('keya') || this.isKeyPressed('arrowleft')
@@ -99,7 +103,6 @@ export class InputSystem extends System {
             input.pointerX = this.pointerPosition.x
             input.pointerY = this.pointerPosition.y
             input.isPointerDown = this.isPointerDown
-            input.isTouching = false // No longer used
 
             // Process input into direction vectors
             this.processInputToDirection(input, config)
@@ -123,10 +126,6 @@ export class InputSystem extends System {
         // Process mouse pointer input to direction (for desktop)
         this.processPointerDirection(input, config)
 
-        // Apply responsiveness
-        input.direction.x *= config.inputResponsiveness
-        input.direction.y *= config.inputResponsiveness
-
         // Clamp values to [-1, 1]
         input.direction.x = this.clamp(input.direction.x, -1, 1)
         input.direction.y = this.clamp(input.direction.y, -1, 1)
@@ -139,10 +138,10 @@ export class InputSystem extends System {
 
     private processKeyboardDirection(input: InputComponent): void {
         // Forward/Backward movement (Y direction)
-        if (input.moveForward) {
+        if (input.moveUp) {
             input.direction.y += 1
         }
-        if (input.moveBackward) {
+        if (input.moveDown) {
             input.direction.y -= 1
         }
 

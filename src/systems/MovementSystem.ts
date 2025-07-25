@@ -4,6 +4,7 @@ import type {
     SpeedComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
 
 export class MovementSystem extends System {
@@ -20,7 +21,9 @@ export class MovementSystem extends System {
             const config =
                 entity.getComponent<MovementConfigComponent>('movementConfig')
 
-            if (!position || !speed || !config) continue
+            if (!position || !speed || !config) {
+                continue
+            }
 
             this.updatePosition(position, speed, deltaTime)
         }

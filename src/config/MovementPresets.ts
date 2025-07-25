@@ -9,7 +9,6 @@ export const balancedPreset: MovementConfigPreset = {
     maxSpeed: 2.5, // Matches the new base speed from leveling config
     rotationAcceleration: 10.0, // How fast the ship accelerates its rotation
     maxRotationSpeed: 4.0, // Maximum rotation speed in radians per second
-    inputResponsiveness: 1.0,
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,
     linearDampening: 0.95,

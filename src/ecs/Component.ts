@@ -1,4 +1,4 @@
-import type { Material, Object3D } from 'three'
+import type { Material, Object3D, Vector2 } from 'three'
 import type { VisualUpgradeConfig } from '../config/LevelingConfig'
 import type { ModelType } from '../config/ModelConfig'
 
@@ -37,20 +37,16 @@ export interface VelocityComponent extends Component {
 export interface InputComponent extends Component {
     type: 'input'
     // Raw input state
-    moveForward: boolean
-    moveBackward: boolean
+    moveUp: boolean
+    moveDown: boolean
     moveLeft: boolean
     moveRight: boolean
     pointerX: number
     pointerY: number
-    isTouching: boolean
     isPointerDown: boolean
 
     // Processed output - direction vector
-    direction: {
-        x: number // -1 to 1 (left/right)
-        y: number // -1 to 1 (forward/backward)
-    }
+    direction: Vector2
     hasInput: boolean
 }
 
@@ -81,7 +77,6 @@ export interface MovementConfigComponent extends Component {
     maxRotationSpeed: number // Maximum rotation speed in radians per second
 
     // Input processing settings
-    inputResponsiveness: number
     inputDeadZone: number
     pointerSensitivity: number
 

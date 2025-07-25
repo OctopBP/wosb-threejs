@@ -33,7 +33,6 @@ export const enemyMovementPreset: MovementConfigPreset = {
     decelerationForce: 3.0,
     rotationAcceleration: 12.0, // Good rotation acceleration for combat
     maxRotationSpeed: 5.0, // Good max rotation speed for responsive movement
-    inputResponsiveness: 1.0,
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,
     linearDampening: 0.95,

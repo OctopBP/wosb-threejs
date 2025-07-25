@@ -1,3 +1,4 @@
+import { Vector2 } from 'three'
 import type {
     InputComponent,
     MovementConfigComponent,
@@ -7,7 +8,6 @@ import type {
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
-
 export class AccelerationSystem extends System {
     constructor(world: World) {
         super(world, [
@@ -61,58 +61,36 @@ export class AccelerationSystem extends System {
         config: MovementConfigComponent,
         deltaTime: number,
     ): void {
-        // Get target direction from input
-        const targetDirection = {
-            x: input.direction.x,
-            z: input.direction.y, // Y input becomes Z direction in 3D space
+        if (input.direction.lengthSq() === 0) {
+            return
         }
 
-        // Normalize target direction
-        const targetLength = Math.sqrt(
-            targetDirection.x * targetDirection.x +
-                targetDirection.z * targetDirection.z,
-        )
-        if (targetLength === 0) return
-
-        const normalizedTarget = {
-            x: targetDirection.x / targetLength,
-            z: targetDirection.z / targetLength,
-        }
+        const normalizedDirection = input.direction.normalize()
 
         // Get ship forward direction (ship model faces backwards by default)
         const forwardAngle = position.rotationY + Math.PI
-        const shipForward = {
-            x: Math.sin(forwardAngle),
-            z: Math.cos(forwardAngle),
-        }
+        const shipForward = new Vector2(
+            Math.sin(forwardAngle),
+            Math.cos(forwardAngle),
+        )
 
-        // Calculate cross product between ship forward and target direction
-        // In 2D (on XZ plane), cross product is: forward.x * target.z - forward.z * target.x
-        const crossProduct =
-            shipForward.x * normalizedTarget.z -
-            shipForward.z * normalizedTarget.x
+        const orientation = vectorOrientationAndDifference(
+            shipForward,
+            normalizedDirection,
+        )
 
         // Calculate dot product for forward alignment
         const dotProduct =
-            shipForward.x * normalizedTarget.x +
-            shipForward.z * normalizedTarget.z
+            shipForward.x * normalizedDirection.x +
+            shipForward.y * normalizedDirection.y
 
         // Calculate speed acceleration based on forward alignment (dot product)
-        // More aligned = faster, perpendicular = slower
-        const forwardAlignment = Math.max(0, dotProduct) // Only positive alignment contributes to speed
         const speedAcceleration =
-            config.accelerationForce * forwardAlignment * deltaTime
-        speed.currentSpeed += speedAcceleration
+            config.accelerationForce * dotProduct * deltaTime
+        speed.currentSpeed =
+            speed.currentSpeed + Math.max(0.0, speedAcceleration)
 
-        // Calculate rotation speed based on cross product
-        // Cross product tells us how much and in which direction to rotate
-        const rotationAcceleration =
-            config.rotationAcceleration * crossProduct * deltaTime
-        rotationSpeed.currentRotationSpeed += rotationAcceleration
-
-        // Apply rotation dampening to prevent oscillation
-        rotationSpeed.currentRotationSpeed *=
-            config.rotationDampening ** deltaTime
+        rotationSpeed.currentRotationSpeed = -orientation
     }
 
     private applyDeceleration(
@@ -177,4 +155,11 @@ export class AccelerationSystem extends System {
                 config.maxRotationSpeed
         }
     }
+}
+
+function vectorOrientationAndDifference(A: Vector2, B: Vector2): number {
+    const cross = A.x * B.y - A.y * B.x
+    const dot = A.x * B.x + A.y * B.y
+
+    return (Math.sign(cross) * (1 - dot)) / 2
 }
