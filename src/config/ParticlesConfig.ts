@@ -201,7 +201,7 @@ export const bigExplosionParticleConfig: ParticleSystemConfig = {
         { time: 0.0, value: new Color(1.0, 1.0, 0.8) },
         { time: 0.2, value: new Color(1.0, 0.8, 0.4) },
         { time: 0.5, value: new Color(1.0, 0.5, 0.2) },
-        { time: 1.0, value: new Color(0.6, 0.2, 0.1) },
+        { time: 1.0, value: new Color(0.6, 0.4, 0.1) },
     ],
 }
 
@@ -258,7 +258,7 @@ export const smallExplosionParticleConfig: ParticleSystemConfig = {
         { time: 0.0, value: new Color(1.0, 1.0, 0.9) },
         { time: 0.3, value: new Color(1.0, 0.7, 0.3) },
         { time: 0.7, value: new Color(1.0, 0.4, 0.1) },
-        { time: 1.0, value: new Color(0.5, 0.1, 0.0) },
+        { time: 1.0, value: new Color(0.5, 0.3, 0.0) },
     ],
 }
 
@@ -312,7 +312,7 @@ export const nukeExplosionParticleConfig: ParticleSystemConfig = {
         { time: 0.1, value: new Color(1.0, 1.0, 0.6) },
         { time: 0.4, value: new Color(1.0, 0.6, 0.2) },
         { time: 0.8, value: new Color(0.8, 0.3, 0.1) },
-        { time: 1.0, value: new Color(0.4, 0.1, 0.0) },
+        { time: 1.0, value: new Color(0.4, 0.2, 0.0) },
     ],
 }
 
