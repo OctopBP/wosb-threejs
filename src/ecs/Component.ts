@@ -54,6 +54,20 @@ export interface InputComponent extends Component {
     hasInput: boolean
 }
 
+// Speed component for forward movement
+export interface SpeedComponent extends Component {
+    type: 'speed'
+    currentSpeed: number
+    maxSpeed: number
+}
+
+// Rotation speed component for ship turning
+export interface RotationSpeedComponent extends Component {
+    type: 'rotationSpeed'
+    currentRotationSpeed: number
+    maxRotationSpeed: number
+}
+
 // Movement configuration component
 export interface MovementConfigComponent extends Component {
     type: 'movementConfig'
@@ -63,7 +77,8 @@ export interface MovementConfigComponent extends Component {
     maxSpeed: number
 
     // Rotation settings
-    autoRotationStrength: number // How much the ship auto-rotates towards movement direction
+    rotationAcceleration: number // How fast the ship accelerates its rotation
+    maxRotationSpeed: number // Maximum rotation speed in radians per second
 
     // Input processing settings
     inputResponsiveness: number
@@ -72,6 +87,7 @@ export interface MovementConfigComponent extends Component {
 
     // Movement dampening
     linearDampening: number
+    rotationDampening: number
 }
 
 // Renderable component for Three.js mesh
