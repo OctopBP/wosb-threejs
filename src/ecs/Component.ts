@@ -296,6 +296,8 @@ export interface GameStateComponent extends Component {
     wave2EnemiesDefeated: number
     bossSpawned: boolean
     playerHits: number // Track hits taken by player for boss encounter
+    playerDeathStartTime?: number // When player death was detected (for delay before new ship offer)
+    playerDeathDelayDuration: number // How long to wait before showing new ship offer (seconds)
 }
 
 // Boss tag component for boss entities

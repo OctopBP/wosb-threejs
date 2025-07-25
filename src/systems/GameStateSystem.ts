@@ -121,6 +121,7 @@ export class GameStateSystem extends System {
             wave2EnemiesDefeated: 0,
             bossSpawned: false,
             playerHits: 0,
+            playerDeathDelayDuration: 1.0, // 1 second delay before showing new ship offer
         }
         this.gameStateEntity.addComponent(gameState)
         this.world.addEntity(this.gameStateEntity)
@@ -148,10 +149,21 @@ export class GameStateSystem extends System {
         const playerHealth = player.getComponent<HealthComponent>('health')
         if (!playerHealth) return
 
-        // If player is dead, transition to new ship offer
-        if (playerHealth.isDead) {
-            gameState.currentState = 'newShipOffer'
-            console.log('💀 Player died! Showing new ship offer...')
+        // If player is dead, start death delay timer
+        if (playerHealth.isDead && !gameState.playerDeathStartTime) {
+            gameState.playerDeathStartTime = performance.now() / 1000
+            console.log('💀 Player died! Starting explosion effects and delay...')
+        }
+
+        // Check if death delay has passed and transition to new ship offer
+        if (gameState.playerDeathStartTime) {
+            const currentTime = performance.now() / 1000
+            const timeSinceDeath = currentTime - gameState.playerDeathStartTime
+            
+            if (timeSinceDeath >= gameState.playerDeathDelayDuration) {
+                gameState.currentState = 'newShipOffer'
+                console.log('💀 Death delay complete. Showing new ship offer...')
+            }
         }
     }
 
@@ -175,6 +187,7 @@ export class GameStateSystem extends System {
         gameState.wave2EnemiesDefeated = 0
         gameState.bossSpawned = false
         gameState.playerHits = 0
+        gameState.playerDeathStartTime = undefined
 
         // Get all entities BEFORE removing any (to avoid iterator issues)
         const allEntities = Array.from(this.world.getAllEntities())
