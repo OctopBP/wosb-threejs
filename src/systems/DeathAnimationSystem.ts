@@ -46,9 +46,9 @@ export class DeathAnimationSystem extends System {
             // Update animation time
             deathAnimation.currentTime += deltaTime
 
-            // Trigger wreckage particles at the beginning of death animation
+            // Trigger explosion effects at the beginning of death animation
             if (!deathAnimation.wreckageTriggered) {
-                this.triggerWreckageParticles(position)
+                this.triggerExplosionEffects(position)
                 deathAnimation.wreckageTriggered = true
             }
 
@@ -102,21 +102,85 @@ export class DeathAnimationSystem extends System {
         }
     }
 
-    private triggerWreckageParticles(position: PositionComponent): void {
+    private triggerExplosionEffects(position: PositionComponent): void {
         if (!this.particleSystem) return
 
-        // Create dramatic wreckage particle effect at ship position
-        const wreckageId = `wreckage_death_${Date.now()}_${Math.random()}`
-        const wreckageConfig = getParticleConfig(
-            'deathWreckage',
-            new Vector3(position.x, position.y + 0.5, position.z), // Slightly above ship
-            new Vector3(0, 1, 0), // Upward direction
+        const explosionPosition = new Vector3(
+            position.x,
+            position.y + 0.5,
+            position.z,
         )
+        const timestamp = Date.now()
+        const randomId = Math.random()
 
-        this.particleSystem.createAndBurstParticleSystem(
-            wreckageId,
-            wreckageConfig,
+        // Stage 1: Nuclear explosion (immediate, intense core blast)
+        const nukeId = `nuke_explosion_${timestamp}_${randomId}`
+        const nukeConfig = getParticleConfig(
+            'nukeExplosion',
+            explosionPosition.clone(),
+            new Vector3(0, 1, 0),
         )
+        this.particleSystem.createAndBurstParticleSystem(nukeId, nukeConfig)
+
+        // Stage 2: Big explosion flames (50ms delay, main blast)
+        setTimeout(() => {
+            if (!this.particleSystem) return
+            const bigExplosionId = `big_explosion_${timestamp}_${randomId}`
+            const bigExplosionConfig = getParticleConfig(
+                'bigExplosion',
+                explosionPosition.clone(),
+                new Vector3(0, 1, 0),
+            )
+            this.particleSystem.createAndBurstParticleSystem(
+                bigExplosionId,
+                bigExplosionConfig,
+            )
+        }, 50)
+
+        // Stage 3: Small explosion flames (150ms delay, secondary bursts)
+        setTimeout(() => {
+            if (!this.particleSystem) return
+            const smallExplosionId = `small_explosion_${timestamp}_${randomId}`
+            const smallExplosionConfig = getParticleConfig(
+                'smallExplosion',
+                explosionPosition.clone(),
+                new Vector3(0, 1, 0),
+            )
+            this.particleSystem.createAndBurstParticleSystem(
+                smallExplosionId,
+                smallExplosionConfig,
+            )
+        }, 150)
+
+        // Stage 4: Explosion smoke (300ms delay, lingering aftermath)
+        setTimeout(() => {
+            if (!this.particleSystem) return
+            const smokeId = `explosion_smoke_${timestamp}_${randomId}`
+            const smokeConfig = getParticleConfig(
+                'explosionSmoke',
+                explosionPosition.clone(),
+                new Vector3(0, 1, 0),
+            )
+            this.particleSystem.createAndBurstParticleSystem(
+                smokeId,
+                smokeConfig,
+            )
+        }, 300)
+
+        // Stage 5: Wreckage particles (400ms delay, debris)
+        setTimeout(() => {
+            if (!this.particleSystem) return
+            const wreckageId = `wreckage_death_${timestamp}_${randomId}`
+            const wreckageConfig = getParticleConfig(
+                'deathWreckage',
+                explosionPosition.clone(),
+                new Vector3(0, 1, 0),
+            )
+            this.particleSystem.createAndBurstParticleSystem(
+                wreckageId,
+                wreckageConfig,
+            )
+        }, 400)
     }
 
     private applyDissolveShader(entity: Entity): void {
