@@ -1,6 +1,6 @@
+import { Vector2 } from 'three'
 import {
     bossMovementPreset,
-    createBossAIConfig,
     createBossHealthConfig,
     createBossWeaponConfig,
     getBossVisualConfig,
@@ -10,7 +10,6 @@ import {
     createEnemyShipCollision,
 } from '../config/CollisionConfig'
 import {
-    createEnemyAIConfig,
     createEnemyHealthConfig,
     createEnemyWeaponConfig,
     enemyMovementPreset,
@@ -21,42 +20,38 @@ import type {
     BossComponent,
     DamageableComponent,
     EnemyComponent,
+    InputComponent,
     PositionComponent,
     RenderableComponent,
-    VelocityComponent,
+    RotationSpeedComponent,
+    SpeedComponent,
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
+
 export function createEnemyShip(
     x: number,
-    y: number,
     z: number,
-    targetId: number | null = null,
+    playerX: number,
+    playerZ: number,
 ): Entity {
     const entity = new Entity()
+
+    // Calculate angle to player
+    const dx = x - playerX
+    const dz = z - playerZ
+    const angleToPlayer = Math.atan2(dx, dz)
 
     // Position component - spawn at specified location
     const position: PositionComponent = {
         type: 'position',
         x,
-        y,
+        y: -0.1,
         z,
         rotationX: 0,
-        rotationY: Math.PI, // Face towards player (opposite direction)
+        rotationY: angleToPlayer,
         rotationZ: 0,
     }
     entity.addComponent(position)
-
-    // Velocity component - no initial movement
-    const velocity: VelocityComponent = {
-        type: 'velocity',
-        dx: 0,
-        dy: 0,
-        dz: 0,
-        angularVelocityX: 0,
-        angularVelocityY: 0,
-        angularVelocityZ: 0,
-    }
-    entity.addComponent(velocity)
 
     // Movement configuration - use enemy preset
     const movementConfig = createMovementConfig(enemyMovementPreset)
@@ -97,9 +92,30 @@ export function createEnemyShip(
     }
     entity.addComponent(enemy)
 
-    // Enemy AI component - use enemy AI config
-    const enemyAI = createEnemyAIConfig(targetId)
-    entity.addComponent(enemyAI)
+    entity.addComponent<SpeedComponent>({
+        type: 'speed',
+        currentSpeed: 0,
+        maxSpeed: movementConfig.maxSpeed,
+    })
+
+    entity.addComponent<RotationSpeedComponent>({
+        type: 'rotationSpeed',
+        currentRotationSpeed: 0,
+        maxRotationSpeed: movementConfig.maxRotationSpeed,
+    })
+
+    entity.addComponent<InputComponent>({
+        type: 'input',
+        moveUp: false,
+        moveDown: false,
+        moveLeft: false,
+        moveRight: false,
+        pointerX: 0,
+        pointerY: 0,
+        direction: new Vector2(),
+        hasInput: false,
+        isPointerDown: false,
+    })
 
     // Alive component - enemy starts alive
     const alive: AliveComponent = {
@@ -113,38 +129,31 @@ export function createEnemyShip(
 // Create a powerful boss ship
 export function createBossShip(
     x: number,
-    y: number,
     z: number,
-    targetId: number | null = null,
+    playerX: number,
+    playerZ: number,
 ): Entity {
     const entity = new Entity()
 
     // Get boss configuration
     const bossVisualConfig = getBossVisualConfig()
 
+    // Calculate angle to player
+    const dx = x - playerX
+    const dz = z - playerZ
+    const angleToPlayer = Math.atan2(dx, dz)
+
     // Position component - spawn at specified location
     const position: PositionComponent = {
         type: 'position',
         x,
-        y,
+        y: -0.1,
         z,
         rotationX: 0,
-        rotationY: Math.PI, // Face towards player
+        rotationY: angleToPlayer,
         rotationZ: 0,
     }
     entity.addComponent(position)
-
-    // Velocity component - no initial movement
-    const velocity: VelocityComponent = {
-        type: 'velocity',
-        dx: 0,
-        dy: 0,
-        dz: 0,
-        angularVelocityX: 0,
-        angularVelocityY: 0,
-        angularVelocityZ: 0,
-    }
-    entity.addComponent(velocity)
 
     // Movement configuration - use boss preset
     const bossMovementConfig = createMovementConfig(bossMovementPreset)
@@ -193,9 +202,30 @@ export function createBossShip(
     }
     entity.addComponent(boss)
 
-    // Enemy AI component - use boss AI config
-    const enemyAI = createBossAIConfig(targetId)
-    entity.addComponent(enemyAI)
+    entity.addComponent<SpeedComponent>({
+        type: 'speed',
+        currentSpeed: 0,
+        maxSpeed: bossMovementConfig.maxSpeed,
+    })
+
+    entity.addComponent<RotationSpeedComponent>({
+        type: 'rotationSpeed',
+        currentRotationSpeed: 0,
+        maxRotationSpeed: bossMovementConfig.maxRotationSpeed,
+    })
+
+    entity.addComponent<InputComponent>({
+        type: 'input',
+        moveUp: false,
+        moveDown: false,
+        moveLeft: false,
+        moveRight: false,
+        pointerX: 0,
+        pointerY: 0,
+        direction: new Vector2(),
+        hasInput: false,
+        isPointerDown: false,
+    })
 
     // Alive component - boss starts alive
     const alive: AliveComponent = {

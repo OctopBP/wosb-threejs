@@ -16,10 +16,6 @@ export interface GameStateConfig {
     wave1: WaveConfig // 3 enemies after initial
     wave2: WaveConfig // 12 enemies after wave1
     boss: BossConfig
-    spawning: {
-        spawnHeightOffset: number
-        spawnAngleRandomness: boolean
-    }
 }
 
 // Default game state configuration
@@ -43,10 +39,6 @@ export const defaultGameStateConfig: GameStateConfig = {
         minSpawnDistance: 25,
         maxSpawnDistance: 25, // Fixed distance for consistent boss encounter
         forceSpawnTimeSeconds: 20, // Boss appears after 20 seconds if waves aren't complete
-    },
-    spawning: {
-        spawnHeightOffset: -0.2, // Y position for spawned entities
-        spawnAngleRandomness: true, // Whether to randomize spawn angles
     },
 }
 

@@ -10,7 +10,6 @@ import type {
     MovementConfigComponent,
     PositionComponent,
     RangeIndicatorComponent,
-    RotationSpeedComponent,
     SpeedComponent,
     WeaponComponent,
 } from './ecs'

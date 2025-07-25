@@ -1,4 +1,4 @@
-import type { Material, Object3D, Vector2 } from 'three'
+import type { Material, Object3D, Vector2, Vector3 } from 'three'
 import type { VisualUpgradeConfig } from '../config/LevelingConfig'
 import type { ModelType } from '../config/ModelConfig'
 
@@ -169,17 +169,6 @@ export interface DamageableComponent extends Component {
 // Enemy tag component
 export interface EnemyComponent extends Component {
     type: 'enemy'
-}
-
-// Enemy AI component for controlling enemy behavior
-export interface EnemyAIComponent extends Component {
-    type: 'enemyAI'
-    // AI behavior state
-    moveSpeed: number
-    shootingRange: number
-    lastShotTime: number
-    // Target tracking
-    targetId: number | null
 }
 
 // XP (Experience Points) component for tracking player progression

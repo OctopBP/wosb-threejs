@@ -1,7 +1,7 @@
 import type {
     PositionComponent,
     RenderableComponent,
-    VelocityComponent,
+    SpeedComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
 
@@ -53,7 +53,7 @@ export class WaveRockingSystem extends System {
 
     constructor(world: World) {
         // Apply to entities with position, velocity, and renderable components that are ships
-        super(world, ['position', 'velocity', 'renderable'])
+        super(world, ['position', 'speed', 'renderable'])
     }
 
     update(deltaTime: number): void {
@@ -63,17 +63,17 @@ export class WaveRockingSystem extends System {
 
         for (const entity of entities) {
             const position = entity.getComponent<PositionComponent>('position')
-            const velocity = entity.getComponent<VelocityComponent>('velocity')
+            const speed = entity.getComponent<SpeedComponent>('speed')
             const renderable =
                 entity.getComponent<RenderableComponent>('renderable')
 
-            if (!position || !velocity || !renderable) continue
+            if (!position || !speed || !renderable) continue
 
             // Only apply to ship meshes
             if (!this.isShipMesh(renderable.meshType)) continue
 
-            this.applyWaveMotion(position)
-            this.applyWaveMovementEffects(position, velocity, deltaTime)
+            // this.applyWaveMotion(position)
+            // this.applyWaveMovementEffects(position, speed, deltaTime)
         }
     }
 
@@ -133,7 +133,7 @@ export class WaveRockingSystem extends System {
 
     private applyWaveMovementEffects(
         position: PositionComponent,
-        velocity: VelocityComponent,
+        speed: SpeedComponent,
         deltaTime: number,
     ): void {
         // Create spatial variation for movement effects
@@ -141,16 +141,13 @@ export class WaveRockingSystem extends System {
         const spatialOffsetZ = position.z * this.waveConfig.spatialVariation
 
         // Calculate current movement magnitude for resistance
-        const currentSpeed = Math.sqrt(
-            velocity.dx * velocity.dx + velocity.dz * velocity.dz,
-        )
+        const currentSpeed = Math.sqrt(speed.currentSpeed * speed.currentSpeed)
 
         // Apply wave resistance - stronger resistance for faster movement
         if (currentSpeed > 0.1) {
             const resistanceMultiplier =
                 1.0 - this.waveConfig.waveResistance * deltaTime
-            velocity.dx *= resistanceMultiplier
-            velocity.dz *= resistanceMultiplier
+            speed.currentSpeed *= resistanceMultiplier
         }
 
         // Apply wave push forces (ocean currents)
@@ -171,8 +168,8 @@ export class WaveRockingSystem extends System {
             deltaTime
 
         // Apply the push forces
-        velocity.dx += wavePushX
-        velocity.dz += wavePushZ
+        speed.currentSpeed += wavePushX
+        speed.currentSpeed += wavePushZ
 
         // Add some turbulence for more realistic feel
         const turbulenceX =
@@ -184,8 +181,8 @@ export class WaveRockingSystem extends System {
             this.waveConfig.turbulenceStrength *
             deltaTime
 
-        velocity.dx += turbulenceX
-        velocity.dz += turbulenceZ
+        speed.currentSpeed += turbulenceX
+        speed.currentSpeed += turbulenceZ
 
         // Apply some vertical wave motion to velocity for more dynamic feel
         const verticalWaveForce =
@@ -197,7 +194,7 @@ export class WaveRockingSystem extends System {
             0.2 *
             deltaTime
 
-        velocity.dy += verticalWaveForce
+        speed.currentSpeed += verticalWaveForce
     }
 
     /**

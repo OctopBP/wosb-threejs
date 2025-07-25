@@ -38,7 +38,10 @@ export abstract class BaseGameState implements GameStateHandler {
 
     protected getPlayerPosition(world: World): PositionComponent | null {
         const player = this.getPlayerEntity(world)
-        if (!player) return null
+        if (!player) {
+            return null
+        }
+
         return player.getComponent<PositionComponent>('position') || null
     }
 
@@ -75,26 +78,17 @@ export abstract class BaseGameState implements GameStateHandler {
         const distance =
             spawnDistance || getRandomSpawnDistanceForWaveOrBoss(config.wave1)
 
-        // Choose spawn position
-        let spawnX: number, spawnZ: number
-
-        if (config.spawning.spawnAngleRandomness) {
-            // Random angle around player
-            const spawnAngle = Math.random() * 2 * Math.PI
-            spawnX = playerPosition.x + Math.cos(spawnAngle) * distance
-            spawnZ = playerPosition.z + Math.sin(spawnAngle) * distance
-        } else {
-            // Fixed position in front of player
-            spawnX = playerPosition.x
-            spawnZ = playerPosition.z + distance
-        }
+        // Random angle around player
+        const spawnAngle = Math.random() * 2 * Math.PI
+        const spawnX = playerPosition.x + Math.cos(spawnAngle) * distance
+        const spawnZ = playerPosition.z + Math.sin(spawnAngle) * distance
 
         // Create enemy ship
         const enemy = createEnemyShip(
             spawnX,
-            config.spawning.spawnHeightOffset,
             spawnZ,
-            player.id,
+            playerPosition.x,
+            playerPosition.z,
         )
 
         // Add enemy to world
@@ -116,9 +110,9 @@ export abstract class BaseGameState implements GameStateHandler {
         // Create boss ship
         const boss = createBossShip(
             spawnX,
-            config.spawning.spawnHeightOffset,
             spawnZ,
-            player.id,
+            playerPosition.x,
+            playerPosition.z,
         )
 
         // Add boss to world

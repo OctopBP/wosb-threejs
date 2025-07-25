@@ -1,23 +1,15 @@
+import { Vector2 } from 'three'
 import type {
-    EnemyAIComponent,
+    InputComponent,
     PositionComponent,
-    VelocityComponent,
     WeaponComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
-
 import type { World } from '../ecs/World'
 
 export class EnemyAISystem extends System {
     constructor(world: World) {
-        super(world, [
-            'enemy',
-            'enemyAI',
-            'position',
-            'velocity',
-            'weapon',
-            'alive',
-        ])
+        super(world, ['enemy', 'position', 'input', 'speed', 'weapon', 'alive'])
     }
 
     update(_deltaTime: number): void {
@@ -39,55 +31,38 @@ export class EnemyAISystem extends System {
         }
 
         for (const enemy of enemies) {
-            const enemyAI = enemy.getComponent<EnemyAIComponent>('enemyAI')
             const position = enemy.getComponent<PositionComponent>('position')
-            const velocity = enemy.getComponent<VelocityComponent>('velocity')
             const weapon = enemy.getComponent<WeaponComponent>('weapon')
+            const input = enemy.getComponent<InputComponent>('input')
 
-            if (!enemyAI || !position || !velocity || !weapon) continue
+            if (!position || !weapon || !input) {
+                continue
+            }
 
             // Update AI behavior
-            this.updateMovement(enemyAI, position, velocity, playerPosition)
+            this.updateMovement(position, playerPosition, input)
 
             // Only handle shooting for manual weapons - auto-targeting weapons are handled by WeaponSystem
             if (!weapon.isAutoTargeting) {
-                this.updateShooting(enemyAI, position, weapon, playerPosition)
+                this.updateShooting(position, weapon, playerPosition)
             }
         }
     }
 
     private updateMovement(
-        ai: EnemyAIComponent,
         position: PositionComponent,
-        velocity: VelocityComponent,
         playerPosition: PositionComponent,
+        input: InputComponent,
     ): void {
         // Calculate direction to player
         const dx = playerPosition.x - position.x
         const dz = playerPosition.z - position.z
-        const distance = Math.sqrt(dx * dx + dz * dz)
 
-        if (distance > 0.1) {
-            // Normalize direction
-            const dirX = dx / distance
-            const dirZ = dz / distance
-
-            // Apply movement towards player
-            const moveForce = ai.moveSpeed
-            velocity.dx = dirX * moveForce
-            velocity.dz = dirZ * moveForce
-
-            // Face the player
-            position.rotationY = Math.atan2(dirX, dirZ) + Math.PI
-        } else {
-            // Stop moving if very close to player
-            velocity.dx = 0
-            velocity.dz = 0
-        }
+        input.direction = new Vector2(dx, dz).normalize()
+        input.hasInput = true
     }
 
     private updateShooting(
-        ai: EnemyAIComponent,
         position: PositionComponent,
         weapon: WeaponComponent,
         playerPosition: PositionComponent,
@@ -98,16 +73,16 @@ export class EnemyAISystem extends System {
         const distance = Math.sqrt(dx * dx + dz * dz)
 
         // Only shoot if player is within range
-        if (distance <= ai.shootingRange) {
+        if (distance <= weapon.detectionRange) {
             const currentTime = performance.now() / 1000
-            const timeSinceLastShot = currentTime - ai.lastShotTime
+            const timeSinceLastShot = currentTime - weapon.lastShotTime
             const fireInterval = 1 / weapon.fireRate
 
             // Check if enough time has passed since last shot
             if (timeSinceLastShot >= fireInterval) {
                 // Enemy shooting is handled by WeaponSystem
                 // We just need to update the last shot time
-                ai.lastShotTime = currentTime
+                weapon.lastShotTime = currentTime
                 weapon.lastShotTime = currentTime
             }
         }

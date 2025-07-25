@@ -82,7 +82,8 @@ export class DeathAnimationSystem extends System {
 
             // Apply sinking animation - gradually move ship underwater
             position.y =
-                deathAnimation.originalY - progress * deathAnimation.sinkSpeed
+                deathAnimation.originalY -
+                (1 - (1 - progress) ** 0.4) * deathAnimation.sinkSpeed
 
             // Add dramatic rotation during sinking for flooding effect
             position.rotationX = progress * 1.5 // Forward tilt as it floods and sinks
@@ -302,7 +303,7 @@ export class DeathAnimationSystem extends System {
      */
     public startDeathAnimation(
         entity: Entity,
-        sinkSpeed = 3.0,
+        sinkSpeed = 15.0,
         sinkDuration = 4.0,
     ): void {
         const position = entity.getComponent<PositionComponent>('position')

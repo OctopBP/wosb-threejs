@@ -1,18 +1,10 @@
-import {
-    enemySpawningConfig,
-    getRandomSpawnDistance,
-} from '../config/EnemyConfig'
 import { enemyXPConfig } from '../config/LevelingConfig'
-import type { HealthComponent, PositionComponent } from '../ecs/Component'
+import type { HealthComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
-import { createEnemyShip } from '../entities/EnemyFactory'
 import type { LevelingSystem } from './LevelingSystem'
 
 export class EnemySpawningSystem extends System {
-    private lastSpawnTime: number = 0
-    private spawnInterval: number = enemySpawningConfig.spawnInterval
-    private maxEnemies: number = enemySpawningConfig.maxEnemies
     private levelingSystem: LevelingSystem | null = null
 
     constructor(world: World) {
@@ -25,49 +17,7 @@ export class EnemySpawningSystem extends System {
     }
 
     update(_deltaTime: number): void {
-        // Disabled: Wave-based spawning is now handled by GameStateSystem
-        // to implement specific scenario timing requirements
-
-        // Still clean up dead enemies for XP awarding
         this.cleanupDeadEnemies()
-    }
-
-    private trySpawnEnemy(): void {
-        // Check current enemy count
-        const currentEnemies = this.world.getEntitiesWithComponents(['enemy'])
-        if (currentEnemies.length >= this.maxEnemies) {
-            return // Don't spawn if we've reached the limit
-        }
-
-        // Get player position for spawning reference
-        const playerEntities = this.world.getEntitiesWithComponents(['player'])
-        if (playerEntities.length === 0) {
-            return // No player found
-        }
-
-        const player = playerEntities[0]
-        const playerPosition =
-            player.getComponent<PositionComponent>('position')
-        if (!playerPosition) {
-            return
-        }
-
-        // Choose a random spawn position around the player
-        const spawnAngle = Math.random() * 2 * Math.PI
-        const spawnDistance = getRandomSpawnDistance()
-        const spawnX = playerPosition.x + Math.cos(spawnAngle) * spawnDistance
-        const spawnZ = playerPosition.z + Math.sin(spawnAngle) * spawnDistance
-
-        // Create enemy ship
-        const enemy = createEnemyShip(
-            spawnX,
-            0.1, // Same Y level as player
-            spawnZ,
-            player.id, // Set player as target
-        )
-
-        // Add enemy to world
-        this.world.addEntity(enemy)
     }
 
     private cleanupDeadEnemies(): void {
@@ -102,8 +52,5 @@ export class EnemySpawningSystem extends System {
                 }
             }
         }
-
-        // Note: Dead enemies are now handled by DeathAnimationSystem
-        // They will be removed after their sinking animation completes
     }
 }

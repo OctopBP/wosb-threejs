@@ -12,7 +12,7 @@ export class InputSystem extends System {
     private virtualJoystickSystem: VirtualJoystickSystem | null = null
 
     constructor(world: World, canvas: HTMLCanvasElement) {
-        super(world, ['input', 'movementConfig']) // Requires entities with input and movement config
+        super(world, ['input', 'movementConfig', 'player']) // Requires entities with input and movement config
         this.canvas = canvas
     }
 

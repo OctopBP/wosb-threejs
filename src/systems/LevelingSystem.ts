@@ -74,9 +74,6 @@ export class LevelingSystem extends System {
         xp.currentXP += xpAmount
         xp.totalXP += xpAmount
 
-        console.log(
-            `🎯 Awarded ${xpAmount} XP to entity ${entityId}. Current XP: ${xp.currentXP}, Total: ${xp.totalXP}`,
-        )
         return true
     }
 
