@@ -31,7 +31,7 @@ export const enemyMovementPreset: MovementConfigPreset = {
     maxSpeed: 4.0, // Faster than player's initial speed (2.5)
     accelerationForce: 8.0, // Quick acceleration to catch player
     decelerationForce: 3.0,
-    rotationAcceleration: 12.0, // Good rotation acceleration for combat
+    rotationAcceleration: 1.0, // Good rotation acceleration for combat
     maxRotationSpeed: 5.0, // Good max rotation speed for responsive movement
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,

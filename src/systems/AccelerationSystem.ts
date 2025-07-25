@@ -79,18 +79,14 @@ export class AccelerationSystem extends System {
             normalizedDirection,
         )
 
-        // Calculate dot product for forward alignment
-        const dotProduct =
-            shipForward.x * normalizedDirection.x +
-            shipForward.y * normalizedDirection.y
-
         // Calculate speed acceleration based on forward alignment (dot product)
         const speedAcceleration =
-            config.accelerationForce * dotProduct * deltaTime
+            config.accelerationForce * normalizedDirection.length() * deltaTime
         speed.currentSpeed =
             speed.currentSpeed + Math.max(0.0, speedAcceleration)
 
-        rotationSpeed.currentRotationSpeed = -orientation
+        rotationSpeed.currentRotationSpeed =
+            -orientation * config.rotationAcceleration
     }
 
     private applyDeceleration(

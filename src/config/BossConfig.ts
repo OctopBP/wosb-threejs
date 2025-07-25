@@ -26,7 +26,7 @@ export const bossMovementPreset: MovementConfigPreset = {
     maxSpeed: 5.0, // Much faster than player (even at max level)
     accelerationForce: 10.0, // Very quick acceleration
     decelerationForce: 4.0,
-    rotationAcceleration: 15.0, // Fast rotation acceleration for combat
+    rotationAcceleration: 1.0, // Fast rotation acceleration for combat
     maxRotationSpeed: 6.0, // High max rotation speed for agile combat
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,
