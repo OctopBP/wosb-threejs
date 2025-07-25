@@ -34,7 +34,10 @@ export class AppOne {
     waterMesh?: Mesh
     waterMaterial?: ShaderMaterial
 
-    constructor(readonly canvas: HTMLCanvasElement) {
+    constructor(
+        readonly canvas: HTMLCanvasElement,
+        preloadedAudioBuffers?: Map<string, AudioBuffer>,
+    ) {
         // Create renderer
         this.renderer = new WebGLRenderer({
             canvas,
@@ -54,6 +57,8 @@ export class AppOne {
             this.renderer,
             this.canvas,
             this.camera,
+            undefined,
+            preloadedAudioBuffers,
         )
         this.createWater()
 

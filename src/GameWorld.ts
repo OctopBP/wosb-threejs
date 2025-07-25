@@ -99,6 +99,7 @@ export class GameWorld {
         private canvas: HTMLCanvasElement,
         private camera: PerspectiveCamera,
         gameStateConfig: GameStateConfig = defaultGameStateConfig,
+        preloadedAudioBuffers?: Map<string, AudioBuffer>,
     ) {
         this.world = new World()
 
@@ -156,7 +157,7 @@ export class GameWorld {
         this.audioUISystem.setAudioSystem(this.audioSystem)
 
         // Setup audio system
-        this.setupAudioSystem()
+        this.setupAudioSystem(preloadedAudioBuffers)
 
         // Add systems to world in execution order
         this.world.addSystem(this.audioSystem) //Update audio system
@@ -588,9 +589,17 @@ export class GameWorld {
     /**
      * Setup the audio system with assets and initialize on first user interaction
      */
-    private async setupAudioSystem(): Promise<void> {
+    private async setupAudioSystem(
+        preloadedAudioBuffers?: Map<string, AudioBuffer>,
+    ): Promise<void> {
         // Register audio assets
         this.audioSystem.registerAssets(audioAssets)
+
+        // Set preloaded buffers if available
+        if (preloadedAudioBuffers && preloadedAudioBuffers.size > 0) {
+            this.audioSystem.setPreloadedBuffers(preloadedAudioBuffers)
+            console.log('🎵 GameWorld: Using preloaded audio buffers')
+        }
 
         // Apply default settings
         this.audioSystem.setMasterVolume(defaultAudioSettings.masterVolume)
@@ -612,7 +621,10 @@ export class GameWorld {
 
             try {
                 await this.audioSystem.initialize(this.camera)
+
+                // Load assets if not already preloaded
                 await this.audioSystem.loadAssets()
+
                 this.audioInitialized = true
 
                 // Start background music when ready
