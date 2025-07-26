@@ -497,12 +497,18 @@ export class WeaponSystem extends System {
         // Create projectile entity
         const projectile = this.world.createEntity()
 
-        // Find the closest shooting point to the target
+        // Calculate lead target position (point in front of target ship)
+        const leadTargetPosition = this.calculateLeadTargetPosition(
+            targetPosition,
+            weapon.leadTargetDistance,
+        )
+
+        // Find the closest shooting point to the lead target
         const { point: shootingPoint, index: shootingPointIndex } =
             this.findClosestShootingPoint(
                 weapon,
                 shooterPosition,
-                targetPosition,
+                leadTargetPosition,
             )
 
         // Get world position of the chosen shooting point
@@ -511,9 +517,9 @@ export class WeaponSystem extends System {
             shooterPosition,
         )
 
-        // Calculate direction from shooting point to target
-        const dx = targetPosition.x - worldShootingPos.x
-        const dz = targetPosition.z - worldShootingPos.z
+        // Calculate direction from shooting point to lead target position
+        const dx = leadTargetPosition.x - worldShootingPos.x
+        const dz = leadTargetPosition.z - worldShootingPos.z
         const distance = Math.sqrt(dx * dx + dz * dz)
 
         // Normalize direction
@@ -642,5 +648,27 @@ export class WeaponSystem extends System {
             gunSmokeId,
             gunSmokeConfig,
         )
+    }
+
+    private calculateLeadTargetPosition(
+        targetPosition: PositionComponent,
+        leadDistance: number,
+    ): PositionComponent {
+        // Calculate forward direction based on target ship's Y rotation
+        // Ship model faces backwards by default, so we add Math.PI
+        const forwardAngle = targetPosition.rotationY + Math.PI
+        const forwardX = Math.sin(forwardAngle)
+        const forwardZ = Math.cos(forwardAngle)
+
+        // Calculate lead target position (point in front of target ship)
+        return {
+            type: 'position',
+            x: targetPosition.x + forwardX * leadDistance,
+            y: targetPosition.y,
+            z: targetPosition.z + forwardZ * leadDistance,
+            rotationX: targetPosition.rotationX,
+            rotationY: targetPosition.rotationY,
+            rotationZ: targetPosition.rotationZ,
+        }
     }
 }

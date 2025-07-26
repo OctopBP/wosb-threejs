@@ -121,6 +121,7 @@ export interface WeaponComponent extends Component {
     isAutoTargeting: boolean // whether this weapon auto-aims at enemies
     detectionRange: number // range for enemy detection (can be different from firing range)
     requiresLineOfSight: boolean // whether to check for obstacles (future feature)
+    leadTargetDistance: number // distance in front of target ship to aim at for predictive targeting
     // Shooting points relative to ship position
     shootingPoints: Array<{ x: number; y: number }> // relative positions where cannons are located
 }
