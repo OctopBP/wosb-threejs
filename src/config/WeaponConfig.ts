@@ -1,6 +1,11 @@
 import type { WeaponComponent } from '../ecs/Component'
 
-export type WeaponConfigPreset = Omit<WeaponComponent, 'type' | 'lastShotTime'>
+export type WeaponConfigPreset = Omit<
+    WeaponComponent,
+    'type' | 'lastShotTime'
+> & {
+    leadTargetDistance: number // Distance in front of target ship to aim at
+}
 
 export const playerWeaponPreset: WeaponConfigPreset = {
     damage: 25, // Will be overridden by leveling system
@@ -11,6 +16,7 @@ export const playerWeaponPreset: WeaponConfigPreset = {
     isAutoTargeting: true,
     detectionRange: 15.0, // Good detection range
     requiresLineOfSight: false,
+    leadTargetDistance: 2.5, // Aim 2.5 units in front of enemy ships
     shootingPoints: [
         { x: -0.3, y: 0.8 },
         { x: 0.3, y: 0.8 },
@@ -28,6 +34,7 @@ export const enemyWeaponPreset: WeaponConfigPreset = {
     isAutoTargeting: true,
     detectionRange: 15.0, // Shorter detection range
     requiresLineOfSight: false,
+    leadTargetDistance: 1.8, // Aim 1.8 units in front of player ship
     shootingPoints: [
         { x: -0.4, y: 0.8 },
         { x: 0.4, y: 0.8 },
@@ -45,6 +52,7 @@ export const bossWeaponPreset: WeaponConfigPreset = {
     isAutoTargeting: true,
     detectionRange: 20.0, // Very long detection range
     requiresLineOfSight: false,
+    leadTargetDistance: 3.0, // Aim 3.0 units in front of player ship for better boss accuracy
     shootingPoints: [
         { x: -0.4, y: 2 },
         { x: 0.4, y: 2 },
