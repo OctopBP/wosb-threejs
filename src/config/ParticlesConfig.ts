@@ -153,12 +153,232 @@ export const deathWreckageParticleConfig: ParticleSystemConfig = {
 }
 
 /**
+ * Configuration for big explosion flames - the main blast
+ */
+export const bigExplosionParticleConfig: ParticleSystemConfig = {
+    position: new Vector3(0, 0, 0),
+
+    emissionRate: 0,
+    burstCount: 12,
+    burstInterval: -1,
+
+    life: { min: 0.8, max: 1.2 },
+    size: { min: 3.0, max: 5.0 },
+    speed: { min: 4.0, max: 8.0 },
+
+    spawnArea: {
+        type: 'sphere',
+        size: new Vector3(0.5, 0.3, 0.5),
+    },
+
+    direction: new Vector3(0, 1, 0),
+    directionSpread: Math.PI * 0.8,
+
+    gravity: new Vector3(0, 1.0, 0),
+    drag: 2.0,
+
+    startColor: new Color(0xffffff),
+    endColor: new Color(0xffffff),
+
+    rotation: { min: 0, max: Math.PI * 2 },
+    rotationSpeed: { min: -4, max: 4 },
+
+    texture: 'assets/textures/flames_big.png',
+
+    sizeOverTime: [
+        { time: 0.0, value: 0.3 },
+        { time: 0.1, value: 1.0 },
+        { time: 0.6, value: 1.2 },
+        { time: 1.0, value: 0.8 },
+    ],
+    alphaOverTime: [
+        { time: 0.0, value: 1.0 },
+        { time: 0.3, value: 1.0 },
+        { time: 0.8, value: 0.8 },
+        { time: 1.0, value: 0.0 },
+    ],
+    colorOverTime: [
+        { time: 0.0, value: new Color(1.0, 1.0, 0.8) },
+        { time: 0.2, value: new Color(1.0, 0.8, 0.4) },
+        { time: 0.5, value: new Color(1.0, 0.5, 0.2) },
+        { time: 1.0, value: new Color(0.6, 0.4, 0.1) },
+    ],
+}
+
+/**
+ * Configuration for small explosion flames - secondary bursts
+ */
+export const smallExplosionParticleConfig: ParticleSystemConfig = {
+    position: new Vector3(0, 0, 0),
+
+    emissionRate: 0,
+    burstCount: 20,
+    burstInterval: -1,
+
+    life: { min: 0.6, max: 1.0 },
+    size: { min: 1.5, max: 3.0 },
+    speed: { min: 2.0, max: 6.0 },
+
+    spawnArea: {
+        type: 'sphere',
+        size: new Vector3(1.0, 0.5, 1.0),
+    },
+
+    direction: new Vector3(0, 1, 0),
+    directionSpread: Math.PI,
+
+    gravity: new Vector3(0, 0.5, 0),
+    drag: 1.5,
+
+    startColor: new Color(0xffffff),
+    endColor: new Color(0xffffff),
+
+    rotation: { min: 0, max: Math.PI * 2 },
+    rotationSpeed: { min: -6, max: 6 },
+
+    texture: 'assets/textures/flames_small.png',
+    spriteSheet: {
+        columns: 2,
+        rows: 2,
+        frameDuration: 0.08,
+        randomStartFrame: true,
+    },
+
+    sizeOverTime: [
+        { time: 0.0, value: 0.5 },
+        { time: 0.2, value: 1.0 },
+        { time: 1.0, value: 1.3 },
+    ],
+    alphaOverTime: [
+        { time: 0.0, value: 1.0 },
+        { time: 0.4, value: 1.0 },
+        { time: 1.0, value: 0.0 },
+    ],
+    colorOverTime: [
+        { time: 0.0, value: new Color(1.0, 1.0, 0.9) },
+        { time: 0.3, value: new Color(1.0, 0.7, 0.3) },
+        { time: 0.7, value: new Color(1.0, 0.4, 0.1) },
+        { time: 1.0, value: new Color(0.5, 0.3, 0.0) },
+    ],
+}
+
+/**
+ * Configuration for nuclear-style explosion flames - intense core blast
+ */
+export const nukeExplosionParticleConfig: ParticleSystemConfig = {
+    position: new Vector3(0, 0, 0),
+
+    emissionRate: 0,
+    burstCount: 8,
+    burstInterval: -1,
+
+    life: { min: 1.0, max: 1.5 },
+    size: { min: 4.0, max: 7.0 },
+    speed: { min: 1.0, max: 3.0 },
+
+    spawnArea: {
+        type: 'point',
+        size: new Vector3(0, 0, 0),
+    },
+
+    direction: new Vector3(0, 1, 0),
+    directionSpread: Math.PI * 0.4,
+
+    gravity: new Vector3(0, 2.0, 0),
+    drag: 3.0,
+
+    startColor: new Color(0xffffff),
+    endColor: new Color(0xffffff),
+
+    rotation: { min: 0, max: Math.PI * 2 },
+    rotationSpeed: { min: -2, max: 2 },
+
+    texture: 'assets/textures/nuke_flames.png',
+
+    sizeOverTime: [
+        { time: 0.0, value: 0.1 },
+        { time: 0.05, value: 1.0 },
+        { time: 0.3, value: 1.5 },
+        { time: 1.0, value: 1.0 },
+    ],
+    alphaOverTime: [
+        { time: 0.0, value: 1.0 },
+        { time: 0.1, value: 1.0 },
+        { time: 0.7, value: 0.9 },
+        { time: 1.0, value: 0.0 },
+    ],
+    colorOverTime: [
+        { time: 0.0, value: new Color(1.0, 1.0, 1.0) },
+        { time: 0.1, value: new Color(1.0, 1.0, 0.6) },
+        { time: 0.4, value: new Color(1.0, 0.6, 0.2) },
+        { time: 0.8, value: new Color(0.8, 0.3, 0.1) },
+        { time: 1.0, value: new Color(0.4, 0.2, 0.0) },
+    ],
+}
+
+/**
+ * Configuration for explosion smoke - lingering aftermath
+ */
+export const explosionSmokeParticleConfig: ParticleSystemConfig = {
+    position: new Vector3(0, 0, 0),
+
+    emissionRate: 0,
+    burstCount: 15,
+    burstInterval: -1,
+
+    life: { min: 2.0, max: 3.5 },
+    size: { min: 2.0, max: 4.0 },
+    speed: { min: 1.0, max: 3.0 },
+
+    spawnArea: {
+        type: 'sphere',
+        size: new Vector3(1.5, 0.8, 1.5),
+    },
+
+    direction: new Vector3(0, 1, 0),
+    directionSpread: Math.PI * 0.6,
+
+    gravity: new Vector3(0, 1.5, 0),
+    drag: 1.0,
+
+    startColor: new Color(0xffffff),
+    endColor: new Color(0xffffff),
+
+    rotation: { min: 0, max: Math.PI * 2 },
+    rotationSpeed: { min: -1, max: 1 },
+
+    texture: 'assets/textures/smoke.png',
+
+    sizeOverTime: [
+        { time: 0.0, value: 0.5 },
+        { time: 0.3, value: 1.0 },
+        { time: 1.0, value: 2.0 },
+    ],
+    alphaOverTime: [
+        { time: 0.0, value: 0.8 },
+        { time: 0.2, value: 0.9 },
+        { time: 0.6, value: 0.7 },
+        { time: 1.0, value: 0.0 },
+    ],
+    colorOverTime: [
+        { time: 0.0, value: new Color(0.9, 0.9, 0.9) },
+        { time: 0.3, value: new Color(0.7, 0.7, 0.7) },
+        { time: 0.7, value: new Color(0.5, 0.5, 0.5) },
+        { time: 1.0, value: new Color(0.3, 0.3, 0.3) },
+    ],
+}
+
+/**
  * All particle configurations for easy access
  */
 export const particleConfigs = {
     gunSmoke: gunSmokeParticleConfig,
     wreckage: wreckageParticleConfig,
     deathWreckage: deathWreckageParticleConfig,
+    bigExplosion: bigExplosionParticleConfig,
+    smallExplosion: smallExplosionParticleConfig,
+    nukeExplosion: nukeExplosionParticleConfig,
+    explosionSmoke: explosionSmokeParticleConfig,
 } as const
 
 /**

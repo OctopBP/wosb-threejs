@@ -10,7 +10,7 @@ import type {
     MovementConfigComponent,
     PositionComponent,
     RangeIndicatorComponent,
-    VelocityComponent,
+    SpeedComponent,
     WeaponComponent,
 } from './ecs'
 import type { Entity } from './ecs/Entity'
@@ -50,6 +50,7 @@ import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
+import { ProceduralTextureSystem } from './systems/ProceduralTextureSystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
@@ -90,6 +91,7 @@ export class GameWorld {
     private audioUISystem: AudioUISystem
     private particleSystem: ParticleSystem
     private debugSystem: DebugSystem
+    private proceduralTextureSystem: ProceduralTextureSystem
     private playerEntity: Entity | null = null
     private debugEntity: Entity | null = null
     private lastTime: number = 0
@@ -143,6 +145,7 @@ export class GameWorld {
         this.audioSystem = new AudioSystem(this.world)
         this.audioUISystem = new AudioUISystem(this.world)
         this.particleSystem = new ParticleSystem(this.world, scene, camera)
+        this.proceduralTextureSystem = new ProceduralTextureSystem(this.world)
         this.debugSystem = new DebugSystem(this.world, scene)
 
         // Connect systems that need references to each other
@@ -193,6 +196,7 @@ export class GameWorld {
         this.world.addSystem(this.debugSystem) // Render debug gizmos
         this.world.addSystem(this.particleSystem) // Render particles
         this.world.addSystem(this.renderSystem) // Render the results
+        this.world.addSystem(this.proceduralTextureSystem) // For future animation
     }
 
     init(): void {
@@ -518,14 +522,29 @@ export class GameWorld {
         return position ? { x: position.x, y: position.y, z: position.z } : null
     }
 
-    getPlayerVelocity(): { dx: number; dy: number; dz: number } | null {
+    getPlayerSpeed(): {
+        currentSpeed: number
+        forwardX: number
+        forwardZ: number
+    } | null {
         if (!this.playerEntity) return null
 
-        const velocity =
-            this.playerEntity.getComponent<VelocityComponent>('velocity')
-        return velocity
-            ? { dx: velocity.dx, dy: velocity.dy, dz: velocity.dz }
-            : null
+        const speed = this.playerEntity.getComponent<SpeedComponent>('speed')
+        const position =
+            this.playerEntity.getComponent<PositionComponent>('position')
+
+        if (!speed || !position) return null
+
+        // Calculate forward direction
+        const forwardAngle = position.rotationY + Math.PI
+        const forwardX = Math.sin(forwardAngle)
+        const forwardZ = Math.cos(forwardAngle)
+
+        return {
+            currentSpeed: speed.currentSpeed,
+            forwardX,
+            forwardZ,
+        }
     }
 
     getPlayerInputDirection() {
@@ -645,5 +664,9 @@ export class GameWorld {
      */
     isAudioInitialized(): boolean {
         return this.audioInitialized
+    }
+
+    getProceduralTextureSystem(): ProceduralTextureSystem {
+        return this.proceduralTextureSystem
     }
 }
