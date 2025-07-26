@@ -4,11 +4,13 @@ import { GUI } from 'lil-gui'
 import {
     Color,
     CubeTextureLoader,
+    DepthFormat,
     DepthTexture,
     DirectionalLight,
     Fog,
     HemisphereLight,
     Mesh,
+    MeshBasicMaterial,
     NearestFilter,
     NormalBlending,
     PCFSoftShadowMap,
@@ -171,6 +173,7 @@ export class AppOne {
             uCameraFar: { value: this.camera.far },
             uEdgeThickness: { value: 0.015 },
             uEdgeIntensity: { value: 1.5 },
+            uDebugDepth: { value: 0.0 },
         }
         const waterMaterial = new ShaderMaterial({
             vertexShader: waterVertexShader,
@@ -199,14 +202,15 @@ export class AppOne {
 
         // Create depth texture
         this.depthTexture = new DepthTexture(width, height)
+        this.depthTexture.format = DepthFormat
         this.depthTexture.type = UnsignedShortType
-        this.depthTexture.minFilter = NearestFilter
-        this.depthTexture.magFilter = NearestFilter
 
         // Create render target for depth
-        this.depthRenderTarget = new WebGLRenderTarget(width, height)
-        this.depthRenderTarget.depthTexture = this.depthTexture
-        this.depthRenderTarget.depthBuffer = true
+        this.depthRenderTarget = new WebGLRenderTarget(width, height, {
+            depthTexture: this.depthTexture,
+            depthBuffer: true,
+            stencilBuffer: false,
+        })
     }
 
     private createCamera(): PerspectiveCamera {
@@ -670,6 +674,23 @@ export class AppOne {
                 .add(uniforms.uEdgeIntensity, 'value', 0, 3, 0.01)
                 .name('Edge Intensity')
 
+            // Debug depth texture
+            waterFolder
+                .add(
+                    {
+                        showDepthTexture: () => {
+                            // Create a simple debug plane to show depth texture
+                            this.showDepthTextureDebug()
+                        },
+                    },
+                    'showDepthTexture',
+                )
+                .name('Show Depth Texture')
+
+            waterFolder
+                .add(uniforms.uDebugDepth, 'value', 0, 1, 0.1)
+                .name('Debug Depth Mode')
+
             // Color uniforms
             waterFolder
                 .addColor(
@@ -724,8 +745,10 @@ export class AppOne {
 
         this.renderer.setSize(width, height)
 
-        // Resize depth render target
+        // Resize depth render target and depth texture
         this.depthRenderTarget.setSize(width, height)
+        this.depthTexture.image.width = width
+        this.depthTexture.image.height = height
 
         // Update water material resolution uniform
         if (this.waterMaterial) {
@@ -768,14 +791,45 @@ export class AppOne {
             water.visible = false
         }
 
+        // Store original render target and clear settings
+        const currentRenderTarget = this.renderer.getRenderTarget()
+        const currentAutoClear = this.renderer.autoClear
+
+        // Configure renderer for depth rendering
+        this.renderer.autoClear = true
+
         // Render depth to render target
         this.renderer.setRenderTarget(this.depthRenderTarget)
+        this.renderer.clear()
         this.renderer.render(this.scene, this.camera)
-        this.renderer.setRenderTarget(null)
+        this.renderer.setRenderTarget(currentRenderTarget)
+
+        // Restore renderer settings
+        this.renderer.autoClear = currentAutoClear
 
         // Restore water visibility
         if (water && originalVisible !== undefined) {
             water.visible = originalVisible
+        }
+    }
+
+    private showDepthTextureDebug() {
+        // Remove existing debug plane
+        const existing = this.scene.getObjectByName('DepthDebug')
+        if (existing) {
+            this.scene.remove(existing)
+        } else {
+            // Create debug plane to show depth texture
+            const debugGeometry = new PlaneGeometry(20, 20)
+            const debugMaterial = new MeshBasicMaterial({
+                map: this.depthTexture,
+                transparent: false,
+            })
+            const debugPlane = new Mesh(debugGeometry, debugMaterial)
+            debugPlane.position.set(30, 10, 0)
+            debugPlane.name = 'DepthDebug'
+            this.scene.add(debugPlane)
+            console.log('Depth texture debug plane created')
         }
     }
 

@@ -22,6 +22,7 @@ uniform float uCameraNear;
 uniform float uCameraFar;
 uniform float uEdgeThickness;
 uniform float uEdgeIntensity;
+uniform float uDebugDepth;
 
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
@@ -34,14 +35,48 @@ uniform sampler2D foamTexture;
 
 #include <fog_pars_fragment>
 
-// Convert linear depth to z buffer depth
+// Convert depth buffer value to linear depth
 float linearizeDepth(float depth) {
   float z = depth * 2.0 - 1.0; // Convert to NDC
   return (2.0 * uCameraNear * uCameraFar) / (uCameraFar + uCameraNear - z * (uCameraFar - uCameraNear));
 }
 
+// Alternative simpler depth comparison
+float getDepthDifference(vec2 screenUV, float currentDepth) {
+  // Sample the depth texture directly
+  float sampledDepth = texture2D(uDepthTexture, screenUV).r;
+  
+  // Simple depth difference without linearization first
+  return abs(currentDepth - sampledDepth);
+}
+
 // Edge detection function
 float detectEdges(vec2 screenUV, float currentDepth) {
+  vec2 texelSize = 1.0 / uResolution;
+  
+  // Sample surrounding depth values
+  float depth1 = texture2D(uDepthTexture, screenUV + vec2(-texelSize.x, 0.0)).r;
+  float depth2 = texture2D(uDepthTexture, screenUV + vec2(texelSize.x, 0.0)).r;
+  float depth3 = texture2D(uDepthTexture, screenUV + vec2(0.0, -texelSize.y)).r;
+  float depth4 = texture2D(uDepthTexture, screenUV + vec2(0.0, texelSize.y)).r;
+  
+  // Calculate depth differences (simple version first)
+  float depthDiff1 = abs(currentDepth - depth1);
+  float depthDiff2 = abs(currentDepth - depth2);
+  float depthDiff3 = abs(currentDepth - depth3);
+  float depthDiff4 = abs(currentDepth - depth4);
+  
+  // Find maximum depth difference
+  float maxDepthDiff = max(max(depthDiff1, depthDiff2), max(depthDiff3, depthDiff4));
+  
+  // Create edge mask based on depth threshold
+  float edgeMask = smoothstep(0.0, uEdgeThickness, maxDepthDiff);
+  
+  return edgeMask * uEdgeIntensity;
+}
+
+// Alternative edge detection with better depth handling
+float detectEdgesLinear(vec2 screenUV, float currentDepth) {
   vec2 texelSize = 1.0 / uResolution;
   
   // Sample surrounding depth values
@@ -66,8 +101,8 @@ float detectEdges(vec2 screenUV, float currentDepth) {
   // Find maximum depth difference
   float maxDepthDiff = max(max(depthDiff1, depthDiff2), max(depthDiff3, depthDiff4));
   
-  // Create edge mask based on depth threshold
-  float edgeMask = smoothstep(0.0, uEdgeThickness, maxDepthDiff);
+  // Create edge mask based on depth threshold (adjusted for linear depth)
+  float edgeMask = smoothstep(0.0, uEdgeThickness * 100.0, maxDepthDiff);
   
   return edgeMask * uEdgeIntensity;
 }
@@ -169,6 +204,14 @@ void main() {
 
   // Add white edge where water meets other geometry
   finalColor = mix(finalColor, vec3(1.0), clamp(edgeIntensity, 0.0, 1.0));
+
+  // Debug mode: show depth texture or edge detection
+  if (uDebugDepth > 0.5) {
+    float depthSample = texture2D(uDepthTexture, screenUV).r;
+    finalColor = vec3(depthSample);
+  } else if (uDebugDepth > 0.1) {
+    finalColor = vec3(edgeIntensity);
+  }
 
   gl_FragColor = vec4(finalColor, uOpacity);
 
