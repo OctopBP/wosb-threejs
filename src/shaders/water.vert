@@ -12,6 +12,7 @@ uniform float uWavesIterations;
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
 varying vec2 vUv;
+varying vec4 vScreenPosition;
 
 #include <fog_pars_vertex>
 
@@ -94,6 +95,9 @@ void main() {
 
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   gl_Position = projectionMatrix * mvPosition;
+  
+  // Pass screen position for depth comparison
+  vScreenPosition = gl_Position;
 
   #include <fog_vertex>
 }

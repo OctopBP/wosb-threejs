@@ -15,15 +15,62 @@ uniform float uFresnelScale;
 uniform float uFresnelPower;
 uniform float uTime;
 
+// Depth texture uniforms for edge detection
+uniform sampler2D uDepthTexture;
+uniform vec2 uResolution;
+uniform float uCameraNear;
+uniform float uCameraFar;
+uniform float uEdgeThickness;
+uniform float uEdgeIntensity;
+
 varying vec3 vNormal;
 varying vec3 vWorldPosition;
 varying vec2 vUv;
+varying vec4 vScreenPosition;
 
 uniform samplerCube uEnvironmentMap;
 uniform sampler2D bwTexture;
 uniform sampler2D foamTexture;
 
 #include <fog_pars_fragment>
+
+// Convert linear depth to z buffer depth
+float linearizeDepth(float depth) {
+  float z = depth * 2.0 - 1.0; // Convert to NDC
+  return (2.0 * uCameraNear * uCameraFar) / (uCameraFar + uCameraNear - z * (uCameraFar - uCameraNear));
+}
+
+// Edge detection function
+float detectEdges(vec2 screenUV, float currentDepth) {
+  vec2 texelSize = 1.0 / uResolution;
+  
+  // Sample surrounding depth values
+  float depth1 = texture2D(uDepthTexture, screenUV + vec2(-texelSize.x, 0.0)).r;
+  float depth2 = texture2D(uDepthTexture, screenUV + vec2(texelSize.x, 0.0)).r;
+  float depth3 = texture2D(uDepthTexture, screenUV + vec2(0.0, -texelSize.y)).r;
+  float depth4 = texture2D(uDepthTexture, screenUV + vec2(0.0, texelSize.y)).r;
+  
+  // Convert to linear depth
+  float linearDepth1 = linearizeDepth(depth1);
+  float linearDepth2 = linearizeDepth(depth2);
+  float linearDepth3 = linearizeDepth(depth3);
+  float linearDepth4 = linearizeDepth(depth4);
+  float currentLinearDepth = linearizeDepth(currentDepth);
+  
+  // Calculate depth differences
+  float depthDiff1 = abs(currentLinearDepth - linearDepth1);
+  float depthDiff2 = abs(currentLinearDepth - linearDepth2);
+  float depthDiff3 = abs(currentLinearDepth - linearDepth3);
+  float depthDiff4 = abs(currentLinearDepth - linearDepth4);
+  
+  // Find maximum depth difference
+  float maxDepthDiff = max(max(depthDiff1, depthDiff2), max(depthDiff3, depthDiff4));
+  
+  // Create edge mask based on depth threshold
+  float edgeMask = smoothstep(0.0, uEdgeThickness, maxDepthDiff);
+  
+  return edgeMask * uEdgeIntensity;
+}
 
 float hash21(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -75,8 +122,16 @@ float voronoi(vec2 uv, float angleOffset, float cellDensity) {
     return minDist;
 }
 
-
 void main() {
+  // Calculate screen UV coordinates
+  vec2 screenUV = (vScreenPosition.xy / vScreenPosition.w) * 0.5 + 0.5;
+  
+  // Get current fragment depth
+  float currentDepth = gl_FragCoord.z;
+  
+  // Detect edges
+  float edgeIntensity = detectEdges(screenUV, currentDepth);
+  
   // Sample the procedural black and white texture
   float bw = texture2D(bwTexture, vUv).r;
 
@@ -111,6 +166,9 @@ void main() {
   float v = voronoi(vUv, uTime * 3.0, 200.0);
   float foam = texture2D(foamTexture, mod((v - 0.5) * 0.03 + vUv * 20.0, 1.0)).r;
   finalColor = mix(finalColor, vec3(foam), clamp(bw - 0.2, 0.0, 1.0));
+
+  // Add white edge where water meets other geometry
+  finalColor = mix(finalColor, vec3(1.0), clamp(edgeIntensity, 0.0, 1.0));
 
   gl_FragColor = vec4(finalColor, uOpacity);
 

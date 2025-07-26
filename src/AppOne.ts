@@ -4,10 +4,12 @@ import { GUI } from 'lil-gui'
 import {
     Color,
     CubeTextureLoader,
+    DepthTexture,
     DirectionalLight,
     Fog,
     HemisphereLight,
     Mesh,
+    NearestFilter,
     NormalBlending,
     PCFSoftShadowMap,
     PerspectiveCamera,
@@ -17,8 +19,11 @@ import {
     TextureLoader,
     UniformsLib,
     UniformsUtils,
+    UnsignedShortType,
+    Vector2,
     Vector3,
     WebGLRenderer,
+    WebGLRenderTarget,
 } from 'three'
 import { GameWorld } from './GameWorld'
 import waterFragmentShader from './shaders/water.frag?raw'
@@ -33,6 +38,10 @@ export class AppOne {
 
     waterMesh?: Mesh
     waterMaterial?: ShaderMaterial
+
+    // Depth texture properties
+    private depthRenderTarget!: WebGLRenderTarget
+    private depthTexture!: DepthTexture
 
     constructor(readonly canvas: HTMLCanvasElement) {
         // Create renderer
@@ -49,6 +58,10 @@ export class AppOne {
 
         this.camera = this.createCamera()
         this.scene = this.createScene()
+
+        // Initialize depth texture for water edge detection
+        this.setupDepthTexture()
+
         this.gameWorld = new GameWorld(
             this.scene,
             this.renderer,
@@ -146,6 +159,18 @@ export class AppOne {
                 value: this.gameWorld.getProceduralTextureSystem().getTexture(),
             },
             foamTexture: { value: foamTexture },
+            // Depth texture uniforms for edge detection
+            uDepthTexture: { value: this.depthTexture },
+            uResolution: {
+                value: new Vector2(
+                    this.canvas.clientWidth,
+                    this.canvas.clientHeight,
+                ),
+            },
+            uCameraNear: { value: this.camera.near },
+            uCameraFar: { value: this.camera.far },
+            uEdgeThickness: { value: 0.015 },
+            uEdgeIntensity: { value: 1.5 },
         }
         const waterMaterial = new ShaderMaterial({
             vertexShader: waterVertexShader,
@@ -166,6 +191,22 @@ export class AppOne {
         this.scene.add(water)
         this.waterMesh = water
         this.waterMaterial = waterMaterial
+    }
+
+    private setupDepthTexture() {
+        const width = this.canvas.clientWidth
+        const height = this.canvas.clientHeight
+
+        // Create depth texture
+        this.depthTexture = new DepthTexture(width, height)
+        this.depthTexture.type = UnsignedShortType
+        this.depthTexture.minFilter = NearestFilter
+        this.depthTexture.magFilter = NearestFilter
+
+        // Create render target for depth
+        this.depthRenderTarget = new WebGLRenderTarget(width, height)
+        this.depthRenderTarget.depthTexture = this.depthTexture
+        this.depthRenderTarget.depthBuffer = true
     }
 
     private createCamera(): PerspectiveCamera {
@@ -620,6 +661,15 @@ export class AppOne {
             waterFolder
                 .add(uniforms.uFresnelPower, 'value', 0, 5, 0.01)
                 .name('Fresnel Power')
+
+            // Edge detection controls
+            waterFolder
+                .add(uniforms.uEdgeThickness, 'value', 0, 0.1, 0.001)
+                .name('Edge Thickness')
+            waterFolder
+                .add(uniforms.uEdgeIntensity, 'value', 0, 3, 0.01)
+                .name('Edge Intensity')
+
             // Color uniforms
             waterFolder
                 .addColor(
@@ -673,6 +723,14 @@ export class AppOne {
         this.camera.updateProjectionMatrix()
 
         this.renderer.setSize(width, height)
+
+        // Resize depth render target
+        this.depthRenderTarget.setSize(width, height)
+
+        // Update water material resolution uniform
+        if (this.waterMaterial) {
+            this.waterMaterial.uniforms.uResolution.value.set(width, height)
+        }
     }
 
     private startRenderLoop() {
@@ -691,10 +749,34 @@ export class AppOne {
                     .getTexture()
             }
             this.gameWorld.update(time)
+
+            // Render depth texture (all objects except water)
+            this.renderDepthTexture()
+
+            // Render the main scene
             this.renderer.render(this.scene, this.camera)
             requestAnimationFrame(animate)
         }
         requestAnimationFrame(animate)
+    }
+
+    private renderDepthTexture() {
+        // Hide water mesh during depth rendering
+        const water = this.scene.getObjectByName('Water') as Mesh | undefined
+        const originalVisible = water?.visible
+        if (water) {
+            water.visible = false
+        }
+
+        // Render depth to render target
+        this.renderer.setRenderTarget(this.depthRenderTarget)
+        this.renderer.render(this.scene, this.camera)
+        this.renderer.setRenderTarget(null)
+
+        // Restore water visibility
+        if (water && originalVisible !== undefined) {
+            water.visible = originalVisible
+        }
     }
 
     // Cleanup method
@@ -704,6 +786,12 @@ export class AppOne {
         }
         if (this.gameWorld) {
             this.gameWorld.cleanup()
+        }
+        if (this.depthRenderTarget) {
+            this.depthRenderTarget.dispose()
+        }
+        if (this.depthTexture) {
+            this.depthTexture.dispose()
         }
         if (this.renderer) {
             this.renderer.dispose()
