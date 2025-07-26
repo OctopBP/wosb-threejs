@@ -1,4 +1,4 @@
-import type { Material, Object3D, Vector2, Vector3 } from 'three'
+import type { Material, Object3D, Vector2 } from 'three'
 import type { VisualUpgradeConfig } from '../config/LevelingConfig'
 import type { ModelType } from '../config/ModelConfig'
 
@@ -366,4 +366,9 @@ export interface DeathAnimationComponent extends Component {
 // Alive component - entities with this component are alive and should participate in normal systems
 export interface AliveComponent extends Component {
     type: 'alive'
+}
+
+export interface FoamTrailComponent extends Component {
+    type: 'foamTrail'
+    size: number
 }

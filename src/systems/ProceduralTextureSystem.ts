@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { World } from '../ecs'
-import type { PositionComponent } from '../ecs/Component'
+import type { FoamTrailComponent, PositionComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 
 const PROCEDURAL_TEXTURE_CONFIG = {
@@ -19,7 +19,7 @@ export class ProceduralTextureSystem extends System {
     private size: number
 
     constructor(world: World) {
-        super(world, ['position'])
+        super(world, ['position', 'foamTrail'])
 
         this.size = PROCEDURAL_TEXTURE_CONFIG.textureSize
         this.canvas = document.createElement('canvas')
@@ -55,11 +55,7 @@ export class ProceduralTextureSystem extends System {
         return { u, v }
     }
 
-    private drawWhiteSpot(
-        u: number,
-        v: number,
-        radius: number = PROCEDURAL_TEXTURE_CONFIG.spotRadius,
-    ) {
+    private drawWhiteSpot(u: number, v: number, radius: number) {
         // radius in UV space (0-1), convert to pixels
         const px = u * this.size
         const py = v * this.size
@@ -84,23 +80,17 @@ export class ProceduralTextureSystem extends System {
         this.ctx.putImageData(imageData, 0, 0)
 
         for (const entity of this.getEntities()) {
-            if (
-                entity.hasComponent('player') ||
-                entity.hasComponent('enemy') ||
-                entity.hasComponent('boss')
-            ) {
-                const position =
-                    entity.getComponent<PositionComponent>('position')
+            const foamTrail =
+                entity.getComponent<FoamTrailComponent>('foamTrail')
+            const position = entity.getComponent<PositionComponent>('position')
 
-                if (!position) {
-                    continue
-                }
+            if (!position || !foamTrail) {
+                continue
+            }
 
-                const { u, v } = this.worldToUV(position.x, position.z)
-                // Only draw if within [0,1] range
-                if (u >= 0 && u <= 1 && v >= 0 && v <= 1) {
-                    this.drawWhiteSpot(u, v)
-                }
+            const { u, v } = this.worldToUV(position.x, position.z)
+            if (u >= 0 && u <= 1 && v >= 0 && v <= 1) {
+                this.drawWhiteSpot(u, v, foamTrail.size)
             }
         }
         this.texture.needsUpdate = true

@@ -1,5 +1,6 @@
 import { Vector2 } from 'three'
 import {
+    basicBossFoamTrailPreset,
     bossMovementPreset,
     createBossHealthConfig,
     createBossWeaponConfig,
@@ -10,6 +11,7 @@ import {
     createEnemyShipCollision,
 } from '../config/CollisionConfig'
 import {
+    basicEnemyFoamTrailPreset,
     createEnemyHealthConfig,
     createEnemyWeaponConfig,
     enemyMovementPreset,
@@ -20,6 +22,7 @@ import type {
     BossComponent,
     DamageableComponent,
     EnemyComponent,
+    FoamTrailComponent,
     InputComponent,
     PositionComponent,
     RenderableComponent,
@@ -27,7 +30,6 @@ import type {
     SpeedComponent,
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
-
 export function createEnemyShip(
     x: number,
     z: number,
@@ -102,6 +104,11 @@ export function createEnemyShip(
         type: 'rotationSpeed',
         currentRotationSpeed: 0,
         maxRotationSpeed: movementConfig.maxRotationSpeed,
+    })
+
+    entity.addComponent<FoamTrailComponent>({
+        type: 'foamTrail',
+        size: basicEnemyFoamTrailPreset.size,
     })
 
     entity.addComponent<InputComponent>({
@@ -212,6 +219,11 @@ export function createBossShip(
         type: 'rotationSpeed',
         currentRotationSpeed: 0,
         maxRotationSpeed: bossMovementConfig.maxRotationSpeed,
+    })
+
+    entity.addComponent<FoamTrailComponent>({
+        type: 'foamTrail',
+        size: basicBossFoamTrailPreset.size,
     })
 
     entity.addComponent<InputComponent>({

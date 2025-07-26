@@ -11,6 +11,7 @@ import { createPlayerWeaponConfig } from '../config/WeaponConfig'
 import type {
     AliveComponent,
     DamageableComponent,
+    FoamTrailComponent,
     HealthComponent,
     InputComponent,
     MovementConfigComponent,
@@ -54,6 +55,11 @@ export function createPlayerShip(
         maxRotationSpeed: 4.0, // Will be overridden by movement config, but good default
     }
     entity.addComponent(rotationSpeed)
+
+    entity.addComponent<FoamTrailComponent>({
+        type: 'foamTrail',
+        size: 0.004,
+    })
 
     // Input component - no initial input with direction output
     const input: InputComponent = {

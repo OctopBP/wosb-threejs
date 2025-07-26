@@ -1,4 +1,4 @@
-import type { HealthComponent } from '../ecs/Component'
+import type { FoamTrailComponent, HealthComponent } from '../ecs/Component'
 import type { MovementConfigPreset } from './MovementPresets'
 import { createBossWeaponConfig } from './WeaponConfig'
 
@@ -7,6 +7,8 @@ export interface BossHealthConfig
     extends Omit<HealthComponent, 'type' | 'currentHealth' | 'isDead'> {
     maxHealth: number
 }
+
+export interface BossFoamTrailConfig extends Omit<FoamTrailComponent, 'type'> {}
 
 // Boss visual configuration
 export interface BossVisualConfig {
@@ -36,6 +38,10 @@ export const basicBossHealthPreset: BossHealthConfig = {
 export const basicBossVisualPreset: BossVisualConfig = {
     scale: 0.5,
     meshType: 'boss', // For now use enemy model, can be changed to 'boss' later
+}
+
+export const basicBossFoamTrailPreset: BossFoamTrailConfig = {
+    size: 0.01,
 }
 
 // Helper functions to create configured boss components

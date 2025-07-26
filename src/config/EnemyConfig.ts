@@ -1,4 +1,4 @@
-import type { HealthComponent } from '../ecs/Component'
+import type { FoamTrailComponent, HealthComponent } from '../ecs/Component'
 import type { MovementConfigPreset } from './MovementPresets'
 import { createEnemyWeaponConfig } from './WeaponConfig'
 
@@ -7,6 +7,8 @@ export interface EnemyHealthConfig
     extends Omit<HealthComponent, 'type' | 'currentHealth' | 'isDead'> {
     maxHealth: number
 }
+
+export interface FoamTrailConfig extends Omit<FoamTrailComponent, 'type'> {}
 
 // Enemy spawning configuration
 export interface EnemySpawningConfig {
@@ -32,6 +34,10 @@ export const enemyMovementPreset: MovementConfigPreset = {
 // Basic enemy health configuration
 export const basicEnemyHealthPreset: EnemyHealthConfig = {
     maxHealth: 50, // Dies in 2 hits at level 1 (25 damage), 1 hit at level 2 (50 damage)
+}
+
+export const basicEnemyFoamTrailPreset: FoamTrailConfig = {
+    size: 0.004,
 }
 
 // Helper functions to create configured components
