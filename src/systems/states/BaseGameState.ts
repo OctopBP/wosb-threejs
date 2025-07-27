@@ -1,8 +1,4 @@
-import type { SpawnArea } from '../../config/EnemyConfig'
-import {
-    defaultSpawnAreas,
-    isPositionInAnyAllowedArea,
-} from '../../config/EnemyConfig'
+import { isPositionInAnyAllowedArea } from '../../config/EnemyConfig'
 import type { GameStateConfig } from '../../config/GameStateConfig'
 import { getRandomSpawnDistanceForWaveOrBoss } from '../../config/GameStateConfig'
 import type {
@@ -72,7 +68,6 @@ export abstract class BaseGameState implements GameStateHandler {
         world: World,
         config: GameStateConfig,
         spawnDistance?: number,
-        allowedAreas?: SpawnArea[],
     ): void {
         const playerPosition = this.getPlayerPosition(world)
         if (!playerPosition) return
@@ -80,8 +75,8 @@ export abstract class BaseGameState implements GameStateHandler {
         const player = this.getPlayerEntity(world)
         if (!player) return
 
-        // Use provided areas or fall back to default
-        const areas = allowedAreas || defaultSpawnAreas
+        // Use allowed areas from main config
+        const areas = config.allowedAreas
 
         // Use provided distance or random from config
         const distance =
@@ -152,8 +147,8 @@ export abstract class BaseGameState implements GameStateHandler {
         const player = this.getPlayerEntity(world)
         if (!player) return
 
-        // Use boss allowed areas or default
-        const areas = config.boss.allowedAreas || defaultSpawnAreas
+        // Use allowed areas from main config
+        const areas = config.allowedAreas
 
         // Try to find a valid spawn position for boss within allowed areas
         const maxAttempts = 50

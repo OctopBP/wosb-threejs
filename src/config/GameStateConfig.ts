@@ -6,14 +6,12 @@ export interface WaveConfig {
     enemyCount: number
     minSpawnDistance: number
     maxSpawnDistance: number
-    allowedAreas?: SpawnArea[] // Optional allowed spawn areas, defaults to defaultSpawnAreas if not specified
 }
 
 export interface BossConfig {
     minSpawnDistance: number
     maxSpawnDistance: number
     forceSpawnTimeSeconds: number // Configurable boss timer
-    allowedAreas?: SpawnArea[] // Optional allowed spawn areas for boss
 }
 
 export interface GameStateConfig {
@@ -21,6 +19,7 @@ export interface GameStateConfig {
     wave1: WaveConfig // 3 enemies after initial
     wave2: WaveConfig // 12 enemies after wave1
     boss: BossConfig
+    allowedAreas: SpawnArea[] // Single set of spawn areas for all waves and boss
 }
 
 // Default game state configuration
@@ -29,26 +28,23 @@ export const defaultGameStateConfig: GameStateConfig = {
         enemyCount: 1, // Single enemy at game start
         minSpawnDistance: 15,
         maxSpawnDistance: 15,
-        allowedAreas: defaultSpawnAreas,
     },
     wave1: {
         enemyCount: 3, // 3 enemies for first wave
         minSpawnDistance: 25,
         maxSpawnDistance: 35,
-        allowedAreas: defaultSpawnAreas,
     },
     wave2: {
         enemyCount: 12, // 12 enemies for second wave
         minSpawnDistance: 25,
         maxSpawnDistance: 45,
-        allowedAreas: defaultSpawnAreas,
     },
     boss: {
         minSpawnDistance: 25,
         maxSpawnDistance: 25, // Fixed distance for consistent boss encounter
         forceSpawnTimeSeconds: 20, // Boss appears after 20 seconds if waves aren't complete
-        allowedAreas: defaultSpawnAreas,
     },
+    allowedAreas: defaultSpawnAreas,
 }
 
 // Helper to get a random spawn distance for a wave or boss

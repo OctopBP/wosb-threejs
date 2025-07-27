@@ -39,15 +39,24 @@ const customSpawnAreas: SpawnArea[] = [
     }
 ]
 
-// Apply to wave configuration
+// Apply to game configuration
 const gameConfig = {
     wave1: { 
         enemyCount: 3,
         minSpawnDistance: 25,
         maxSpawnDistance: 35,
-        allowedAreas: customSpawnAreas
     },
-    // ... other waves
+    wave2: { 
+        enemyCount: 10,
+        minSpawnDistance: 25,
+        maxSpawnDistance: 45,
+    },
+    boss: {
+        minSpawnDistance: 25,
+        maxSpawnDistance: 25,
+        forceSpawnTimeSeconds: 20,
+    },
+    allowedAreas: customSpawnAreas  // Single set for all waves
 }
 ```
 
@@ -186,8 +195,9 @@ import { easyGameStateConfig, hardGameStateConfig } from './config/GameStateConf
 import { 
     cornerAmbushConfig, 
     ringFormationConfig, 
-    progressiveExpansionConfig,
-    corridorCombatConfig 
+    compactCombatConfig,
+    corridorCombatConfig,
+    openOceanConfig 
 } from './config/CustomGameConfigs'
 
 // Use easy mode
@@ -199,8 +209,9 @@ const gameWorld = new GameWorld(scene, renderer, canvas, camera, hardGameStateCo
 // Or try custom spawn area configurations
 const gameWorld = new GameWorld(scene, renderer, canvas, camera, cornerAmbushConfig)
 const gameWorld = new GameWorld(scene, renderer, canvas, camera, ringFormationConfig)
-const gameWorld = new GameWorld(scene, renderer, canvas, camera, progressiveExpansionConfig)
+const gameWorld = new GameWorld(scene, renderer, canvas, camera, compactCombatConfig)
 const gameWorld = new GameWorld(scene, renderer, canvas, camera, corridorCombatConfig)
+const gameWorld = new GameWorld(scene, renderer, canvas, camera, openOceanConfig)
 ```
 
 ### 2. Runtime Configuration Changes

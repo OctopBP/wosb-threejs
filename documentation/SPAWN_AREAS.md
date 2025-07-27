@@ -43,20 +43,22 @@ const gameConfig = {
 }
 ```
 
-### Per-Wave Configuration
+### Single Area Set for All Waves
 
-You can define different spawn areas for each wave:
+All waves and the boss use the same spawn areas configuration for consistency:
 
 ```typescript
-// Wave 1: Enemies spawn close to player
-const wave1Areas = [{ name: 'Inner', minX: -15, maxX: 15, minZ: -15, maxZ: 15 }]
-
-// Wave 2: Battlefield expands
-const wave2Areas = [{ name: 'Outer', minX: -30, maxX: 30, minZ: -30, maxZ: 30 }]
+// Define areas that apply to all waves
+const gameAreas = [
+    { name: 'North Sector', minX: -20, maxX: 20, minZ: 10, maxZ: 40 },
+    { name: 'South Sector', minX: -20, maxX: 20, minZ: -40, maxZ: -10 }
+]
 
 const config = {
-    wave1: { allowedAreas: wave1Areas, ... },
-    wave2: { allowedAreas: wave2Areas, ... }
+    wave1: { enemyCount: 3, minSpawnDistance: 25, maxSpawnDistance: 35 },
+    wave2: { enemyCount: 10, minSpawnDistance: 25, maxSpawnDistance: 45 },
+    boss: { minSpawnDistance: 25, maxSpawnDistance: 25, forceSpawnTimeSeconds: 20 },
+    allowedAreas: gameAreas  // Used by all waves and boss
 }
 ```
 
@@ -74,16 +76,20 @@ The game includes several pre-built configurations in `src/config/CustomGameConf
 - No spawns in the immediate center area
 - Creates a "surrounded" feeling
 
-### 3. Progressive Expansion (`progressiveExpansionConfig`)
-- Wave 1: Small central area
-- Wave 2: Expanded area
-- Boss: Full map access
-- Gradually increases battlefield size
+### 3. Compact Combat (`compactCombatConfig`)
+- Single small central area for all waves
+- Forces close-quarters combat
+- Intense, fast-paced gameplay
 
 ### 4. Corridor Combat (`corridorCombatConfig`)
 - Two vertical corridors on left and right sides
 - Creates lane-based combat
 - Forces strategic positioning
+
+### 5. Open Ocean (`openOceanConfig`)
+- Large open battlefield
+- Maximum freedom of movement
+- Classic naval combat experience
 
 ## Technical Details
 
@@ -148,10 +154,18 @@ The system logs helpful messages:
 ### Testing Different Configurations
 ```typescript
 // In AppOne.ts
-import { cornerAmbushConfig } from './config/CustomGameConfigs'
+import { 
+    cornerAmbushConfig, 
+    ringFormationConfig, 
+    compactCombatConfig,
+    corridorCombatConfig,
+    openOceanConfig 
+} from './config/CustomGameConfigs'
 
-// Replace the default config
+// Replace the default config with any of these
 const gameWorld = new GameWorld(scene, renderer, canvas, camera, cornerAmbushConfig)
+const gameWorld = new GameWorld(scene, renderer, canvas, camera, ringFormationConfig)
+const gameWorld = new GameWorld(scene, renderer, canvas, camera, compactCombatConfig)
 ```
 
 ### Creating Custom Areas

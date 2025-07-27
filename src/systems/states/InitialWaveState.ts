@@ -20,7 +20,6 @@ export class InitialWaveState extends BaseGameState {
                 world,
                 config,
                 getRandomSpawnDistanceForWaveOrBoss(initialWaveConfig),
-                initialWaveConfig.allowedAreas,
             )
             this.initialEnemySpawned = true
             gameState.initialWaveEnemiesSpawned = 1

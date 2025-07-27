@@ -21,7 +21,6 @@ export class Wave2State extends BaseGameState {
                     world,
                     config,
                     getRandomSpawnDistanceForWaveOrBoss(waveConfig),
-                    waveConfig.allowedAreas,
                 )
                 gameState.wave2EnemiesSpawned++
             }

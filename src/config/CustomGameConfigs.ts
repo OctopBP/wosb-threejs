@@ -85,10 +85,10 @@ export const corridorAreas: SpawnArea[] = [
     },
 ]
 
-// 4. Progressive Expansion - Areas get bigger with each wave
-export const wave1Areas: SpawnArea[] = [
+// 4. Compact Central Area - Tight combat space
+export const compactCentralAreas: SpawnArea[] = [
     {
-        name: 'Inner Circle',
+        name: 'Central Arena',
         minX: -15,
         maxX: 15,
         minZ: -15,
@@ -96,17 +96,8 @@ export const wave1Areas: SpawnArea[] = [
     },
 ]
 
-export const wave2Areas: SpawnArea[] = [
-    {
-        name: 'Expanded Ocean',
-        minX: -25,
-        maxX: 25,
-        minZ: -25,
-        maxZ: 25,
-    },
-]
-
-export const bossAreas: SpawnArea[] = [
+// 5. Full Ocean - Large open battlefield
+export const fullOceanAreas: SpawnArea[] = [
     {
         name: 'Full Ocean',
         minX: -40,
@@ -123,26 +114,23 @@ export const cornerAmbushConfig: GameStateConfig = {
         enemyCount: 1,
         minSpawnDistance: 15,
         maxSpawnDistance: 15,
-        allowedAreas: cornerAmbushAreas,
     },
     wave1: {
         enemyCount: 3,
         minSpawnDistance: 25,
         maxSpawnDistance: 35,
-        allowedAreas: cornerAmbushAreas,
     },
     wave2: {
         enemyCount: 8, // Reduced from 12 since corners might be harder
         minSpawnDistance: 25,
         maxSpawnDistance: 45,
-        allowedAreas: cornerAmbushAreas,
     },
     boss: {
         minSpawnDistance: 25,
         maxSpawnDistance: 25,
         forceSpawnTimeSeconds: 20,
-        allowedAreas: cornerAmbushAreas,
     },
+    allowedAreas: cornerAmbushAreas,
 }
 
 export const ringFormationConfig: GameStateConfig = {
@@ -150,53 +138,47 @@ export const ringFormationConfig: GameStateConfig = {
         enemyCount: 1,
         minSpawnDistance: 15,
         maxSpawnDistance: 15,
-        allowedAreas: ringFormationAreas,
     },
     wave1: {
         enemyCount: 3,
         minSpawnDistance: 25,
         maxSpawnDistance: 35,
-        allowedAreas: ringFormationAreas,
     },
     wave2: {
         enemyCount: 10,
         minSpawnDistance: 25,
         maxSpawnDistance: 45,
-        allowedAreas: ringFormationAreas,
     },
     boss: {
         minSpawnDistance: 25,
         maxSpawnDistance: 25,
         forceSpawnTimeSeconds: 20,
-        allowedAreas: ringFormationAreas,
     },
+    allowedAreas: ringFormationAreas,
 }
 
-export const progressiveExpansionConfig: GameStateConfig = {
+export const compactCombatConfig: GameStateConfig = {
     initialWave: {
         enemyCount: 1,
         minSpawnDistance: 10,
         maxSpawnDistance: 10,
-        allowedAreas: wave1Areas,
     },
     wave1: {
         enemyCount: 3,
         minSpawnDistance: 12,
         maxSpawnDistance: 18,
-        allowedAreas: wave1Areas, // Start tight
     },
     wave2: {
         enemyCount: 12,
-        minSpawnDistance: 20,
-        maxSpawnDistance: 30,
-        allowedAreas: wave2Areas, // Expand battlefield
+        minSpawnDistance: 15,
+        maxSpawnDistance: 25,
     },
     boss: {
-        minSpawnDistance: 25,
-        maxSpawnDistance: 35,
+        minSpawnDistance: 20,
+        maxSpawnDistance: 25,
         forceSpawnTimeSeconds: 20,
-        allowedAreas: bossAreas, // Full area for boss
     },
+    allowedAreas: compactCentralAreas,
 }
 
 export const corridorCombatConfig: GameStateConfig = {
@@ -204,24 +186,45 @@ export const corridorCombatConfig: GameStateConfig = {
         enemyCount: 1,
         minSpawnDistance: 15,
         maxSpawnDistance: 15,
-        allowedAreas: corridorAreas,
     },
     wave1: {
         enemyCount: 4, // Even number for balanced corridor spawning
         minSpawnDistance: 20,
         maxSpawnDistance: 30,
-        allowedAreas: corridorAreas,
     },
     wave2: {
         enemyCount: 10,
         minSpawnDistance: 25,
         maxSpawnDistance: 40,
-        allowedAreas: corridorAreas,
     },
     boss: {
         minSpawnDistance: 25,
         maxSpawnDistance: 25,
         forceSpawnTimeSeconds: 20,
-        allowedAreas: corridorAreas,
     },
+    allowedAreas: corridorAreas,
+}
+
+export const openOceanConfig: GameStateConfig = {
+    initialWave: {
+        enemyCount: 1,
+        minSpawnDistance: 15,
+        maxSpawnDistance: 15,
+    },
+    wave1: {
+        enemyCount: 3,
+        minSpawnDistance: 25,
+        maxSpawnDistance: 35,
+    },
+    wave2: {
+        enemyCount: 12,
+        minSpawnDistance: 25,
+        maxSpawnDistance: 45,
+    },
+    boss: {
+        minSpawnDistance: 25,
+        maxSpawnDistance: 35,
+        forceSpawnTimeSeconds: 20,
+    },
+    allowedAreas: fullOceanAreas,
 }
