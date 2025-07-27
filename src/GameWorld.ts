@@ -217,10 +217,15 @@ export class GameWorld {
             })
         }
 
-        // Create and add islands to the scene
-        const island = createIsland(0, 0, 0, 1.0)
-        this.world.addEntity(island)
-        console.log('🏝️ Islands created and added to scene')
+        // Create and add islands to the scene near the water
+        // Water is at (0, 0, 35), so place islands around that area
+        const island1 = createIsland(15, 0, 25, 1.0) // Right side
+        const island2 = createIsland(-20, 0, 30, 1.0) // Left side
+        const island3 = createIsland(5, 0, 45, 1.0) // Further ahead
+        this.world.addEntity(island1)
+        this.world.addEntity(island2)
+        this.world.addEntity(island3)
+        console.log('🏝️ Islands created and added to scene near water')
     }
 
     update(time: number): void {
