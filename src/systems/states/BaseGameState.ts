@@ -14,13 +14,14 @@ export interface GameStateHandler {
      * @param gameState The current game state component
      * @param config Configuration for this state
      * @param world The ECS world
-     * @param levelingSystem Reference to the leveling system for XP awarding
+     * @param gameWorld The GameWorld instance for physics-aware entity spawning
      * @returns Next state to transition to, or null to stay in current state
      */
     handle(
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld?: any,
     ): string | null
 }
 
@@ -29,6 +30,7 @@ export abstract class BaseGameState implements GameStateHandler {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld?: any,
     ): string | null
 
     protected getPlayerEntity(world: World): Entity | null {
@@ -67,6 +69,7 @@ export abstract class BaseGameState implements GameStateHandler {
         world: World,
         config: GameStateConfig,
         spawnDistance?: number,
+        gameWorld?: any,
     ): void {
         const playerPosition = this.getPlayerPosition(world)
         if (!playerPosition) return
@@ -91,11 +94,19 @@ export abstract class BaseGameState implements GameStateHandler {
             playerPosition.z,
         )
 
-        // Add enemy to world
-        world.addEntity(enemy)
+        // Add enemy to world with physics if gameWorld is available
+        if (gameWorld && gameWorld.addEntityWithPhysics) {
+            gameWorld.addEntityWithPhysics(enemy)
+        } else {
+            world.addEntity(enemy)
+        }
     }
 
-    protected spawnBoss(world: World, config: GameStateConfig): void {
+    protected spawnBoss(
+        world: World,
+        config: GameStateConfig,
+        gameWorld?: any,
+    ): void {
         const playerPosition = this.getPlayerPosition(world)
         if (!playerPosition) return
 
@@ -115,7 +126,11 @@ export abstract class BaseGameState implements GameStateHandler {
             playerPosition.z,
         )
 
-        // Add boss to world
-        world.addEntity(boss)
+        // Add boss to world with physics if gameWorld is available
+        if (gameWorld && gameWorld.addEntityWithPhysics) {
+            gameWorld.addEntityWithPhysics(boss)
+        } else {
+            world.addEntity(boss)
+        }
     }
 }

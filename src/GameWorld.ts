@@ -45,6 +45,8 @@ import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
+import { PhysicsMovementSystem } from './systems/PhysicsMovementSystem'
+import { PhysicsSystem } from './systems/PhysicsSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProceduralTextureSystem } from './systems/ProceduralTextureSystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
@@ -52,6 +54,7 @@ import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
 import { RotationSystem } from './systems/RotationSystem'
+import { ShipCollisionSystem } from './systems/ShipCollisionSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WaveRockingSystem } from './systems/WaveRockingSystem'
 import { WeaponSystem } from './systems/WeaponSystem'
@@ -85,6 +88,9 @@ export class GameWorld {
     private audioSystem: AudioSystem
     private audioUISystem: AudioUISystem
     private particleSystem: ParticleSystem
+    private physicsSystem: PhysicsSystem
+    private physicsMovementSystem: PhysicsMovementSystem
+    private shipCollisionSystem: ShipCollisionSystem
     private debugSystem: DebugSystem
     private proceduralTextureSystem: ProceduralTextureSystem
     private playerEntity: Entity | null = null
@@ -137,6 +143,9 @@ export class GameWorld {
         this.audioSystem = new AudioSystem(this.world)
         this.audioUISystem = new AudioUISystem(this.world)
         this.particleSystem = new ParticleSystem(this.world, scene, camera)
+        this.physicsSystem = new PhysicsSystem(this.world)
+        this.physicsMovementSystem = new PhysicsMovementSystem(this.world)
+        this.shipCollisionSystem = new ShipCollisionSystem(this.world)
         this.proceduralTextureSystem = new ProceduralTextureSystem(this.world)
         this.debugSystem = new DebugSystem(this.world, scene)
 
@@ -153,6 +162,9 @@ export class GameWorld {
         this.deathAnimationSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)
+        this.physicsMovementSystem.setPhysicsSystem(this.physicsSystem)
+        this.shipCollisionSystem.setPhysicsSystem(this.physicsSystem)
+        this.shipCollisionSystem.setAudioSystem(this.audioSystem)
 
         // Setup audio system
         this.setupAudioSystem()
@@ -166,12 +178,15 @@ export class GameWorld {
         this.world.addSystem(this.enemyAISystem) //Update enemy AI (movement and targeting)
         this.world.addSystem(this.rotationSystem) //Handle rotation
         this.world.addSystem(this.accelerationSystem) //Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
+        this.world.addSystem(this.physicsSystem) //Update physics world and sync positions
+        this.world.addSystem(this.physicsMovementSystem) //Apply physics-based movement forces
+        this.world.addSystem(this.movementSystem) //Apply velocity to position (non-physics entities)
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
         this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity
         this.world.addSystem(this.projectileSystem) // Update projectile lifetimes
         this.world.addSystem(this.collisionSystem) // Check collisions and apply damage
+        this.world.addSystem(this.shipCollisionSystem) // Handle ship-to-ship physics collisions
         this.world.addSystem(this.barrelSpawnSystem) // Spawn barrels around enemies
         this.world.addSystem(this.barrelCollectionSystem) // Handle barrel collection and floating
         this.world.addSystem(this.deathAnimationSystem) // Handle death animations (sinking ships)
@@ -194,6 +209,8 @@ export class GameWorld {
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
+            // Create physics body for player ship
+            this.physicsSystem.createPhysicsBody(this.playerEntity, 1, false)
             // Add camera target to player
             this.cameraSystem.addCameraTarget(
                 this.playerEntity.id,
@@ -221,6 +238,31 @@ export class GameWorld {
         const island = createIsland(0, 0, 0, 1.0)
         this.world.addEntity(island)
         console.log('🏝️ Islands created and added to scene')
+    }
+
+    /**
+     * Add an entity with physics body if it's a ship
+     */
+    addEntityWithPhysics(entity: Entity): void {
+        this.world.addEntity(entity)
+
+        // Auto-create physics body for ships (entities with player, enemy, or boss components)
+        const isShip =
+            entity.hasComponent('player') ||
+            entity.hasComponent('enemy') ||
+            entity.hasComponent('boss')
+
+        if (isShip && entity.hasComponent('collision')) {
+            // Different masses for different ship types
+            let mass = 1
+            if (entity.hasComponent('boss')) {
+                mass = 3 // Heavier boss ships
+            } else if (entity.hasComponent('enemy')) {
+                mass = 0.8 // Slightly lighter enemy ships
+            }
+
+            this.physicsSystem.createPhysicsBody(entity, mass, false)
+        }
     }
 
     update(time: number): void {

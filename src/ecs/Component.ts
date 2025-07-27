@@ -373,3 +373,12 @@ export interface FoamTrailComponent extends Component {
     type: 'foamTrail'
     size: number
 }
+
+// Physics Body component for cannon.js physics integration
+export interface PhysicsBodyComponent extends Component {
+    type: 'physicsBody'
+    body: import('cannon').Body | null // Cannon.js rigid body
+    shape: 'box' | 'sphere'
+    mass: number
+    isStatic: boolean // Whether the body is static (immovable)
+}
