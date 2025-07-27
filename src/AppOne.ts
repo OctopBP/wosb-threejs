@@ -174,6 +174,7 @@ export class AppOne {
             uEdgeThickness: { value: 0.015 },
             uEdgeIntensity: { value: 1.5 },
             uDebugDepth: { value: 0.0 },
+            uHideShips: { value: 0.0 },
         }
         const waterMaterial = new ShaderMaterial({
             vertexShader: waterVertexShader,
@@ -691,6 +692,27 @@ export class AppOne {
                 .add(uniforms.uDebugDepth, 'value', 0, 1, 0.1)
                 .name('Debug Depth Mode')
 
+            waterFolder
+                .add(
+                    {
+                        hideShips: () => {
+                            this.scene.traverse((object) => {
+                                if (
+                                    object.name.includes('ship') &&
+                                    !object.name.includes('Water')
+                                ) {
+                                    object.visible = !object.visible
+                                }
+                            })
+                            console.log(
+                                'Toggled ship visibility for depth debugging',
+                            )
+                        },
+                    },
+                    'hideShips',
+                )
+                .name('Toggle Ships')
+
             // Color uniforms
             waterFolder
                 .addColor(
@@ -789,6 +811,59 @@ export class AppOne {
         const originalVisible = water?.visible
         if (water) {
             water.visible = false
+        }
+
+        // Debug: Log what objects are visible during depth rendering
+        let visibleObjects = 0
+        let islandObjects = 0
+        let shipObjects = 0
+        const islandMeshes: any[] = []
+
+        this.scene.traverse((object) => {
+            if (object.visible && object !== water) {
+                visibleObjects++
+                if (object.name.includes('island')) {
+                    islandObjects++
+                    islandMeshes.push(object)
+                    console.log(
+                        'Island object in depth pass:',
+                        object.name,
+                        object.position,
+                        'type:',
+                        object.type,
+                    )
+                }
+                if (object.name.includes('ship')) {
+                    shipObjects++
+                }
+            }
+        })
+
+        // Special debugging: ensure island materials write depth
+        islandMeshes.forEach((island) => {
+            island.traverse((child: any) => {
+                if (child.isMesh && child.material) {
+                    // Ensure depth writing is enabled
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach((mat: any) => {
+                            mat.depthWrite = true
+                            mat.depthTest = true
+                            mat.transparent = false
+                        })
+                    } else {
+                        child.material.depthWrite = true
+                        child.material.depthTest = true
+                        child.material.transparent = false
+                    }
+                }
+            })
+        })
+
+        if (visibleObjects % 60 === 0) {
+            // Log every 60 frames to avoid spam
+            console.log(
+                `Depth pass: ${visibleObjects} visible objects, ${islandObjects} islands, ${shipObjects} ships`,
+            )
         }
 
         // Store original render target and clear settings
