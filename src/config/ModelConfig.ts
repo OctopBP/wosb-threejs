@@ -41,7 +41,7 @@ export const MODEL_CONFIGS: Record<string, ModelConfig | PrimitiveModelConfig> =
         },
         island: {
             kind: 'model',
-            fileName: 'islands.glb',
+            fileName: 'islands1.glb',
             scale: 1.0,
         },
         bullet: {

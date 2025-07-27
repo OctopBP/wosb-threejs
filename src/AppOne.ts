@@ -11,7 +11,6 @@ import {
     HemisphereLight,
     Mesh,
     MeshBasicMaterial,
-    NearestFilter,
     NormalBlending,
     PCFSoftShadowMap,
     PerspectiveCamera,
@@ -121,7 +120,7 @@ export class AppOne {
         scene.add(directionalLight)
 
         // Add fog for atmosphere
-        scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 25, 45)
+        // scene.fog = new Fog(new Color(0.7, 0.8, 0.9), 25, 45)
 
         return scene
     }
@@ -171,8 +170,8 @@ export class AppOne {
             },
             uCameraNear: { value: this.camera.near },
             uCameraFar: { value: this.camera.far },
-            uEdgeThickness: { value: 0.015 },
-            uEdgeIntensity: { value: 1.5 },
+            uEdgeThickness: { value: 0.0005 },
+            uEdgeIntensity: { value: 10 },
             uDebugDepth: { value: 0.0 },
             uHideShips: { value: 0.0 },
         }
@@ -672,7 +671,7 @@ export class AppOne {
                 .add(uniforms.uEdgeThickness, 'value', 0, 0.1, 0.001)
                 .name('Edge Thickness')
             waterFolder
-                .add(uniforms.uEdgeIntensity, 'value', 0, 3, 0.01)
+                .add(uniforms.uEdgeIntensity, 'value', 0, 15, 0.01)
                 .name('Edge Intensity')
 
             // Debug depth texture

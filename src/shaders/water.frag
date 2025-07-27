@@ -45,7 +45,7 @@ float linearizeDepth(float depth) {
 float getDepthDifference(vec2 screenUV, float currentDepth) {
   // Sample the depth texture directly
   float sampledDepth = texture2D(uDepthTexture, screenUV).r;
-  
+
   // Simple depth difference without linearization first
   return abs(currentDepth - sampledDepth);
 }
@@ -53,57 +53,57 @@ float getDepthDifference(vec2 screenUV, float currentDepth) {
 // Edge detection function
 float detectEdges(vec2 screenUV, float currentDepth) {
   vec2 texelSize = 1.0 / uResolution;
-  
+
   // Sample surrounding depth values
   float depth1 = texture2D(uDepthTexture, screenUV + vec2(-texelSize.x, 0.0)).r;
   float depth2 = texture2D(uDepthTexture, screenUV + vec2(texelSize.x, 0.0)).r;
   float depth3 = texture2D(uDepthTexture, screenUV + vec2(0.0, -texelSize.y)).r;
   float depth4 = texture2D(uDepthTexture, screenUV + vec2(0.0, texelSize.y)).r;
-  
+
   // Calculate depth differences (simple version first)
   float depthDiff1 = abs(currentDepth - depth1);
   float depthDiff2 = abs(currentDepth - depth2);
   float depthDiff3 = abs(currentDepth - depth3);
   float depthDiff4 = abs(currentDepth - depth4);
-  
+
   // Find maximum depth difference
   float maxDepthDiff = max(max(depthDiff1, depthDiff2), max(depthDiff3, depthDiff4));
-  
+
   // Create edge mask based on depth threshold
   float edgeMask = smoothstep(0.0, uEdgeThickness, maxDepthDiff);
-  
+
   return edgeMask * uEdgeIntensity;
 }
 
 // Alternative edge detection with better depth handling
 float detectEdgesLinear(vec2 screenUV, float currentDepth) {
   vec2 texelSize = 1.0 / uResolution;
-  
+
   // Sample surrounding depth values
   float depth1 = texture2D(uDepthTexture, screenUV + vec2(-texelSize.x, 0.0)).r;
   float depth2 = texture2D(uDepthTexture, screenUV + vec2(texelSize.x, 0.0)).r;
   float depth3 = texture2D(uDepthTexture, screenUV + vec2(0.0, -texelSize.y)).r;
   float depth4 = texture2D(uDepthTexture, screenUV + vec2(0.0, texelSize.y)).r;
-  
+
   // Convert to linear depth
   float linearDepth1 = linearizeDepth(depth1);
   float linearDepth2 = linearizeDepth(depth2);
   float linearDepth3 = linearizeDepth(depth3);
   float linearDepth4 = linearizeDepth(depth4);
   float currentLinearDepth = linearizeDepth(currentDepth);
-  
+
   // Calculate depth differences
   float depthDiff1 = abs(currentLinearDepth - linearDepth1);
   float depthDiff2 = abs(currentLinearDepth - linearDepth2);
   float depthDiff3 = abs(currentLinearDepth - linearDepth3);
   float depthDiff4 = abs(currentLinearDepth - linearDepth4);
-  
+
   // Find maximum depth difference
   float maxDepthDiff = max(max(depthDiff1, depthDiff2), max(depthDiff3, depthDiff4));
-  
+
   // Create edge mask based on depth threshold (adjusted for linear depth)
   float edgeMask = smoothstep(0.0, uEdgeThickness * 100.0, maxDepthDiff);
-  
+
   return edgeMask * uEdgeIntensity;
 }
 
@@ -160,13 +160,13 @@ float voronoi(vec2 uv, float angleOffset, float cellDensity) {
 void main() {
   // Calculate screen UV coordinates
   vec2 screenUV = (vScreenPosition.xy / vScreenPosition.w) * 0.5 + 0.5;
-  
+
   // Get current fragment depth
   float currentDepth = gl_FragCoord.z;
-  
+
   // Detect edges
   float edgeIntensity = detectEdges(screenUV, currentDepth);
-  
+
   // Sample the procedural black and white texture
   float bw = texture2D(bwTexture, vUv).r;
 
@@ -203,15 +203,12 @@ void main() {
   finalColor = mix(finalColor, vec3(foam), clamp(bw - 0.2, 0.0, 1.0));
 
   // Add white edge where water meets other geometry
-  finalColor = mix(finalColor, vec3(1.0), clamp(edgeIntensity, 0.0, 1.0));
-
-  // Debug mode: show depth texture or edge detection
-  if (uDebugDepth > 0.5) {
-    float depthSample = texture2D(uDepthTexture, screenUV).r;
-    finalColor = vec3(depthSample);
-  } else if (uDebugDepth > 0.1) {
-    finalColor = vec3(edgeIntensity);
-  }
+  float shoreFoam = 1.0 - clamp(edgeIntensity, 0.0, 1.0);
+  // float shoreFoamTexture = texture2D(foamTexture, mod(vUv * 30.0, 1.0)).r;
+  // shoreFoam *= voronoi(vUv, uTime, 30.0);
+  float waveStep = 0.2;
+  shoreFoam = shoreFoam * abs((mod(shoreFoam, waveStep) / waveStep) - 0.5) * 2.0;
+  finalColor = mix(finalColor, finalColor + vec3(0.3), shoreFoam + 0.05);
 
   gl_FragColor = vec4(finalColor, uOpacity);
 
