@@ -588,7 +588,10 @@ export class GameWorld {
      * Setup the audio system with assets and initialize on first user interaction
      */
     private async setupAudioSystem(): Promise<void> {
-        // Register audio assets
+        // Initialize audio context early (before user interaction)
+        await this.audioSystem.initializeContext()
+
+        // Register audio assets (this will start preloading immediately)
         this.audioSystem.registerAssets(audioAssets)
 
         // Apply default settings
@@ -598,40 +601,55 @@ export class GameWorld {
         this.audioSystem.setUIVolume(defaultAudioSettings.uiVolume)
         this.audioSystem.setMuted(defaultAudioSettings.muted)
 
-        // Setup user interaction listener to initialize audio
+        // Setup user interaction listener to complete audio initialization
         this.setupAudioInitialization()
+
+        // Log initial loading progress
+        console.log('🎵 Audio system setup complete - preloading assets...')
     }
 
     /**
      * Setup audio initialization on first user interaction
      */
     private setupAudioInitialization(): void {
-        const initializeAudio = async () => {
+        const completeAudioInitialization = async () => {
             if (this.audioInitialized) return
 
             try {
-                await this.audioSystem.initialize(this.camera)
-                await this.audioSystem.loadAssets()
+                // Complete audio initialization (attach listener to camera)
+                await this.audioSystem.completeInitialization(this.camera)
                 this.audioInitialized = true
 
                 // Start background music when ready
-                this.audioSystem.playMusic('background')
-
-                console.log('🎵 Audio system initialized and ready')
+                if (this.audioSystem.isPreloadComplete()) {
+                    this.audioSystem.playMusic('background')
+                    console.log('🎵 Audio system fully ready - music started')
+                } else {
+                    // Wait for preloading to complete before starting music
+                    const checkPreload = () => {
+                        if (this.audioSystem.isPreloadComplete()) {
+                            this.audioSystem.playMusic('background')
+                            console.log('🎵 Audio system fully ready - music started')
+                        } else {
+                            setTimeout(checkPreload, 100) // Check again in 100ms
+                        }
+                    }
+                    checkPreload()
+                }
 
                 // Remove event listeners
-                document.removeEventListener('click', initializeAudio)
-                document.removeEventListener('keydown', initializeAudio)
-                document.removeEventListener('touchstart', initializeAudio)
+                document.removeEventListener('click', completeAudioInitialization)
+                document.removeEventListener('keydown', completeAudioInitialization)
+                document.removeEventListener('touchstart', completeAudioInitialization)
             } catch (error) {
-                console.error('Failed to initialize audio system:', error)
+                console.error('Failed to complete audio initialization:', error)
             }
         }
 
-        // Listen for user interactions to initialize audio
-        document.addEventListener('click', initializeAudio, { once: true })
-        document.addEventListener('keydown', initializeAudio, { once: true })
-        document.addEventListener('touchstart', initializeAudio, { once: true })
+        // Listen for user interactions to complete audio initialization
+        document.addEventListener('click', completeAudioInitialization, { once: true })
+        document.addEventListener('keydown', completeAudioInitialization, { once: true })
+        document.addEventListener('touchstart', completeAudioInitialization, { once: true })
     }
 
     /**
