@@ -10,7 +10,7 @@ export const audioAssets: AudioAssets = {
         background: {
             url: 'assets/audio/music/Music.ogg',
             config: {
-                volume: 1,
+                volume: 0.5,
                 loop: true,
             },
         },
@@ -22,7 +22,7 @@ export const audioAssets: AudioAssets = {
         shoot: {
             url: 'assets/audio/sfx/Shoot.ogg',
             config: {
-                volume: 1,
+                volume: 0.8,
                 loop: false,
             },
         },
@@ -31,7 +31,7 @@ export const audioAssets: AudioAssets = {
         death: {
             url: 'assets/audio/sfx/Death.ogg',
             config: {
-                volume: 1.0,
+                volume: 0.7,
                 loop: false,
             },
         },
@@ -40,7 +40,7 @@ export const audioAssets: AudioAssets = {
         level_up: {
             url: 'assets/audio/sfx/LevelUp.ogg',
             config: {
-                volume: 1,
+                volume: 0.9,
                 loop: false,
             },
         },
@@ -56,8 +56,8 @@ export const audioAssets: AudioAssets = {
 export const defaultAudioSettings = {
     masterVolume: 1.0,
     musicVolume: 0.5,
-    sfxVolume: 0.5,
-    uiVolume: 0.5,
+    sfxVolume: 0.8,
+    uiVolume: 0.6,
     muted: false,
 }
 

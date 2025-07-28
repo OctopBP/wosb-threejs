@@ -23,6 +23,14 @@ export interface AudioAssets {
     ui: Record<string, AudioAsset>
 }
 
+export interface AudioLoadingProgress {
+    totalAssets: number
+    loadedAssets: number
+    loadingProgress: number // 0-1
+    isComplete: boolean
+    errors: string[]
+}
+
 export class AudioSystem extends System {
     private audioContext: AudioContext | null = null
     private audioListener: AudioListener | null = null
@@ -37,6 +45,14 @@ export class AudioSystem extends System {
     private isInitialized = false
     private currentMusic: Audio | null = null
     private audioMuted = false
+    private loadingProgress: AudioLoadingProgress = {
+        totalAssets: 0,
+        loadedAssets: 0,
+        loadingProgress: 0,
+        isComplete: false,
+        errors: [],
+    }
+    private loadingCallbacks: ((progress: AudioLoadingProgress) => void)[] = []
 
     constructor(world: World) {
         super(world, []) // No required components for audio system
@@ -44,14 +60,13 @@ export class AudioSystem extends System {
     }
 
     /**
-     * Initialize the audio system. This must be called after user interaction
-     * due to Web Audio API autoplay policies.
+     * Initialize the audio system immediately without waiting for user interaction
      */
     async initialize(camera: Camera): Promise<void> {
         if (this.isInitialized) return
 
         try {
-            // Create AudioContext
+            // Create AudioContext with immediate initialization
             this.audioContext = new (
                 window.AudioContext || (window as any).webkitAudioContext
             )()
@@ -60,15 +75,16 @@ export class AudioSystem extends System {
             this.audioListener = new AudioListener()
             camera.add(this.audioListener)
 
-            // Resume context if suspended (required by some browsers)
+            // Resume context immediately (works in most modern browsers)
             if (this.audioContext.state === 'suspended') {
                 await this.audioContext.resume()
             }
 
             this.isInitialized = true
-            console.log('Audio system initialized successfully')
+            console.log('🎵 Audio system initialized successfully')
         } catch (error) {
             console.error('Failed to initialize audio system:', error)
+            // Continue anyway - audio will work once user interacts
         }
     }
 
@@ -80,55 +96,129 @@ export class AudioSystem extends System {
     }
 
     /**
-     * Load all registered audio assets
+     * Start preloading all audio assets immediately
      */
-    async loadAssets(): Promise<void> {
-        if (!this.isInitialized) {
-            console.warn(
-                'Audio system not initialized. Call initialize() first.',
-            )
+    async preloadAssets(): Promise<void> {
+        // Calculate total assets
+        const allAssets = [
+            ...Object.entries(this.assets.music),
+            ...Object.entries(this.assets.sfx),
+            ...Object.entries(this.assets.ui),
+        ]
+
+        this.loadingProgress.totalAssets = allAssets.length
+        this.loadingProgress.loadedAssets = 0
+        this.loadingProgress.loadingProgress = 0
+        this.loadingProgress.isComplete = false
+        this.loadingProgress.errors = []
+
+        if (allAssets.length === 0) {
+            this.loadingProgress.isComplete = true
+            this.loadingProgress.loadingProgress = 1
+            this.notifyLoadingProgress()
             return
         }
 
-        const loadPromises: Promise<void>[] = []
+        console.log(
+            `🎵 Starting preload of ${allAssets.length} audio assets...`,
+        )
 
-        // Load all asset types
-        for (const [category, categoryAssets] of Object.entries(this.assets)) {
-            for (const [name, asset] of Object.entries(categoryAssets)) {
-                const key = `${category}:${name}`
-                loadPromises.push(
-                    this.loadSingleAsset(key, asset as AudioAsset),
-                )
-            }
-        }
+        // Load all assets concurrently with progress tracking
+        const loadPromises = allAssets.map(([name, asset], index) =>
+            this.loadSingleAssetWithProgress(
+                name,
+                asset,
+                index,
+                allAssets.length,
+            ),
+        )
 
         try {
-            await Promise.all(loadPromises)
-            console.log('All audio assets loaded successfully')
+            await Promise.allSettled(loadPromises)
+            this.loadingProgress.isComplete = true
+            this.loadingProgress.loadingProgress = 1
+            this.notifyLoadingProgress()
+            console.log(
+                `🎵 Audio preload complete! Loaded ${this.loadedBuffers.size}/${allAssets.length} assets`,
+            )
         } catch (error) {
             console.error('Failed to load some audio assets:', error)
+            this.loadingProgress.errors.push(
+                error instanceof Error ? error.message : 'Unknown error',
+            )
+        }
+    }
+
+    private async loadSingleAssetWithProgress(
+        name: string,
+        asset: AudioAsset,
+        index: number,
+        total: number,
+    ): Promise<void> {
+        try {
+            await this.loadSingleAsset(name, asset)
+            this.loadingProgress.loadedAssets++
+            this.loadingProgress.loadingProgress =
+                this.loadingProgress.loadedAssets / total
+            this.notifyLoadingProgress()
+        } catch (error) {
+            console.error(`Failed to load audio asset ${name}:`, error)
+            this.loadingProgress.errors.push(
+                `Failed to load ${name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            )
         }
     }
 
     private async loadSingleAsset(
-        key: string,
+        name: string,
         asset: AudioAsset,
     ): Promise<void> {
         return new Promise((resolve, reject) => {
             this.audioLoader.load(
                 asset.url,
                 (buffer) => {
-                    this.loadedBuffers.set(key, buffer)
+                    this.loadedBuffers.set(name, buffer)
                     asset.buffer = buffer
                     resolve()
                 },
-                (_) => {},
+                (progress) => {
+                    // Individual asset loading progress (optional)
+                },
                 (error) => {
-                    console.error(`Failed to load audio asset ${key}:`, error)
+                    console.error(`Failed to load audio asset ${name}:`, error)
                     reject(error)
                 },
             )
         })
+    }
+
+    /**
+     * Get current loading progress
+     */
+    getLoadingProgress(): AudioLoadingProgress {
+        return { ...this.loadingProgress }
+    }
+
+    /**
+     * Subscribe to loading progress updates
+     */
+    onLoadingProgress(
+        callback: (progress: AudioLoadingProgress) => void,
+    ): void {
+        this.loadingCallbacks.push(callback)
+    }
+
+    private notifyLoadingProgress(): void {
+        this.loadingCallbacks.forEach((callback) =>
+            callback(this.getLoadingProgress()),
+        )
+    }
+
+    /**
+     * Check if audio system is ready to play sounds
+     */
+    isReady(): boolean {
+        return this.isInitialized && this.loadingProgress.isComplete
     }
 
     /**
@@ -198,16 +288,15 @@ export class AudioSystem extends System {
         maxDistance = 50,
         refDistance = 1,
     ): PositionalAudio | null {
-        if (!this.isInitialized || !this.audioListener) {
-            console.warn('Audio system not initialized')
+        if (!this.isReady() || !this.audioListener) {
+            console.warn('Audio system not ready')
             return null
         }
 
-        const key = `${category}:${name}`
-        const buffer = this.loadedBuffers.get(key)
+        const buffer = this.loadedBuffers.get(name)
 
         if (!buffer) {
-            console.warn(`Audio buffer not found: ${key}`)
+            console.warn(`Audio buffer not found: ${name}`)
             return null
         }
 
@@ -228,8 +317,8 @@ export class AudioSystem extends System {
         name: string,
         config?: Partial<AudioConfig>,
     ): Audio | null {
-        if (!this.isInitialized || !this.audioListener) {
-            console.warn('Audio system not initialized')
+        if (!this.isReady() || !this.audioListener) {
+            console.warn('Audio system not ready')
             return null
         }
 
@@ -237,11 +326,10 @@ export class AudioSystem extends System {
             return null
         }
 
-        const key = `${category}:${name}`
-        const buffer = this.loadedBuffers.get(key)
+        const buffer = this.loadedBuffers.get(name)
 
         if (!buffer) {
-            console.warn(`Audio buffer not found: ${key}`)
+            console.warn(`Audio buffer not found: ${name}`)
             return null
         }
 
@@ -270,12 +358,12 @@ export class AudioSystem extends System {
         }
 
         // Track playing audio
-        this.playingAudio.set(key, audio)
+        this.playingAudio.set(name, audio)
 
         // Remove from tracking when audio ends (if not looping)
         if (!finalConfig.loop) {
             setTimeout(() => {
-                this.playingAudio.delete(key)
+                this.playingAudio.delete(name)
             }, buffer.duration * 1000)
         }
 
@@ -401,15 +489,21 @@ export class AudioSystem extends System {
      */
     getStatus(): {
         initialized: boolean
+        ready: boolean
         assetsLoaded: number
+        totalAssets: number
         currentlyPlaying: number
         musicPlaying: boolean
+        loadingProgress: number
     } {
         return {
             initialized: this.isInitialized,
+            ready: this.isReady(),
             assetsLoaded: this.loadedBuffers.size,
+            totalAssets: this.loadingProgress.totalAssets,
             currentlyPlaying: this.playingAudio.size,
             musicPlaying: this.currentMusic?.isPlaying || false,
+            loadingProgress: this.loadingProgress.loadingProgress,
         }
     }
 
@@ -432,5 +526,6 @@ export class AudioSystem extends System {
         this.loadedBuffers.clear()
         this.playingAudio.clear()
         this.isInitialized = false
+        this.loadingCallbacks = []
     }
 }
