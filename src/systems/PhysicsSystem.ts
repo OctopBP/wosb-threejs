@@ -20,22 +20,51 @@ export class PhysicsSystem extends System {
         if (this.initialized) return
 
         try {
-            // Initialize Rapier (needed for the compat version)
+            // Ensure RAPIER is properly initialized
+            if (!RAPIER.init) {
+                throw new Error('RAPIER.init is not available')
+            }
+            
             await RAPIER.init()
+            
+            // Wait a bit to ensure WASM is fully loaded
+            await new Promise(resolve => setTimeout(resolve, 100))
+
+            // Verify RAPIER classes are available
+            if (!RAPIER.World || !RAPIER.RigidBodyDesc || !RAPIER.ColliderDesc) {
+                throw new Error('RAPIER classes not available after initialization')
+            }
 
             // Create physics world with gravity
-            const gravity = { x: 0.0, y: 0.0, z: 0.0 } // No gravity for ship movement
+            const gravity = new RAPIER.Vector3(0.0, 0.0, 0.0) // No gravity for ship movement
             this.physicsWorld = new RAPIER.World(gravity)
 
+            // Verify the world was created successfully
+            if (!this.physicsWorld) {
+                throw new Error('Failed to create physics world')
+            }
+
             this.initialized = true
+            console.log('Physics system initialized successfully')
         } catch (error) {
             console.error('Failed to initialize physics system:', error)
+            this.initialized = false
+            this.physicsWorld = null
             throw error
         }
     }
 
     update(deltaTime: number): void {
-        if (!this.initialized || !this.physicsWorld) return
+        // Check if physics needs reinitialization
+        if (!this.initialized || !this.physicsWorld) {
+            return
+        }
+
+        // Validate physics world health
+        if (!this.isPhysicsWorldHealthy()) {
+            console.warn('Physics world unhealthy, skipping update')
+            return
+        }
 
         // Cache body handles to avoid accessing them during physics step
         const activeBodyHandles = this.cacheActiveBodyHandles()
@@ -46,15 +75,38 @@ export class PhysicsSystem extends System {
 
             // Step the physics world with proper timestep
             try {
+                // Validate physics world is still valid
+                if (!this.physicsWorld || !this.initialized) {
+                    throw new Error('Physics world became invalid')
+                }
+
                 // Ensure we have a valid timestep (fallback to 16ms if deltaTime is invalid)
                 const timestep = (deltaTime && isFinite(deltaTime) && deltaTime > 0) 
                     ? Math.min(deltaTime, 0.1) 
                     : 1/60; // 60 FPS fallback
                 
+                // Validate timestep before setting
+                if (!isFinite(timestep) || timestep <= 0) {
+                    throw new Error(`Invalid timestep: ${timestep}`)
+                }
+
                 this.physicsWorld.timestep = timestep
+                
+                // Verify timestep was set correctly
+                if (this.physicsWorld.timestep !== timestep) {
+                    console.warn('Timestep was not set correctly:', this.physicsWorld.timestep, 'vs', timestep)
+                }
+
                 this.physicsWorld.step()
             } catch (error) {
                 console.error('Physics step error:', error)
+                // Try to reinitialize physics if it seems corrupted
+                const errorMessage = error instanceof Error ? error.message : String(error)
+                if (errorMessage.includes('memory access out of bounds')) {
+                    console.warn('Physics world appears corrupted, marking for reinitialization')
+                    this.initialized = false
+                    this.physicsWorld = null
+                }
                 return
             }
 
@@ -84,6 +136,31 @@ export class PhysicsSystem extends System {
         }
 
         return activeHandles
+    }
+
+    private isPhysicsWorldHealthy(): boolean {
+        if (!this.physicsWorld || !this.initialized) {
+            return false
+        }
+
+        try {
+            // Try to access basic properties to check if the world is still valid
+            const gravity = this.physicsWorld.gravity
+            if (!gravity || typeof gravity.x !== 'number') {
+                return false
+            }
+
+            // Try to get the number of bodies (this often fails if memory is corrupted)
+            const bodyCount = this.physicsWorld.bodies ? this.physicsWorld.bodies.len() : 0
+            if (typeof bodyCount !== 'number' || bodyCount < 0) {
+                return false
+            }
+
+            return true
+        } catch (error) {
+            console.error('Physics world health check failed:', error)
+            return false
+        }
     }
 
     private applyForces(): void {
@@ -276,30 +353,94 @@ export class PhysicsSystem extends System {
         }
 
         try {
-            // Create rigid body
-            const rigidBodyDesc = isStatic 
-                ? RAPIER.RigidBodyDesc.fixed() 
-                : RAPIER.RigidBodyDesc.dynamic()
-
-            rigidBodyDesc.setTranslation(position.x, position.y, position.z)
-            
-            if (!isStatic) {
-                // Set mass and damping for dynamic bodies
-                rigidBodyDesc.setAdditionalMass(mass)
-                rigidBodyDesc.setLinearDamping(0.5) // Damping for smooth movement
-                rigidBodyDesc.setAngularDamping(0.8) // Higher angular damping for stability
+            // Double-check that physics world is still valid
+            if (!this.physicsWorld || !this.initialized) {
+                throw new Error('Physics world not properly initialized')
             }
 
-            const rigidBody = this.physicsWorld.createRigidBody(rigidBodyDesc)
+            // Verify RAPIER classes are still available
+            if (!RAPIER.RigidBodyDesc || !RAPIER.ColliderDesc) {
+                throw new Error('RAPIER classes not available')
+            }
 
-            // Create box collider
-            const colliderDesc = RAPIER.ColliderDesc.cuboid(
-                size.width / 2,
-                size.height / 2,
-                size.depth / 2,
-            )
+            // Create rigid body descriptor
+            let rigidBodyDesc: any
+            try {
+                rigidBodyDesc = isStatic 
+                    ? RAPIER.RigidBodyDesc.fixed() 
+                    : RAPIER.RigidBodyDesc.dynamic()
+            } catch (error) {
+                throw new Error(`Failed to create rigid body descriptor: ${error}`)
+            }
 
-            const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody)
+            // Set translation
+            try {
+                rigidBodyDesc.setTranslation(position.x, position.y, position.z)
+            } catch (error) {
+                throw new Error(`Failed to set translation: ${error}`)
+            }
+            
+            if (!isStatic) {
+                try {
+                    // Set mass and damping for dynamic bodies
+                    rigidBodyDesc.setAdditionalMass(mass)
+                    rigidBodyDesc.setLinearDamping(0.5) // Damping for smooth movement
+                    rigidBodyDesc.setAngularDamping(0.8) // Higher angular damping for stability
+                } catch (error) {
+                    throw new Error(`Failed to set body properties: ${error}`)
+                }
+            }
+
+            // Create the rigid body
+            let rigidBody: any
+            try {
+                rigidBody = this.physicsWorld.createRigidBody(rigidBodyDesc)
+                if (!rigidBody) {
+                    throw new Error('createRigidBody returned null')
+                }
+            } catch (error) {
+                throw new Error(`Failed to create rigid body: ${error}`)
+            }
+
+            // Create box collider descriptor
+            let colliderDesc: any
+            try {
+                colliderDesc = RAPIER.ColliderDesc.cuboid(
+                    size.width / 2,
+                    size.height / 2,
+                    size.depth / 2,
+                )
+            } catch (error) {
+                // Clean up the rigid body if collider creation fails
+                try {
+                    this.physicsWorld.removeRigidBody(rigidBody)
+                } catch (cleanupError) {
+                    console.error('Failed to cleanup rigid body:', cleanupError)
+                }
+                throw new Error(`Failed to create collider descriptor: ${error}`)
+            }
+
+            // Create the collider
+            let collider: any
+            try {
+                collider = this.physicsWorld.createCollider(colliderDesc, rigidBody)
+                if (!collider) {
+                    throw new Error('createCollider returned null')
+                }
+            } catch (error) {
+                // Clean up the rigid body if collider creation fails
+                try {
+                    this.physicsWorld.removeRigidBody(rigidBody)
+                } catch (cleanupError) {
+                    console.error('Failed to cleanup rigid body:', cleanupError)
+                }
+                throw new Error(`Failed to create collider: ${error}`)
+            }
+
+            // Validate handles
+            if (typeof rigidBody.handle !== 'number' || typeof collider.handle !== 'number') {
+                throw new Error('Invalid handles returned from physics body creation')
+            }
 
             return {
                 bodyHandle: rigidBody.handle,
@@ -357,6 +498,22 @@ export class PhysicsSystem extends System {
                 }
             }
         })
+    }
+
+    async reinitialize(): Promise<boolean> {
+        console.log('Reinitializing physics system...')
+        
+        // Dispose current world
+        this.dispose()
+        
+        try {
+            // Reinitialize
+            await this.init()
+            return true
+        } catch (error) {
+            console.error('Failed to reinitialize physics system:', error)
+            return false
+        }
     }
 
     dispose(): void {
