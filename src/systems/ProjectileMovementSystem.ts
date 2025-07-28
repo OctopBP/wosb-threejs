@@ -23,7 +23,16 @@ export class ProjectileMovementSystem extends System {
 
             if (!projectile || !position || !velocity) continue
 
-            // Apply gravity to velocity (creates arc trajectory)
+            // Skip homing projectiles - they handle their own movement in HomingProjectileSystem
+            if (entity.hasComponent('homingProjectile')) {
+                // Still update position for homing projectiles, but skip gravity
+                position.x += velocity.dx * deltaTime
+                position.y += velocity.dy * deltaTime
+                position.z += velocity.dz * deltaTime
+                continue
+            }
+
+            // Apply gravity to velocity (creates arc trajectory) for non-homing projectiles
             velocity.dy += projectilePhysicsConfig.gravity * deltaTime
 
             // Update position based on velocity

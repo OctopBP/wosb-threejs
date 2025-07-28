@@ -460,6 +460,29 @@ export class AppOne {
                 )
             })
 
+        // Weapon system debug controls
+        const autoTargetingDebugState = { enabled: false }
+        const autoTargetingDebugController = debugFolder
+            .add(autoTargetingDebugState, 'enabled')
+            .name('Auto-Targeting Debug')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.setAutoTargetingDebug(enabled)
+                console.log(
+                    `🎯 Auto-Targeting Debug: ${enabled ? 'Enabled' : 'Disabled'}`,
+                )
+            })
+
+        const homingProjectileDebugState = { enabled: false }
+        const homingProjectileDebugController = debugFolder
+            .add(homingProjectileDebugState, 'enabled')
+            .name('Homing Projectile Debug')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.setHomingProjectileDebug(enabled)
+                console.log(
+                    `🚀 Homing Projectile Debug: ${enabled ? 'Enabled' : 'Disabled'}`,
+                )
+            })
+
         // Quick toggle all debug features
         debugFolder
             .add(
@@ -470,12 +493,16 @@ export class AppOne {
                         collisionShapesState.enabled = true
                         weaponRangeState.enabled = true
                         velocityVectorsState.enabled = true
+                        autoTargetingDebugState.enabled = true
+                        homingProjectileDebugState.enabled = true
 
                         this.gameWorld.setDebugMode(true)
                         this.gameWorld.toggleDebugShootingPoints(true)
                         this.gameWorld.toggleDebugCollisionShapes(true)
                         this.gameWorld.toggleDebugWeaponRange(true)
                         this.gameWorld.toggleDebugVelocityVectors(true)
+                        this.gameWorld.setAutoTargetingDebug(true)
+                        this.gameWorld.setHomingProjectileDebug(true)
 
                         // Update UI to reflect changes
                         debugController.updateDisplay()
@@ -483,6 +510,8 @@ export class AppOne {
                         collisionShapesController.updateDisplay()
                         weaponRangeController.updateDisplay()
                         velocityVectorsController.updateDisplay()
+                        autoTargetingDebugController.updateDisplay()
+                        homingProjectileDebugController.updateDisplay()
                         console.log('🔍 All Debug Features Enabled')
                     },
                 },
@@ -499,12 +528,16 @@ export class AppOne {
                         collisionShapesState.enabled = false
                         weaponRangeState.enabled = false
                         velocityVectorsState.enabled = false
+                        autoTargetingDebugState.enabled = false
+                        homingProjectileDebugState.enabled = false
 
                         this.gameWorld.setDebugMode(false)
                         this.gameWorld.toggleDebugShootingPoints(false)
                         this.gameWorld.toggleDebugCollisionShapes(false)
                         this.gameWorld.toggleDebugWeaponRange(false)
                         this.gameWorld.toggleDebugVelocityVectors(false)
+                        this.gameWorld.setAutoTargetingDebug(false)
+                        this.gameWorld.setHomingProjectileDebug(false)
 
                         // Update UI to reflect changes
                         debugController.updateDisplay()
@@ -512,6 +545,8 @@ export class AppOne {
                         collisionShapesController.updateDisplay()
                         weaponRangeController.updateDisplay()
                         velocityVectorsController.updateDisplay()
+                        autoTargetingDebugController.updateDisplay()
+                        homingProjectileDebugController.updateDisplay()
                         console.log('🔍 All Debug Features Disabled')
                     },
                 },

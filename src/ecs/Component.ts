@@ -136,6 +136,18 @@ export interface ProjectileComponent extends Component {
     currentLifetime: number
 }
 
+// Homing Projectile component for projectiles that track targets
+export interface HomingProjectileComponent extends Component {
+    type: 'homingProjectile'
+    targetId: number | null // entity id of the target to track
+    homingStrength: number // how aggressively it homes (0-1, where 1 is perfect tracking)
+    homingRange: number // maximum distance at which homing activates
+    updateInterval: number // how often to recalculate trajectory (in seconds)
+    lastUpdateTime: number // when trajectory was last updated
+    maxTurnRate: number // maximum turn rate in radians per second
+    targetType: 'player' | 'enemy' // what type of targets to look for
+}
+
 // Collision shape types using discriminated unions
 export type BoxCollider = {
     shape: 'box'

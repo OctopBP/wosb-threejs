@@ -1,10 +1,15 @@
 import type { Scene } from 'three'
 import { Vector3 } from 'three'
 import { createBulletCollision } from '../config/CollisionConfig'
+import {
+    bossHomingProjectilePreset,
+    createHomingProjectileConfig,
+} from '../config/HomingProjectileConfig'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
     HealthComponent,
+    HomingProjectileComponent,
     LevelComponent,
     PositionComponent,
     ProjectileComponent,
@@ -582,6 +587,19 @@ export class WeaponSystem extends System {
         // Collision component - sphere collider for bullet
         const collision = createBulletCollision()
         projectile.addComponent(collision)
+
+        // Check if the shooter is a boss and add homing component
+        const shooter = this.world.getEntity(shooterId)
+        if (shooter && shooter.hasComponent('boss')) {
+            const homingComp = createHomingProjectileConfig(
+                bossHomingProjectilePreset,
+            )
+            projectile.addComponent(homingComp)
+
+            if (this.debugAutoTargeting) {
+                console.log('🎯 Created homing projectile for boss')
+            }
+        }
 
         // Play weapon sound effect
         this.playWeaponSound()
