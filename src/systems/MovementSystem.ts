@@ -16,6 +16,11 @@ export class MovementSystem extends System {
         const entities = this.getEntities()
 
         for (const entity of entities) {
+            // Skip entities that have physics bodies - they're handled by PhysicsMovementSystem
+            if (entity.hasComponent('physicsBody')) {
+                continue
+            }
+
             const position = entity.getComponent<PositionComponent>('position')
             const speed = entity.getComponent<SpeedComponent>('speed')
             const config =

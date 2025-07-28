@@ -11,6 +11,7 @@ export class Wave1State extends BaseGameState {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld?: any,
     ): string | null {
         const waveConfig = config.wave1
 
@@ -21,6 +22,7 @@ export class Wave1State extends BaseGameState {
                     world,
                     config,
                     getRandomSpawnDistanceForWaveOrBoss(waveConfig),
+                    gameWorld,
                 )
                 gameState.wave1EnemiesSpawned++
             }
