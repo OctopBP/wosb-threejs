@@ -12,36 +12,40 @@ export const audioAssets: AudioAssets = {
             config: {
                 volume: 1,
                 loop: true,
+                priority: 'low', // Background music can load last
             },
         },
     },
 
     // Sound effects
     sfx: {
-        // Weapon shooting sound
+        // Weapon shooting sound - high priority for immediate feedback
         shoot: {
             url: 'assets/audio/sfx/Shoot.ogg',
             config: {
                 volume: 1,
                 loop: false,
+                priority: 'high', // Critical for gameplay feedback
             },
         },
 
-        // Death/explosion sound
+        // Death/explosion sound - high priority for immediate feedback
         death: {
             url: 'assets/audio/sfx/Death.ogg',
             config: {
                 volume: 1.0,
                 loop: false,
+                priority: 'high', // Critical for gameplay feedback
             },
         },
 
-        // Level up sound
+        // Level up sound - normal priority
         level_up: {
             url: 'assets/audio/sfx/LevelUp.ogg',
             config: {
                 volume: 1,
                 loop: false,
+                priority: 'normal', // Important but not critical
             },
         },
     },
@@ -85,4 +89,9 @@ export const audioSystemConfig = {
     // Performance settings
     enablePositionalAudio: true,
     enableAudioCompression: true,
+    
+    // Preloading settings
+    preloadHighPriorityFirst: true,
+    maxConcurrentLoads: 4, // Limit concurrent downloads
+    loadTimeout: 10000, // 10 seconds timeout per asset
 } as const
