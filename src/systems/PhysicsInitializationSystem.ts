@@ -33,10 +33,22 @@ export class PhysicsInitializationSystem extends System {
             // Skip if already initialized
             if (physicsBody.bodyHandle !== -1) continue
 
+            // Validate collision data
+            if (!collision.collider || typeof collision.collider.shape !== 'string') {
+                console.warn('Invalid collision data for entity:', entity.id)
+                continue
+            }
+
             // Create physics body based on collision shape
             let bodyData: { bodyHandle: number; colliderHandle: number } | null = null
 
             if (collision.collider.shape === 'box') {
+                // Validate box dimensions
+                if (collision.collider.width <= 0 || collision.collider.height <= 0 || collision.collider.depth <= 0) {
+                    console.warn('Invalid box dimensions for entity:', entity.id, collision.collider)
+                    continue
+                }
+
                 bodyData = this.physicsSystem.createBoxBody(
                     { x: position.x, y: position.y, z: position.z },
                     {

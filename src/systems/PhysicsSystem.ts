@@ -18,14 +18,19 @@ export class PhysicsSystem extends System {
     async init(): Promise<void> {
         if (this.initialized) return
 
-        // Initialize Rapier (needed for the compat version)
-        await RAPIER.init()
+        try {
+            // Initialize Rapier (needed for the compat version)
+            await RAPIER.init()
 
-        // Create physics world with gravity
-        const gravity = { x: 0.0, y: 0.0, z: 0.0 } // No gravity for ship movement
-        this.physicsWorld = new RAPIER.World(gravity)
+            // Create physics world with gravity
+            const gravity = { x: 0.0, y: 0.0, z: 0.0 } // No gravity for ship movement
+            this.physicsWorld = new RAPIER.World(gravity)
 
-        this.initialized = true
+            this.initialized = true
+        } catch (error) {
+            console.error('Failed to initialize physics system:', error)
+            throw error
+        }
     }
 
     update(deltaTime: number): void {
@@ -34,8 +39,28 @@ export class PhysicsSystem extends System {
         // Apply forces to physics bodies
         this.applyForces()
 
-        // Step the physics world
-        this.physicsWorld.step()
+        // Only step physics world if we have active bodies
+        const activeBodies = this.world.getEntitiesWithComponents(['physicsBody', 'position'])
+            .filter(entity => {
+                const physicsBody = entity.getComponent<PhysicsBodyComponent>('physicsBody')
+                return physicsBody && physicsBody.bodyHandle !== -1
+            })
+
+        if (activeBodies.length > 0) {
+            // Step the physics world with proper timestep
+            try {
+                // Ensure we have a valid timestep (fallback to 16ms if deltaTime is invalid)
+                const timestep = (deltaTime && isFinite(deltaTime) && deltaTime > 0) 
+                    ? Math.min(deltaTime, 0.1) 
+                    : 1/60; // 60 FPS fallback
+                
+                this.physicsWorld.timestep = timestep
+                this.physicsWorld.step()
+            } catch (error) {
+                console.error('Physics step error:', error)
+                return
+            }
+        }
 
         // Synchronize physics positions back to ECS components
         this.synchronizePositions()
@@ -57,26 +82,37 @@ export class PhysicsSystem extends System {
             const physicsForce = entity.getComponent<PhysicsForceComponent>('physicsForce')
 
             if (!physicsBody || !physicsForce) continue
+            if (physicsBody.bodyHandle === -1) continue // Skip uninitialized bodies
 
             const body = this.physicsWorld.getRigidBody(physicsBody.bodyHandle)
             if (!body) continue
 
-            // Apply linear forces
-            if (physicsForce.forceX !== 0 || physicsForce.forceY !== 0 || physicsForce.forceZ !== 0) {
-                body.addForce({
-                    x: physicsForce.forceX,
-                    y: physicsForce.forceY,
-                    z: physicsForce.forceZ,
-                }, true)
-            }
+            try {
+                // Apply linear forces
+                if (physicsForce.forceX !== 0 || physicsForce.forceY !== 0 || physicsForce.forceZ !== 0) {
+                    // Validate forces are finite
+                    if (isFinite(physicsForce.forceX) && isFinite(physicsForce.forceY) && isFinite(physicsForce.forceZ)) {
+                        body.addForce({
+                            x: physicsForce.forceX,
+                            y: physicsForce.forceY,
+                            z: physicsForce.forceZ,
+                        }, true)
+                    }
+                }
 
-            // Apply torque
-            if (physicsForce.torqueX !== 0 || physicsForce.torqueY !== 0 || physicsForce.torqueZ !== 0) {
-                body.addTorque({
-                    x: physicsForce.torqueX,
-                    y: physicsForce.torqueY,
-                    z: physicsForce.torqueZ,
-                }, true)
+                // Apply torque
+                if (physicsForce.torqueX !== 0 || physicsForce.torqueY !== 0 || physicsForce.torqueZ !== 0) {
+                    // Validate torques are finite
+                    if (isFinite(physicsForce.torqueX) && isFinite(physicsForce.torqueY) && isFinite(physicsForce.torqueZ)) {
+                        body.addTorque({
+                            x: physicsForce.torqueX,
+                            y: physicsForce.torqueY,
+                            z: physicsForce.torqueZ,
+                        }, true)
+                    }
+                }
+            } catch (error) {
+                console.error('Error applying forces to body:', error)
             }
         }
     }
@@ -94,25 +130,34 @@ export class PhysicsSystem extends System {
             const position = entity.getComponent<PositionComponent>('position')
 
             if (!physicsBody || !position) continue
+            if (physicsBody.bodyHandle === -1) continue // Skip uninitialized bodies
 
             const body = this.physicsWorld.getRigidBody(physicsBody.bodyHandle)
             if (!body) continue
 
-            // Get physics body position and rotation
-            const translation = body.translation()
-            const rotation = body.rotation()
+            try {
+                // Get physics body position and rotation
+                const translation = body.translation()
+                const rotation = body.rotation()
 
-            // Update position component
-            position.x = translation.x
-            position.y = translation.y
-            position.z = translation.z
+                // Validate translation values
+                if (isFinite(translation.x) && isFinite(translation.y) && isFinite(translation.z)) {
+                    position.x = translation.x
+                    position.y = translation.y
+                    position.z = translation.z
+                }
 
-            // Convert quaternion to Euler angles
-            // For ships, we primarily care about Y rotation (yaw)
-            const euler = this.quaternionToEuler(rotation)
-            position.rotationX = euler.x
-            position.rotationY = euler.y
-            position.rotationZ = euler.z
+                // Convert quaternion to Euler angles
+                // For ships, we primarily care about Y rotation (yaw)
+                const euler = this.quaternionToEuler(rotation)
+                if (isFinite(euler.x) && isFinite(euler.y) && isFinite(euler.z)) {
+                    position.rotationX = euler.x
+                    position.rotationY = euler.y
+                    position.rotationZ = euler.z
+                }
+            } catch (error) {
+                console.error('Error synchronizing position for body:', error)
+            }
         }
     }
 
@@ -164,34 +209,50 @@ export class PhysicsSystem extends System {
     ): { bodyHandle: number; colliderHandle: number } | null {
         if (!this.initialized || !this.physicsWorld) return null
 
-        // Create rigid body
-        const rigidBodyDesc = isStatic 
-            ? RAPIER.RigidBodyDesc.fixed() 
-            : RAPIER.RigidBodyDesc.dynamic()
-
-        rigidBodyDesc.setTranslation(position.x, position.y, position.z)
+        // Validate input parameters
+        if (!isFinite(position.x) || !isFinite(position.y) || !isFinite(position.z)) {
+            console.error('Invalid position for physics body:', position)
+            return null
+        }
         
-        if (!isStatic) {
-            // Set mass and damping for dynamic bodies
-            rigidBodyDesc.setAdditionalMass(mass)
-            rigidBodyDesc.setLinearDamping(0.5) // Damping for smooth movement
-            rigidBodyDesc.setAngularDamping(0.8) // Higher angular damping for stability
+        if (size.width <= 0 || size.height <= 0 || size.depth <= 0) {
+            console.error('Invalid size for physics body:', size)
+            return null
         }
 
-        const rigidBody = this.physicsWorld.createRigidBody(rigidBodyDesc)
+        try {
+            // Create rigid body
+            const rigidBodyDesc = isStatic 
+                ? RAPIER.RigidBodyDesc.fixed() 
+                : RAPIER.RigidBodyDesc.dynamic()
 
-        // Create box collider
-        const colliderDesc = RAPIER.ColliderDesc.cuboid(
-            size.width / 2,
-            size.height / 2,
-            size.depth / 2,
-        )
+            rigidBodyDesc.setTranslation(position.x, position.y, position.z)
+            
+            if (!isStatic) {
+                // Set mass and damping for dynamic bodies
+                rigidBodyDesc.setAdditionalMass(mass)
+                rigidBodyDesc.setLinearDamping(0.5) // Damping for smooth movement
+                rigidBodyDesc.setAngularDamping(0.8) // Higher angular damping for stability
+            }
 
-        const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody)
+            const rigidBody = this.physicsWorld.createRigidBody(rigidBodyDesc)
 
-        return {
-            bodyHandle: rigidBody.handle,
-            colliderHandle: collider.handle,
+            // Create box collider
+            const colliderDesc = RAPIER.ColliderDesc.cuboid(
+                size.width / 2,
+                size.height / 2,
+                size.depth / 2,
+            )
+
+            const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody)
+
+            return {
+                bodyHandle: rigidBody.handle,
+                colliderHandle: collider.handle,
+            }
+        } catch (error) {
+            console.error('Error creating physics body:', error)
+            return null
         }
     }
 
