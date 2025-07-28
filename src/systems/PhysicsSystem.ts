@@ -57,6 +57,19 @@ export class PhysicsSystem extends System {
 
             if (!physicsBody?.body || !position) continue
 
+            // Handle initial rotation setup
+            if ((physicsBody.body as any).initialRotationY !== undefined) {
+                const initialRotY = (physicsBody.body as any).initialRotationY
+                // Set quaternion components directly for initial rotation
+                const halfAngle = initialRotY * 0.5
+                physicsBody.body.quaternion.y = Math.sin(halfAngle)
+                physicsBody.body.quaternion.w = Math.cos(halfAngle)
+                physicsBody.body.quaternion.x = 0
+                physicsBody.body.quaternion.z = 0
+                // Clear the flag so we don't do this again
+                delete (physicsBody.body as any).initialRotationY
+            }
+
             // Update entity position from physics body
             position.x = physicsBody.body.position.x
             position.y = physicsBody.body.position.y
@@ -112,18 +125,15 @@ export class PhysicsSystem extends System {
         body.addShape(shape)
         body.position.set(position.x, position.y, position.z)
 
-        // Set initial rotation (set Y rotation directly)
-        body.quaternion
-            .set(
-                0,
-                Math.sin(position.rotationY / 2),
-                0,
-                Math.cos(position.rotationY / 2),
-            )(
-                // Add to physics world
-                this.physicsWorld as any,
-            )
-            .add(body)
+        // Set initial rotation using angle property if available, or leave default
+        if (position.rotationY !== 0) {
+            // For cannon.js 0.6.2, we'll set the rotation in the physics sync instead
+            // Store the initial rotation for later use
+            ;(body as any).initialRotationY = position.rotationY
+        }
+
+        // Add to physics world
+        ;(this.physicsWorld as any).add(body)
 
         // Add physics component to entity
         entity.addComponent({
