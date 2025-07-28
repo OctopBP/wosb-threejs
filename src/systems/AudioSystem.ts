@@ -37,6 +37,7 @@ export class AudioSystem extends System {
     private isInitialized = false
     private currentMusic: Audio | null = null
     private audioMuted = false
+    private preloadedBuffers: Map<string, AudioBuffer> | null = null
 
     constructor(world: World) {
         super(world, []) // No required components for audio system
@@ -80,6 +81,17 @@ export class AudioSystem extends System {
     }
 
     /**
+     * Set preloaded audio buffers from AudioPreloader
+     */
+    setPreloadedBuffers(preloadedBuffers: Map<string, AudioBuffer>): void {
+        this.preloadedBuffers = preloadedBuffers
+        this.loadedBuffers = new Map(preloadedBuffers)
+        console.log(
+            `🎵 AudioSystem: Set ${preloadedBuffers.size} preloaded audio buffers`,
+        )
+    }
+
+    /**
      * Load all registered audio assets
      */
     async loadAssets(): Promise<void> {
@@ -90,6 +102,16 @@ export class AudioSystem extends System {
             return
         }
 
+        // If we have preloaded buffers, use those instead of loading again
+        if (this.preloadedBuffers && this.preloadedBuffers.size > 0) {
+            this.loadedBuffers = new Map(this.preloadedBuffers)
+            console.log(
+                `🎵 Using ${this.preloadedBuffers.size} preloaded audio assets`,
+            )
+            return
+        }
+
+        // Fallback to original loading method if no preloaded buffers
         const loadPromises: Promise<void>[] = []
 
         // Load all asset types
