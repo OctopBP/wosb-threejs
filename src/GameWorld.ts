@@ -45,6 +45,8 @@ import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
+import { PhysicsInitializationSystem } from './systems/PhysicsInitializationSystem'
+import { PhysicsSystem } from './systems/PhysicsSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProceduralTextureSystem } from './systems/ProceduralTextureSystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
@@ -59,6 +61,8 @@ export class GameWorld {
     private world: World
     private inputSystem: InputSystem
     private virtualJoystickSystem: VirtualJoystickSystem
+    private physicsSystem: PhysicsSystem
+    private physicsInitializationSystem: PhysicsInitializationSystem
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
@@ -107,6 +111,10 @@ export class GameWorld {
             this.world,
             canvas,
         )
+        this.physicsSystem = new PhysicsSystem(this.world)
+        this.physicsInitializationSystem = new PhysicsInitializationSystem(
+            this.world,
+        )
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
@@ -147,6 +155,7 @@ export class GameWorld {
         this.inputSystem.setVirtualJoystickSystem(this.virtualJoystickSystem)
         this.weaponSystem.setAudioSystem(this.audioSystem)
         this.weaponSystem.setParticleSystem(this.particleSystem)
+        this.physicsInitializationSystem.setPhysicsSystem(this.physicsSystem)
         this.collisionSystem.setAudioSystem(this.audioSystem)
         this.collisionSystem.setParticleSystem(this.particleSystem)
         this.collisionSystem.setDeathAnimationSystem(this.deathAnimationSystem)
@@ -163,10 +172,12 @@ export class GameWorld {
         this.world.addSystem(this.virtualJoystickSystem) //Handle virtual joystick UI
         this.world.addSystem(this.inputSystem) //Handle input events and process to direction
         this.world.addSystem(this.gameStateSystem) //Manage game state and spawn enemies
+        this.world.addSystem(this.physicsInitializationSystem) //Setup physics bodies for new entities
         this.world.addSystem(this.enemyAISystem) //Update enemy AI (movement and targeting)
         this.world.addSystem(this.rotationSystem) //Handle rotation
         this.world.addSystem(this.accelerationSystem) //Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
+        this.world.addSystem(this.movementSystem) //Apply forces to physics bodies
+        this.world.addSystem(this.physicsSystem) //Update physics simulation
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
         this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity and handle homing

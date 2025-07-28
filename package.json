@@ -26,7 +26,9 @@
         "rollup-plugin-visualizer": "^5.14.0",
         "terser": "^5.43.1",
         "typescript": "^5.8.3",
-        "vite": "^5.0.11"
+        "vite": "^5.0.11",
+        "vite-plugin-top-level-await": "^1.6.0",
+        "vite-plugin-wasm": "^3.5.0"
     },
     "lint-staged": {
         "*.{ts,js,json}": [
@@ -34,6 +36,7 @@
         ]
     },
     "dependencies": {
+        "@dimforge/rapier3d": "^0.18.0",
         "@types/three": "^0.170.0",
         "lil-gui": "^0.20.0",
         "three": "^0.170.0"
