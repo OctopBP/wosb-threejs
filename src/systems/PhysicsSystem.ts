@@ -4,6 +4,7 @@ import type {
     PhysicsForceComponent,
     PositionComponent,
 } from '../ecs/Component'
+import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
@@ -36,17 +37,13 @@ export class PhysicsSystem extends System {
     update(deltaTime: number): void {
         if (!this.initialized || !this.physicsWorld) return
 
-        // Apply forces to physics bodies
-        this.applyForces()
+        // Cache body handles to avoid accessing them during physics step
+        const activeBodyHandles = this.cacheActiveBodyHandles()
 
-        // Only step physics world if we have active bodies
-        const activeBodies = this.world.getEntitiesWithComponents(['physicsBody', 'position'])
-            .filter(entity => {
-                const physicsBody = entity.getComponent<PhysicsBodyComponent>('physicsBody')
-                return physicsBody && physicsBody.bodyHandle !== -1
-            })
+        if (activeBodyHandles.length > 0) {
+            // Apply forces to physics bodies (before stepping)
+            this.applyForces()
 
-        if (activeBodies.length > 0) {
             // Step the physics world with proper timestep
             try {
                 // Ensure we have a valid timestep (fallback to 16ms if deltaTime is invalid)
@@ -60,23 +57,51 @@ export class PhysicsSystem extends System {
                 console.error('Physics step error:', error)
                 return
             }
+
+            // Synchronize physics positions back to ECS components (after stepping)
+            this.synchronizePositions()
+
+            // Clear forces for next frame
+            this.clearForces()
+        }
+    }
+
+    private cacheActiveBodyHandles(): number[] {
+        if (!this.physicsWorld) return []
+        
+        const entities = this.world.getEntitiesWithComponents(['physicsBody', 'position'])
+        const activeHandles: number[] = []
+
+        for (const entity of entities) {
+            const physicsBody = entity.getComponent<PhysicsBodyComponent>('physicsBody')
+            if (physicsBody && physicsBody.bodyHandle !== -1) {
+                // Verify the body actually exists in the physics world
+                const body = this.physicsWorld.getRigidBody(physicsBody.bodyHandle)
+                if (body) {
+                    activeHandles.push(physicsBody.bodyHandle)
+                }
+            }
         }
 
-        // Synchronize physics positions back to ECS components
-        this.synchronizePositions()
-
-        // Clear forces for next frame
-        this.clearForces()
+        return activeHandles
     }
 
     private applyForces(): void {
         if (!this.physicsWorld) return
         
+        // Collect force data before applying to avoid iterator invalidation
+        const forceData: Array<{
+            bodyHandle: number,
+            forces: { x: number, y: number, z: number },
+            torques: { x: number, y: number, z: number }
+        }> = []
+
         const entities = this.world.getEntitiesWithComponents([
             'physicsBody',
             'physicsForce',
         ])
 
+        // First pass: collect all force data
         for (const entity of entities) {
             const physicsBody = entity.getComponent<PhysicsBodyComponent>('physicsBody')
             const physicsForce = entity.getComponent<PhysicsForceComponent>('physicsForce')
@@ -84,32 +109,41 @@ export class PhysicsSystem extends System {
             if (!physicsBody || !physicsForce) continue
             if (physicsBody.bodyHandle === -1) continue // Skip uninitialized bodies
 
-            const body = this.physicsWorld.getRigidBody(physicsBody.bodyHandle)
-            if (!body) continue
+            // Validate forces are finite
+            const validForces = isFinite(physicsForce.forceX) && isFinite(physicsForce.forceY) && isFinite(physicsForce.forceZ)
+            const validTorques = isFinite(physicsForce.torqueX) && isFinite(physicsForce.torqueY) && isFinite(physicsForce.torqueZ)
 
-            try {
-                // Apply linear forces
-                if (physicsForce.forceX !== 0 || physicsForce.forceY !== 0 || physicsForce.forceZ !== 0) {
-                    // Validate forces are finite
-                    if (isFinite(physicsForce.forceX) && isFinite(physicsForce.forceY) && isFinite(physicsForce.forceZ)) {
-                        body.addForce({
-                            x: physicsForce.forceX,
-                            y: physicsForce.forceY,
-                            z: physicsForce.forceZ,
-                        }, true)
+            if (validForces || validTorques) {
+                forceData.push({
+                    bodyHandle: physicsBody.bodyHandle,
+                    forces: {
+                        x: validForces ? physicsForce.forceX : 0,
+                        y: validForces ? physicsForce.forceY : 0,
+                        z: validForces ? physicsForce.forceZ : 0,
+                    },
+                    torques: {
+                        x: validTorques ? physicsForce.torqueX : 0,
+                        y: validTorques ? physicsForce.torqueY : 0,
+                        z: validTorques ? physicsForce.torqueZ : 0,
                     }
+                })
+            }
+        }
+
+        // Second pass: apply forces safely
+        for (const data of forceData) {
+            try {
+                const body = this.physicsWorld.getRigidBody(data.bodyHandle)
+                if (!body) continue
+
+                // Apply linear forces
+                if (data.forces.x !== 0 || data.forces.y !== 0 || data.forces.z !== 0) {
+                    body.addForce(data.forces, true)
                 }
 
                 // Apply torque
-                if (physicsForce.torqueX !== 0 || physicsForce.torqueY !== 0 || physicsForce.torqueZ !== 0) {
-                    // Validate torques are finite
-                    if (isFinite(physicsForce.torqueX) && isFinite(physicsForce.torqueY) && isFinite(physicsForce.torqueZ)) {
-                        body.addTorque({
-                            x: physicsForce.torqueX,
-                            y: physicsForce.torqueY,
-                            z: physicsForce.torqueZ,
-                        }, true)
-                    }
+                if (data.torques.x !== 0 || data.torques.y !== 0 || data.torques.z !== 0) {
+                    body.addTorque(data.torques, true)
                 }
             } catch (error) {
                 console.error('Error applying forces to body:', error)
@@ -120,43 +154,64 @@ export class PhysicsSystem extends System {
     private synchronizePositions(): void {
         if (!this.physicsWorld) return
         
+        // Collect position data first to avoid iterator issues
+        const positionUpdates: Array<{
+            entity: Entity,
+            translation: { x: number, y: number, z: number },
+            rotation: { x: number, y: number, z: number }
+        }> = []
+
         const entities = this.world.getEntitiesWithComponents([
             'physicsBody',
             'position',
         ])
 
+        // First pass: collect position data from physics bodies
         for (const entity of entities) {
             const physicsBody = entity.getComponent<PhysicsBodyComponent>('physicsBody')
-            const position = entity.getComponent<PositionComponent>('position')
 
-            if (!physicsBody || !position) continue
+            if (!physicsBody) continue
             if (physicsBody.bodyHandle === -1) continue // Skip uninitialized bodies
 
-            const body = this.physicsWorld.getRigidBody(physicsBody.bodyHandle)
-            if (!body) continue
-
             try {
+                const body = this.physicsWorld.getRigidBody(physicsBody.bodyHandle)
+                if (!body) continue
+
                 // Get physics body position and rotation
                 const translation = body.translation()
                 const rotation = body.rotation()
 
                 // Validate translation values
                 if (isFinite(translation.x) && isFinite(translation.y) && isFinite(translation.z)) {
-                    position.x = translation.x
-                    position.y = translation.y
-                    position.z = translation.z
-                }
-
-                // Convert quaternion to Euler angles
-                // For ships, we primarily care about Y rotation (yaw)
-                const euler = this.quaternionToEuler(rotation)
-                if (isFinite(euler.x) && isFinite(euler.y) && isFinite(euler.z)) {
-                    position.rotationX = euler.x
-                    position.rotationY = euler.y
-                    position.rotationZ = euler.z
+                    // Convert quaternion to Euler angles
+                    const euler = this.quaternionToEuler(rotation)
+                    if (isFinite(euler.x) && isFinite(euler.y) && isFinite(euler.z)) {
+                        positionUpdates.push({
+                            entity,
+                            translation: { x: translation.x, y: translation.y, z: translation.z },
+                            rotation: { x: euler.x, y: euler.y, z: euler.z }
+                        })
+                    }
                 }
             } catch (error) {
-                console.error('Error synchronizing position for body:', error)
+                console.error('Error reading position from physics body:', error)
+            }
+        }
+
+        // Second pass: apply position updates to ECS components
+        for (const update of positionUpdates) {
+            try {
+                const position = update.entity.getComponent<PositionComponent>('position')
+                if (position) {
+                    position.x = update.translation.x
+                    position.y = update.translation.y
+                    position.z = update.translation.z
+                    position.rotationX = update.rotation.x
+                    position.rotationY = update.rotation.y
+                    position.rotationZ = update.rotation.z
+                }
+            } catch (error) {
+                console.error('Error updating ECS position:', error)
             }
         }
     }
@@ -259,20 +314,64 @@ export class PhysicsSystem extends System {
     removePhysicsBody(bodyHandle: number, colliderHandle: number): void {
         if (!this.initialized || !this.physicsWorld) return
 
-        const body = this.physicsWorld.getRigidBody(bodyHandle)
-        const collider = this.physicsWorld.getCollider(colliderHandle)
+        try {
+            // Remove collider first
+            if (colliderHandle !== -1) {
+                const collider = this.physicsWorld.getCollider(colliderHandle)
+                if (collider) {
+                    this.physicsWorld.removeCollider(collider, true)
+                }
+            }
 
-        if (collider) {
-            this.physicsWorld.removeCollider(collider, true)
+            // Then remove the rigid body
+            if (bodyHandle !== -1) {
+                const body = this.physicsWorld.getRigidBody(bodyHandle)
+                if (body) {
+                    this.physicsWorld.removeRigidBody(body)
+                }
+            }
+        } catch (error) {
+            console.error('Error removing physics body:', error)
         }
-        if (body) {
-            this.physicsWorld.removeRigidBody(body)
-        }
+    }
+
+    // Clean up physics bodies for removed entities
+    cleanupRemovedEntities(): void {
+        if (!this.initialized || !this.physicsWorld) return
+
+        const entities = this.world.getEntitiesWithComponents(['physicsBody'])
+        const validEntityIds = new Set(entities.map(e => e.id))
+        
+        // Track which bodies should be removed (this is just a conceptual example)
+        // In a real implementation, you'd need a way to track removed entities
+        
+        // For now, just validate that all physics bodies have corresponding entities
+        entities.forEach(entity => {
+            const physicsBody = entity.getComponent<PhysicsBodyComponent>('physicsBody')
+            if (physicsBody && physicsBody.bodyHandle !== -1) {
+                const body = this.physicsWorld!.getRigidBody(physicsBody.bodyHandle)
+                if (!body) {
+                    // Physics body was removed but ECS component still references it
+                    physicsBody.bodyHandle = -1
+                    physicsBody.colliderHandle = -1
+                }
+            }
+        })
     }
 
     dispose(): void {
         if (this.physicsWorld) {
-            this.physicsWorld.free()
+            try {
+                // Clear all bodies before disposing the world
+                this.physicsWorld.bodies.forEach(body => {
+                    this.physicsWorld!.removeRigidBody(body)
+                })
+                this.physicsWorld.free()
+            } catch (error) {
+                console.error('Error disposing physics world:', error)
+            }
+            this.physicsWorld = null
         }
+        this.initialized = false
     }
 }
