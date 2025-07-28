@@ -1,3 +1,4 @@
+import * as CANNON from 'cannon'
 import type {
     InputComponent,
     MovementConfigComponent,
