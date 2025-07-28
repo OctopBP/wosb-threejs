@@ -41,7 +41,7 @@ import { DeathAnimationSystem } from './systems/DeathAnimationSystem'
 import { DebugSystem } from './systems/DebugSystem'
 import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
-import { HomingProjectileSystem } from './systems/HomingProjectileSystem'
+
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
@@ -65,7 +65,6 @@ export class GameWorld {
     private movementSystem: MovementSystem
     private waveRockingSystem: WaveRockingSystem
     private weaponSystem: WeaponSystem
-    private homingProjectileSystem: HomingProjectileSystem
     private projectileMovementSystem: ProjectileMovementSystem
     private projectileSystem: ProjectileSystem
     private collisionSystem: CollisionSystem
@@ -114,7 +113,6 @@ export class GameWorld {
         this.movementSystem = new MovementSystem(this.world)
         this.waveRockingSystem = new WaveRockingSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
-        this.homingProjectileSystem = new HomingProjectileSystem(this.world)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
         this.projectileSystem = new ProjectileSystem(this.world)
         this.collisionSystem = new CollisionSystem(this.world)
@@ -172,8 +170,7 @@ export class GameWorld {
         this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
-        this.world.addSystem(this.homingProjectileSystem) // Handle homing projectile targeting
-        this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity
+        this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity and handle homing
         this.world.addSystem(this.projectileSystem) // Update projectile lifetimes
         this.world.addSystem(this.collisionSystem) // Check collisions and apply damage
         this.world.addSystem(this.barrelSpawnSystem) // Spawn barrels around enemies
@@ -439,7 +436,7 @@ export class GameWorld {
 
     // Method to enable/disable homing projectile debug logging
     setHomingProjectileDebug(enabled: boolean): void {
-        this.homingProjectileSystem.setHomingDebug(enabled)
+        this.projectileMovementSystem.setHomingDebug(enabled)
     }
 
     // Debug visualization methods

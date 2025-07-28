@@ -1,15 +1,11 @@
 import type { Scene } from 'three'
 import { Vector3 } from 'three'
 import { createBulletCollision } from '../config/CollisionConfig'
-import {
-    bossHomingProjectilePreset,
-    createHomingProjectileConfig,
-} from '../config/HomingProjectileConfig'
+
 import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
     HealthComponent,
-    HomingProjectileComponent,
     LevelComponent,
     PositionComponent,
     ProjectileComponent,
@@ -463,6 +459,16 @@ export class WeaponSystem extends System {
             ownerId: shooterId,
             maxLifetime: weapon.range / weapon.projectileSpeed + 2.0, // Add extra time for arc trajectory
             currentLifetime: 0,
+            // Add homing properties if this is a homing projectile
+            ...(weapon.projectileType === 'homing' && {
+                isHoming: true,
+                targetId: null,
+                homingStrength: weapon.homingStrength || 0.7,
+                homingRange: weapon.homingRange || 15.0,
+                lastHomingUpdate: 0,
+                homingUpdateInterval: weapon.homingUpdateInterval || 0.1,
+                homingTurnRate: weapon.homingTurnRate || Math.PI * 1.5,
+            }),
         }
         projectile.addComponent(projectileComp)
 
@@ -570,6 +576,16 @@ export class WeaponSystem extends System {
             ownerId: shooterId,
             maxLifetime: weapon.range / weapon.projectileSpeed + 2.0, // Add extra time for arc trajectory
             currentLifetime: 0,
+            // Add homing properties if this is a homing projectile
+            ...(weapon.projectileType === 'homing' && {
+                isHoming: true,
+                targetId: null,
+                homingStrength: weapon.homingStrength || 0.7,
+                homingRange: weapon.homingRange || 15.0,
+                lastHomingUpdate: 0,
+                homingUpdateInterval: weapon.homingUpdateInterval || 0.1,
+                homingTurnRate: weapon.homingTurnRate || Math.PI * 1.5,
+            }),
         }
         projectile.addComponent(projectileComp)
 
@@ -587,19 +603,6 @@ export class WeaponSystem extends System {
         // Collision component - sphere collider for bullet
         const collision = createBulletCollision()
         projectile.addComponent(collision)
-
-        // Check if the shooter is a boss and add homing component
-        const shooter = this.world.getEntity(shooterId)
-        if (shooter && shooter.hasComponent('boss')) {
-            const homingComp = createHomingProjectileConfig(
-                bossHomingProjectilePreset,
-            )
-            projectile.addComponent(homingComp)
-
-            if (this.debugAutoTargeting) {
-                console.log('🎯 Created homing projectile for boss')
-            }
-        }
 
         // Play weapon sound effect
         this.playWeaponSound()
