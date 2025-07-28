@@ -1,5 +1,6 @@
 import RAPIER from '@dimforge/rapier3d-compat'
 import type {
+    MovementConfigComponent,
     PhysicsBodyComponent,
     PhysicsForceComponent,
     PositionComponent,
@@ -72,6 +73,9 @@ export class PhysicsSystem extends System {
         if (activeBodyHandles.length > 0) {
             // Apply forces to physics bodies (before stepping)
             this.applyForces()
+
+            // Enforce max speed limits before physics step
+            this.enforceMaxSpeeds()
 
             // Step the physics world with proper timestep
             try {
@@ -207,7 +211,7 @@ export class PhysicsSystem extends System {
             }
         }
 
-        // Second pass: apply forces safely
+        // Second pass: apply forces safely and enforce max speeds
         for (const data of forceData) {
             try {
                 const body = this.physicsWorld.getRigidBody(data.bodyHandle)
@@ -224,6 +228,59 @@ export class PhysicsSystem extends System {
                 }
             } catch (error) {
                 console.error('Error applying forces to body:', error)
+            }
+        }
+    }
+
+    // Enforce max speed limits for all physics bodies
+    private enforceMaxSpeeds(): void {
+        if (!this.physicsWorld) return
+
+        const entities = this.world.getEntitiesWithComponents([
+            'physicsBody',
+            'movementConfig',
+        ])
+
+        for (const entity of entities) {
+            const physicsBody = entity.getComponent<PhysicsBodyComponent>('physicsBody')
+            const config = entity.getComponent<MovementConfigComponent>('movementConfig')
+
+            if (!physicsBody || !config) continue
+            if (physicsBody.bodyHandle === -1) continue
+
+            try {
+                const body = this.physicsWorld.getRigidBody(physicsBody.bodyHandle)
+                if (!body) continue
+
+                // Get current velocity
+                const velocity = body.linvel()
+                const angularVelocity = body.angvel()
+
+                // Check linear velocity
+                const currentSpeed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z)
+                if (currentSpeed > config.maxSpeed) {
+                    // Scale down velocity to max speed
+                    const scale = config.maxSpeed / currentSpeed
+                    body.setLinvel({
+                        x: velocity.x * scale,
+                        y: velocity.y * scale,
+                        z: velocity.z * scale,
+                    }, true)
+                }
+
+                // Check angular velocity (Y-axis for ship turning)
+                const currentAngularSpeed = Math.abs(angularVelocity.y)
+                if (currentAngularSpeed > config.maxRotationSpeed) {
+                    // Scale down angular velocity to max rotation speed
+                    const angularScale = config.maxRotationSpeed / currentAngularSpeed
+                    body.setAngvel({
+                        x: angularVelocity.x,
+                        y: angularVelocity.y * angularScale,
+                        z: angularVelocity.z,
+                    }, true)
+                }
+            } catch (error) {
+                console.error('Error enforcing max speeds:', error)
             }
         }
     }
