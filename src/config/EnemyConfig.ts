@@ -21,10 +21,10 @@ export interface EnemySpawningConfig {
 // Enemy movement configuration preset
 export const enemyMovementPreset: MovementConfigPreset = {
     maxSpeed: 3.5, // Faster than player's initial speed (2.5)
-    accelerationForce: 8.0, // Quick acceleration to catch player
+    accelerationForce: 1.2, // Reduced for physics-based movement
     decelerationForce: 3.0,
-    rotationAcceleration: 1.0, // Good rotation acceleration for combat
-    maxRotationSpeed: 5.0, // Good max rotation speed for responsive movement
+    rotationAcceleration: 0.4, // Reduced for smoother enemy movement
+    maxRotationSpeed: 2.5, // Reduced max rotation speed
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,
     linearDampening: 0.95,
