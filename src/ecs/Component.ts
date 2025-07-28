@@ -386,3 +386,38 @@ export interface FoamTrailComponent extends Component {
     type: 'foamTrail'
     size: number
 }
+
+// Physics component for Rapier rigid body integration
+export interface PhysicsComponent extends Component {
+    type: 'physics'
+    rigidBodyHandle: number // Rapier rigid body handle
+    rigidBodyType: 'dynamic' | 'kinematic' | 'fixed'
+    mass?: number
+    restitution?: number
+    friction?: number
+    linearDamping?: number
+    angularDamping?: number
+}
+
+// Physics Force component for applying forces to rigid bodies
+export interface PhysicsForceComponent extends Component {
+    type: 'physicsForce'
+    force: { x: number; y: number; z: number }
+    torque: { x: number; y: number; z: number }
+    applyAtCenterOfMass: boolean
+}
+
+// Physics Collider component for Rapier collider integration
+export interface PhysicsColliderComponent extends Component {
+    type: 'physicsCollider'
+    colliderHandle: number // Rapier collider handle
+    colliderType: 'box' | 'sphere' | 'capsule' | 'cylinder'
+    dimensions: {
+        width?: number
+        height?: number
+        depth?: number
+        radius?: number
+    }
+    isSensor: boolean // If true, generates collision events but doesn't affect physics
+    offset?: { x: number; y: number; z: number }
+}

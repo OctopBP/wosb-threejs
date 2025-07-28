@@ -28,6 +28,7 @@ import type {
     RenderableComponent,
     RotationSpeedComponent,
     SpeedComponent,
+    VelocityComponent,
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
 export function createEnemyShip(
@@ -98,6 +99,17 @@ export function createEnemyShip(
         type: 'speed',
         currentSpeed: 0,
         maxSpeed: movementConfig.maxSpeed,
+    })
+
+    // Velocity component - for physics integration
+    entity.addComponent<VelocityComponent>({
+        type: 'velocity',
+        dx: 0,
+        dy: 0,
+        dz: 0,
+        angularVelocityX: 0,
+        angularVelocityY: 0,
+        angularVelocityZ: 0,
     })
 
     entity.addComponent<RotationSpeedComponent>({
@@ -213,6 +225,17 @@ export function createBossShip(
         type: 'speed',
         currentSpeed: 0,
         maxSpeed: bossMovementConfig.maxSpeed,
+    })
+
+    // Velocity component - for physics integration
+    entity.addComponent<VelocityComponent>({
+        type: 'velocity',
+        dx: 0,
+        dy: 0,
+        dz: 0,
+        angularVelocityX: 0,
+        angularVelocityY: 0,
+        angularVelocityZ: 0,
     })
 
     entity.addComponent<RotationSpeedComponent>({

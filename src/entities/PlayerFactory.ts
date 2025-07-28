@@ -20,6 +20,7 @@ import type {
     RenderableComponent,
     RotationSpeedComponent,
     SpeedComponent,
+    VelocityComponent,
     WeaponComponent,
 } from '../ecs/Component'
 import { Entity } from '../ecs/Entity'
@@ -47,6 +48,18 @@ export function createPlayerShip(
         maxSpeed: 2.5, // Will be overridden by movement config, but good default
     }
     entity.addComponent(speed)
+
+    // Velocity component - for physics integration
+    const velocity: VelocityComponent = {
+        type: 'velocity',
+        dx: 0,
+        dy: 0,
+        dz: 0,
+        angularVelocityX: 0,
+        angularVelocityY: 0,
+        angularVelocityZ: 0,
+    }
+    entity.addComponent(velocity)
 
     // Rotation speed component - no initial rotation
     const rotationSpeed: RotationSpeedComponent = {
