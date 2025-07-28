@@ -1,6 +1,7 @@
 import type { Scene } from 'three'
 import { Vector3 } from 'three'
 import { createBulletCollision } from '../config/CollisionConfig'
+
 import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
@@ -458,6 +459,16 @@ export class WeaponSystem extends System {
             ownerId: shooterId,
             maxLifetime: weapon.range / weapon.projectileSpeed + 2.0, // Add extra time for arc trajectory
             currentLifetime: 0,
+            // Add homing properties if this is a homing projectile
+            ...(weapon.projectileType === 'homing' && {
+                isHoming: true,
+                targetId: null,
+                homingStrength: weapon.homingStrength || 0.7,
+                homingRange: weapon.homingRange || 15.0,
+                lastHomingUpdate: 0,
+                homingUpdateInterval: weapon.homingUpdateInterval || 0.1,
+                homingTurnRate: weapon.homingTurnRate || Math.PI * 1.5,
+            }),
         }
         projectile.addComponent(projectileComp)
 
@@ -565,6 +576,16 @@ export class WeaponSystem extends System {
             ownerId: shooterId,
             maxLifetime: weapon.range / weapon.projectileSpeed + 2.0, // Add extra time for arc trajectory
             currentLifetime: 0,
+            // Add homing properties if this is a homing projectile
+            ...(weapon.projectileType === 'homing' && {
+                isHoming: true,
+                targetId: null,
+                homingStrength: weapon.homingStrength || 0.7,
+                homingRange: weapon.homingRange || 15.0,
+                lastHomingUpdate: 0,
+                homingUpdateInterval: weapon.homingUpdateInterval || 0.1,
+                homingTurnRate: weapon.homingTurnRate || Math.PI * 1.5,
+            }),
         }
         projectile.addComponent(projectileComp)
 

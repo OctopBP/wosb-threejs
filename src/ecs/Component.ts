@@ -116,12 +116,17 @@ export interface WeaponComponent extends Component {
     projectileSpeed: number
     range: number
     lastShotTime: number
-    projectileType: 'bullet' // for now, just sphere
+    projectileType: 'bullet' | 'homing' // bullet for normal projectiles, homing for autotargeting projectiles
     // Auto-targeting properties
     isAutoTargeting: boolean // whether this weapon auto-aims at enemies
     detectionRange: number // range for enemy detection (can be different from firing range)
     requiresLineOfSight: boolean // whether to check for obstacles (future feature)
     leadTargetDistance: number // distance in front of target ship to aim at for predictive targeting
+    // Homing projectile properties (only used when projectileType is 'homing')
+    homingStrength?: number // how aggressively projectiles home (0-1, default: 0.7)
+    homingRange?: number // maximum distance at which homing activates (default: 15.0)
+    homingUpdateInterval?: number // how often to recalculate trajectory in seconds (default: 0.1)
+    homingTurnRate?: number // maximum turn rate in radians per second (default: Math.PI * 1.5)
     // Shooting points relative to ship position
     shootingPoints: Array<{ x: number; y: number }> // relative positions where cannons are located
 }
@@ -134,6 +139,14 @@ export interface ProjectileComponent extends Component {
     ownerId: number // entity id that fired this projectile
     maxLifetime: number
     currentLifetime: number
+    // Homing properties (only used for homing projectiles)
+    isHoming?: boolean
+    targetId?: number | null // entity id of the target to track
+    homingStrength?: number // how aggressively it homes (0-1)
+    homingRange?: number // maximum distance at which homing activates
+    lastHomingUpdate?: number // when homing was last updated
+    homingUpdateInterval?: number // how often to recalculate trajectory
+    homingTurnRate?: number // maximum turn rate in radians per second
 }
 
 // Collision shape types using discriminated unions

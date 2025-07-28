@@ -169,7 +169,7 @@ export class GameWorld {
         this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
-        this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity
+        this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity and handle homing
         this.world.addSystem(this.projectileSystem) // Update projectile lifetimes
         this.world.addSystem(this.collisionSystem) // Check collisions and apply damage
         this.world.addSystem(this.barrelSpawnSystem) // Spawn barrels around enemies
