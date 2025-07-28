@@ -472,17 +472,6 @@ export class AppOne {
                 )
             })
 
-        const homingProjectileDebugState = { enabled: false }
-        const homingProjectileDebugController = debugFolder
-            .add(homingProjectileDebugState, 'enabled')
-            .name('Homing Projectile Debug')
-            .onChange((enabled: boolean) => {
-                this.gameWorld.setHomingProjectileDebug(enabled)
-                console.log(
-                    `🚀 Homing Projectile Debug: ${enabled ? 'Enabled' : 'Disabled'}`,
-                )
-            })
-
         // Quick toggle all debug features
         debugFolder
             .add(
@@ -494,7 +483,6 @@ export class AppOne {
                         weaponRangeState.enabled = true
                         velocityVectorsState.enabled = true
                         autoTargetingDebugState.enabled = true
-                        homingProjectileDebugState.enabled = true
 
                         this.gameWorld.setDebugMode(true)
                         this.gameWorld.toggleDebugShootingPoints(true)
@@ -502,7 +490,6 @@ export class AppOne {
                         this.gameWorld.toggleDebugWeaponRange(true)
                         this.gameWorld.toggleDebugVelocityVectors(true)
                         this.gameWorld.setAutoTargetingDebug(true)
-                        this.gameWorld.setHomingProjectileDebug(true)
 
                         // Update UI to reflect changes
                         debugController.updateDisplay()
@@ -511,7 +498,6 @@ export class AppOne {
                         weaponRangeController.updateDisplay()
                         velocityVectorsController.updateDisplay()
                         autoTargetingDebugController.updateDisplay()
-                        homingProjectileDebugController.updateDisplay()
                         console.log('🔍 All Debug Features Enabled')
                     },
                 },
@@ -529,7 +515,6 @@ export class AppOne {
                         weaponRangeState.enabled = false
                         velocityVectorsState.enabled = false
                         autoTargetingDebugState.enabled = false
-                        homingProjectileDebugState.enabled = false
 
                         this.gameWorld.setDebugMode(false)
                         this.gameWorld.toggleDebugShootingPoints(false)
@@ -537,7 +522,6 @@ export class AppOne {
                         this.gameWorld.toggleDebugWeaponRange(false)
                         this.gameWorld.toggleDebugVelocityVectors(false)
                         this.gameWorld.setAutoTargetingDebug(false)
-                        this.gameWorld.setHomingProjectileDebug(false)
 
                         // Update UI to reflect changes
                         debugController.updateDisplay()
@@ -546,7 +530,6 @@ export class AppOne {
                         weaponRangeController.updateDisplay()
                         velocityVectorsController.updateDisplay()
                         autoTargetingDebugController.updateDisplay()
-                        homingProjectileDebugController.updateDisplay()
                         console.log('🔍 All Debug Features Disabled')
                     },
                 },

@@ -55,15 +55,6 @@ export class ProjectileMovementSystem extends System {
         }
     }
 
-    setHomingDebug(enabled: boolean): void {
-        this.debugHoming = enabled
-        if (enabled) {
-            console.log('🎯 Homing projectile debug logging enabled')
-        } else {
-            console.log('🎯 Homing projectile debug logging disabled')
-        }
-    }
-
     private handleHomingProjectile(
         projectile: ProjectileComponent,
         position: PositionComponent,
@@ -93,7 +84,7 @@ export class ProjectileMovementSystem extends System {
         // If we already have a target, check if it's still valid and in range
         if (projectile.targetId !== null && projectile.targetId !== undefined) {
             const currentTarget = this.world.getEntity(projectile.targetId)
-            if (currentTarget && currentTarget.hasComponent('alive')) {
+            if (currentTarget?.hasComponent('alive')) {
                 const targetPos =
                     currentTarget.getComponent<PositionComponent>('position')
                 if (targetPos) {
@@ -164,7 +155,11 @@ export class ProjectileMovementSystem extends System {
         velocity: VelocityComponent,
         deltaTime: number,
     ): void {
-        const target = this.world.getEntity(projectile.targetId!)
+        if (!projectile.targetId) {
+            return
+        }
+
+        const target = this.world.getEntity(projectile.targetId)
         if (!target) {
             projectile.targetId = null
             return

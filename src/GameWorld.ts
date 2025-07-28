@@ -41,7 +41,6 @@ import { DeathAnimationSystem } from './systems/DeathAnimationSystem'
 import { DebugSystem } from './systems/DebugSystem'
 import { EnemyArrowSystem } from './systems/EnemyArrowSystem'
 import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
-
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
@@ -432,11 +431,6 @@ export class GameWorld {
     // Method to enable/disable auto-targeting weapon debug logging
     setAutoTargetingDebug(enabled: boolean): void {
         this.weaponSystem.setAutoTargetingDebug(enabled)
-    }
-
-    // Method to enable/disable homing projectile debug logging
-    setHomingProjectileDebug(enabled: boolean): void {
-        this.projectileMovementSystem.setHomingDebug(enabled)
     }
 
     // Debug visualization methods
