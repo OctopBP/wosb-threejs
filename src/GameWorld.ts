@@ -45,6 +45,9 @@ import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
+import { PhysicsSystem } from './systems/PhysicsSystem'
+import { PhysicsInitializationSystem } from './systems/PhysicsInitializationSystem'
+import { PhysicsMovementSystem } from './systems/PhysicsMovementSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProceduralTextureSystem } from './systems/ProceduralTextureSystem'
 import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
@@ -62,6 +65,9 @@ export class GameWorld {
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
+    private physicsSystem: PhysicsSystem
+    private physicsInitializationSystem: PhysicsInitializationSystem
+    private physicsMovementSystem: PhysicsMovementSystem
     private waveRockingSystem: WaveRockingSystem
     private weaponSystem: WeaponSystem
     private projectileMovementSystem: ProjectileMovementSystem
@@ -110,6 +116,9 @@ export class GameWorld {
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
+        this.physicsSystem = new PhysicsSystem(this.world)
+        this.physicsInitializationSystem = new PhysicsInitializationSystem(this.world)
+        this.physicsMovementSystem = new PhysicsMovementSystem(this.world)
         this.waveRockingSystem = new WaveRockingSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
@@ -153,6 +162,7 @@ export class GameWorld {
         this.deathAnimationSystem.setParticleSystem(this.particleSystem)
         this.levelingSystem.setAudioSystem(this.audioSystem)
         this.audioUISystem.setAudioSystem(this.audioSystem)
+        this.physicsInitializationSystem.setPhysicsSystem(this.physicsSystem)
 
         // Setup audio system
         this.setupAudioSystem()
@@ -163,10 +173,10 @@ export class GameWorld {
         this.world.addSystem(this.virtualJoystickSystem) //Handle virtual joystick UI
         this.world.addSystem(this.inputSystem) //Handle input events and process to direction
         this.world.addSystem(this.gameStateSystem) //Manage game state and spawn enemies
+        this.world.addSystem(this.physicsInitializationSystem) //Initialize physics bodies for new entities
         this.world.addSystem(this.enemyAISystem) //Update enemy AI (movement and targeting)
-        this.world.addSystem(this.rotationSystem) //Handle rotation
-        this.world.addSystem(this.accelerationSystem) //Apply acceleration/deceleration
-        this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
+        this.world.addSystem(this.physicsMovementSystem) //Apply forces based on input (physics-based movement)
+        this.world.addSystem(this.physicsSystem) //Step physics simulation and sync positions
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
         this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity and handle homing
@@ -190,7 +200,9 @@ export class GameWorld {
         this.world.addSystem(this.proceduralTextureSystem) // For future animation
     }
 
-    init(): void {
+    async init(): Promise<void> {
+        // Initialize physics system first
+        await this.physicsSystem.init()
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
@@ -559,6 +571,7 @@ export class GameWorld {
     }
 
     cleanup(): void {
+        this.physicsSystem.dispose()
         this.world.clear()
         this.playerEntity = null
     }
