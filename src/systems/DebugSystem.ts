@@ -11,6 +11,7 @@ import {
     Vector3,
     WireframeGeometry,
 } from 'three'
+import { restrictedZones } from '../config/RestrictedZoneConfig'
 import type {
     CollisionComponent,
     DebugComponent,
@@ -24,7 +25,7 @@ import type { World } from '../ecs/World'
 interface DebugGizmo {
     mesh: Object3D
     entityId: number
-    type: 'shootingPoint' | 'collisionShape' | 'weaponRange' | 'velocityVector'
+    type: 'shootingPoint' | 'collisionShape' | 'weaponRange' | 'velocityVector' | 'restrictedZone'
 }
 
 export class DebugSystem extends System {
@@ -34,6 +35,7 @@ export class DebugSystem extends System {
     private collisionShapeMaterial: MeshBasicMaterial
     private weaponRangeMaterial: MeshBasicMaterial
     private velocityMaterial: LineBasicMaterial
+    private restrictedZoneMaterial: MeshBasicMaterial
 
     constructor(world: World, scene: Scene) {
         super(world, ['debug'])
@@ -65,6 +67,13 @@ export class DebugSystem extends System {
             color: 0xffff00,
             transparent: true,
             opacity: 0.8,
+        })
+
+        this.restrictedZoneMaterial = new MeshBasicMaterial({
+            color: 0xff4444,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.4,
         })
     }
 
@@ -128,6 +137,11 @@ export class DebugSystem extends System {
                     this.renderVelocityVector(entity.id, position, velocity)
                 }
             }
+        }
+
+        // Render restricted zones (only once, not per entity)
+        if (debugComponent.showRestrictedZones) {
+            this.renderRestrictedZones()
         }
     }
 
@@ -399,6 +413,50 @@ export class DebugSystem extends System {
         }
     }
 
+    public toggleRestrictedZones(enabled: boolean): void {
+        const debugEntities = this.getEntities()
+        if (debugEntities.length > 0) {
+            const debugComponent =
+                debugEntities[0].getComponent<DebugComponent>('debug')
+            if (debugComponent) {
+                debugComponent.showRestrictedZones = enabled
+            }
+        }
+    }
+
+    private renderRestrictedZones(): void {
+        for (let i = 0; i < restrictedZones.length; i++) {
+            const zone = restrictedZones[i]
+            
+            // Calculate zone dimensions
+            const width = zone.maxX - zone.minX
+            const depth = zone.maxZ - zone.minZ
+            const height = 2.0 // Fixed height for visualization
+            
+            // Calculate zone center
+            const centerX = (zone.minX + zone.maxX) / 2
+            const centerZ = (zone.minZ + zone.maxZ) / 2
+            const centerY = zone.minY !== undefined ? zone.minY + height / 2 : 1.0
+            
+            // Create box geometry for the restricted zone
+            const geometry = new BoxGeometry(width, height, depth)
+            const mesh = new Mesh(geometry, this.restrictedZoneMaterial)
+            
+            // Position the mesh at the zone center
+            mesh.position.set(centerX, centerY, centerZ)
+            
+            // Add to scene
+            this.scene.add(mesh)
+            
+            // Track this gizmo for cleanup (use negative ID to distinguish from entity IDs)
+            this.debugGizmos.push({
+                mesh,
+                entityId: -i - 1, // Negative ID for zone visualization
+                type: 'restrictedZone',
+            })
+        }
+    }
+
     // Cleanup method
     public dispose(): void {
         this.clearDebugGizmos()
@@ -406,5 +464,6 @@ export class DebugSystem extends System {
         this.collisionShapeMaterial.dispose()
         this.weaponRangeMaterial.dispose()
         this.velocityMaterial.dispose()
+        this.restrictedZoneMaterial.dispose()
     }
 }

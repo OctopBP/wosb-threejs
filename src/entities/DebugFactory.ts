@@ -13,6 +13,7 @@ export function createDebugEntity(world: World): Entity {
         showCollisionShapes: false,
         showWeaponRange: false,
         showVelocityVectors: false,
+        showRestrictedZones: false,
     }
 
     entity.addComponent(debugComponent)

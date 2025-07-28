@@ -51,6 +51,7 @@ import { ProjectileMovementSystem } from './systems/ProjectileMovementSystem'
 import { ProjectileSystem } from './systems/ProjectileSystem'
 import { RangeIndicatorSystem } from './systems/RangeIndicatorSystem'
 import { RenderSystem } from './systems/RenderSystem'
+import { RestrictedZoneSystem } from './systems/RestrictedZoneSystem'
 import { RotationSystem } from './systems/RotationSystem'
 import { VirtualJoystickSystem } from './systems/VirtualJoystickSystem'
 import { WaveRockingSystem } from './systems/WaveRockingSystem'
@@ -62,6 +63,7 @@ export class GameWorld {
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
+    private restrictedZoneSystem: RestrictedZoneSystem
     private waveRockingSystem: WaveRockingSystem
     private weaponSystem: WeaponSystem
     private projectileMovementSystem: ProjectileMovementSystem
@@ -110,6 +112,7 @@ export class GameWorld {
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
+        this.restrictedZoneSystem = new RestrictedZoneSystem(this.world)
         this.waveRockingSystem = new WaveRockingSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
         this.projectileMovementSystem = new ProjectileMovementSystem(this.world)
@@ -167,6 +170,7 @@ export class GameWorld {
         this.world.addSystem(this.rotationSystem) //Handle rotation
         this.world.addSystem(this.accelerationSystem) //Apply acceleration/deceleration
         this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
+        this.world.addSystem(this.restrictedZoneSystem) //Prevent ships from entering restricted zones
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
         this.world.addSystem(this.projectileMovementSystem) // Move projectiles with gravity and handle homing
