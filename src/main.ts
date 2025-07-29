@@ -11,12 +11,12 @@ window.addEventListener('DOMContentLoaded', () => {
         if (overlay) overlay.style.display = 'none'
     }
     showLoading()
-    preloadModels().then(() => {
+    preloadModels().then(async () => {
         hideLoading()
         const canvas = document.getElementById(
             'renderCanvas',
         ) as HTMLCanvasElement
         const app = new App(canvas)
-        app.run()
+        await app.run()
     })
 })

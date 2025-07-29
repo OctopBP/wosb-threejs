@@ -386,3 +386,20 @@ export interface FoamTrailComponent extends Component {
     type: 'foamTrail'
     size: number
 }
+
+// Physics components for Rapier physics engine
+export interface PhysicsBodyComponent extends Component {
+    type: 'physicsBody'
+    bodyHandle: number // Rapier body handle
+    colliderHandle: number // Rapier collider handle
+}
+
+export interface PhysicsForceComponent extends Component {
+    type: 'physicsForce'
+    forceX: number
+    forceY: number
+    forceZ: number
+    torqueX: number
+    torqueY: number
+    torqueZ: number
+}

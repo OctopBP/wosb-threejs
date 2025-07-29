@@ -15,6 +15,8 @@ import type {
     HealthComponent,
     InputComponent,
     MovementConfigComponent,
+    PhysicsBodyComponent,
+    PhysicsForceComponent,
     PlayerComponent,
     PositionComponent,
     RenderableComponent,
@@ -139,6 +141,26 @@ export function createPlayerShip(
         type: 'alive',
     }
     entity.addComponent(alive)
+
+    // Physics body component - will be initialized by PhysicsSystem
+    const physicsBody: PhysicsBodyComponent = {
+        type: 'physicsBody',
+        bodyHandle: -1, // Will be set when physics body is created
+        colliderHandle: -1,
+    }
+    entity.addComponent(physicsBody)
+
+    // Physics force component - for applying forces to the physics body
+    const physicsForce: PhysicsForceComponent = {
+        type: 'physicsForce',
+        forceX: 0,
+        forceY: 0,
+        forceZ: 0,
+        torqueX: 0,
+        torqueY: 0,
+        torqueZ: 0,
+    }
+    entity.addComponent(physicsForce)
 
     return entity
 }

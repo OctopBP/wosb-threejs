@@ -9,7 +9,7 @@ import type { World } from '../ecs/World'
 
 export class EnemyAISystem extends System {
     constructor(world: World) {
-        super(world, ['enemy', 'position', 'input', 'speed', 'weapon', 'alive'])
+        super(world, ['enemy', 'position', 'input', 'weapon', 'alive'])
     }
 
     update(_deltaTime: number): void {
