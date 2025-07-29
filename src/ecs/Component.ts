@@ -328,6 +328,7 @@ export interface DebugComponent extends Component {
     showWeaponRange: boolean
     showVelocityVectors: boolean
     showRestrictedZones: boolean
+    showSpawnZones: boolean
 }
 
 // Animation states for barrels

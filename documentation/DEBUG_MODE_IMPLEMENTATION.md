@@ -17,6 +17,8 @@ Located in the **"Debug Visualization"** folder in the inspector menu (lil-gui),
 * **Show Collision Shapes**: Display collision boundaries around entities
 * **Show Weapon Range**: Show weapon firing and detection ranges
 * **Show Velocity Vectors**: Display movement velocity as directional arrows
+* **Show Restricted Zones**: Display restricted areas where player cannot enter
+* **Show Spawn Zones**: Display areas where enemies can spawn
 * **Enable All Debug**: Quick button to enable all debug features
 * **Disable All Debug**: Quick button to disable all debug features
 
@@ -55,6 +57,18 @@ Located in the **"Debug Visualization"** folder in the inspector menu (lil-gui),
   + Length represents velocity magnitude (scaled for visibility)
   + Only shown for entities with significant movement (>0.1 units/frame)
 
+#### Restricted Zones
+
+* **Color**: Red wireframe boxes (🔴)
+* **Purpose**: Shows areas where the player cannot enter
+* **Details**: Wireframe boxes positioned at restricted zone boundaries
+
+#### Spawn Zones
+
+* **Color**: Green wireframe boxes (🟢)
+* **Purpose**: Shows areas where enemies can spawn
+* **Details**: Wireframe boxes positioned at spawn zone boundaries
+
 ## Architecture
 
 ### Components
@@ -69,6 +83,8 @@ Located in the **"Debug Visualization"** folder in the inspector menu (lil-gui),
     showCollisionShapes: boolean
     showWeaponRange: boolean
     showVelocityVectors: boolean
+    showRestrictedZones: boolean
+    showSpawnZones: boolean
   }
   ```
 
@@ -97,6 +113,8 @@ Located in the **"Debug Visualization"** folder in the inspector menu (lil-gui),
   + `toggleDebugCollisionShapes(enabled: boolean)`
   + `toggleDebugWeaponRange(enabled: boolean)`
   + `toggleDebugVelocityVectors(enabled: boolean)`
+  + `toggleDebugRestrictedZones(enabled: boolean)`
+  + `toggleDebugSpawnZones(enabled: boolean)`
 
 ### AppOne.ts
 
@@ -127,6 +145,8 @@ Located in the **"Debug Visualization"** folder in the inspector menu (lil-gui),
 * 🔵 **Blue Rings**: Weapon Firing Range
 * 🟠 **Orange Rings**: Auto-Targeting Detection Range
 * 🟡 **Yellow Lines**: Velocity Vectors
+* 🔴 **Red Wireframe Boxes**: Restricted Zones
+* 🟢 **Green Wireframe Boxes**: Spawn Zones
 
 ## Technical Notes
 
