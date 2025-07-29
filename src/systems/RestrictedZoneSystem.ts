@@ -1,12 +1,12 @@
-import type { PositionComponent, SpeedComponent } from '../ecs/Component'
-import { System } from '../ecs/System'
-import type { World } from '../ecs/World'
+import type { RestrictedZoneConfig } from '../config/RestrictedZoneConfig'
 import {
     calculatePushBackDirection,
     getRestrictedZoneAt,
-    type RestrictedZoneConfig,
+    restrictedZonesConfig,
 } from '../config/RestrictedZoneConfig'
-
+import type { PositionComponent, SpeedComponent } from '../ecs/Component'
+import { System } from '../ecs/System'
+import type { World } from '../ecs/World'
 /**
  * System that prevents ships from entering restricted zones
  * Checks ship positions and pushes them back if they try to enter forbidden areas
@@ -37,18 +37,12 @@ export class RestrictedZoneSystem extends System {
 
             if (restrictedZone) {
                 // Ship is in a restricted zone - push it back
-                this.pushShipOutOfZone(position, speed, restrictedZone, deltaTime)
-
-                // Log for debugging (optional - can be removed in production)
-                if (entity.hasComponent('player')) {
-                    console.log(
-                        `⚠️ Player ship pushed out of ${restrictedZone.name} at (${position.x.toFixed(1)}, ${position.z.toFixed(1)})`,
-                    )
-                } else if (entity.hasComponent('enemy')) {
-                    console.log(
-                        `🚫 Enemy ship blocked from ${restrictedZone.name}`,
-                    )
-                }
+                this.pushShipOutOfZone(
+                    position,
+                    speed,
+                    restrictedZone,
+                    deltaTime,
+                )
             }
         }
     }
@@ -70,7 +64,7 @@ export class RestrictedZoneSystem extends System {
         )
 
         // Apply push-back force
-        const pushForce = zone.pushBackForce * deltaTime
+        const pushForce = restrictedZonesConfig.pushBackForce * deltaTime
 
         // Move the ship in the push-back direction
         position.x += pushDirection.x * pushForce

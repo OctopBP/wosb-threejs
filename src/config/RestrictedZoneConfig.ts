@@ -1,20 +1,3 @@
-/**
- * Configuration for restricted zones where ships cannot move
- * 
- * Restricted zones are box-shaped areas where ships cannot enter.
- * When a ship tries to enter a restricted zone, it will be pushed back
- * with a force proportional to the zone's pushBackForce setting.
- * 
- * Usage:
- * 1. Ships automatically can't enter these zones due to RestrictedZoneSystem
- * 2. You can visualize zones in debug mode using the debug system
- * 3. Add new zones to the restrictedZones array below
- * 
- * Debug visualization:
- * - Press the appropriate debug key to enable "showRestrictedZones"
- * - Zones will appear as red wireframe boxes
- */
-
 export interface RestrictedZoneConfig {
     minX: number
     maxX: number
@@ -22,8 +5,10 @@ export interface RestrictedZoneConfig {
     maxZ: number
     minY?: number
     maxY?: number
-    name: string
-    pushBackForce: number
+}
+
+export const restrictedZonesConfig = {
+    pushBackForce: 2.0,
 }
 
 /**
@@ -31,42 +16,19 @@ export interface RestrictedZoneConfig {
  * These areas will be off-limits to ships
  */
 export const restrictedZones: RestrictedZoneConfig[] = [
-    // Island area - ships shouldn't be able to move onto land
-    {
-        minX: -5,
-        maxX: 5,
-        minZ: -5,
-        maxZ: 5,
-        name: 'Central Island',
-        pushBackForce: 2.0,
-    },
-    // Example northern reef area
-    {
-        minX: -15,
-        maxX: -10,
-        minZ: 15,
-        maxZ: 20,
-        name: 'Northern Reef',
-        pushBackForce: 1.5,
-    },
-    // Example southern shallow waters
-    {
-        minX: 10,
-        maxX: 15,
-        minZ: -20,
-        maxZ: -15,
-        name: 'Southern Shallows',
-        pushBackForce: 1.5,
-    },
-    // Example eastern rocks
-    {
-        minX: 20,
-        maxX: 25,
-        minZ: -5,
-        maxZ: 5,
-        name: 'Eastern Rocks',
-        pushBackForce: 2.0,
-    },
+    { minX: -50, maxX: 35, minZ: 75, maxZ: 85 },
+    { minX: 33, maxX: 43, minZ: 34, maxZ: 84 },
+    { minX: 27, maxX: 37, minZ: -5, maxZ: 35 },
+    { minX: 12, maxX: 50, minZ: -11, maxZ: -1 },
+    { minX: -35, maxX: 15, minZ: -18, maxZ: -8 },
+    { minX: -60, maxX: -34, minZ: -11, maxZ: -1 },
+    { minX: -65, maxX: -55, minZ: -2, maxZ: 40 },
+    { minX: -60, maxX: -45, minZ: 35, maxZ: 70 },
+    { minX: -60, maxX: -45, minZ: 35, maxZ: 80 },
+
+    { minX: -23, maxX: -12, minZ: 10, maxZ: 14 },
+    { minX: -25, maxX: -17, minZ: 45, maxZ: 58 },
+    { minX: 16, maxX: 21, minZ: 58, maxZ: 63 },
 ]
 
 /**
@@ -83,7 +45,12 @@ export function getRestrictedZoneAt(
 ): RestrictedZoneConfig | null {
     for (const zone of restrictedZones) {
         // Check X and Z bounds
-        if (x >= zone.minX && x <= zone.maxX && z >= zone.minZ && z <= zone.maxZ) {
+        if (
+            x >= zone.minX &&
+            x <= zone.maxX &&
+            z >= zone.minZ &&
+            z <= zone.maxZ
+        ) {
             // Check Y bounds if specified
             if (zone.minY !== undefined && y !== undefined && y < zone.minY) {
                 continue

@@ -399,7 +399,4 @@ export interface RestrictedZoneComponent extends Component {
     // Optional height constraints
     minY?: number
     maxY?: number
-    // Zone metadata
-    name: string // Name/description of the zone
-    pushBackForce: number // How strongly to push ships away when they try to enter
 }
