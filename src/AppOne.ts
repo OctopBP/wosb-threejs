@@ -21,6 +21,7 @@ import {
     WebGLRenderer,
 } from 'three'
 import { GameWorld } from './GameWorld'
+import { PlaygamaSDK } from './PlaygamaSDK'
 import waterFragmentShader from './shaders/water.frag?raw'
 import waterVertexShader from './shaders/water.vert?raw'
 
@@ -33,6 +34,10 @@ export class AppOne {
 
     waterMesh?: Mesh
     waterMaterial?: ShaderMaterial
+
+    private paused = false
+    private animationId?: number
+    private playgamaSDK: PlaygamaSDK
 
     constructor(readonly canvas: HTMLCanvasElement) {
         // Create renderer
@@ -48,6 +53,7 @@ export class AppOne {
         this.renderer.setClearColor(0x87ceeb, 1) // Sky blue background
 
         this.camera = this.createCamera()
+        this.playgamaSDK = PlaygamaSDK.getInstance()
         this.scene = this.createScene()
         this.gameWorld = new GameWorld(
             this.scene,
@@ -79,7 +85,29 @@ export class AppOne {
 
         this.gameWorld.init()
 
+        // Setup Playgama SDK pause/resume handlers
+        this.setupPlaygamaEvents()
+
         this.startRenderLoop()
+    }
+
+    private setupPlaygamaEvents() {
+        // The SDK events are already configured in main.ts, but we can add additional handlers here
+        // if needed for specific game logic
+    }
+
+    pause() {
+        this.paused = true
+        console.log('Game paused')
+    }
+
+    resume() {
+        this.paused = false
+        console.log('Game resumed')
+    }
+
+    isPaused(): boolean {
+        return this.paused
     }
 
     private createScene(): Scene {
@@ -727,6 +755,13 @@ export class AppOne {
 
     private startRenderLoop() {
         const animate = (time: number) => {
+            this.animationId = requestAnimationFrame(animate)
+
+            // Skip update and render if game is paused
+            if (this.paused) {
+                return
+            }
+
             // Animate water shader
             const water = this.scene.getObjectByName('Water') as
                 | Mesh
@@ -742,13 +777,15 @@ export class AppOne {
             }
             this.gameWorld.update(time)
             this.renderer.render(this.scene, this.camera)
-            requestAnimationFrame(animate)
         }
-        requestAnimationFrame(animate)
+        this.animationId = requestAnimationFrame(animate)
     }
 
     // Cleanup method
     dispose() {
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId)
+        }
         if (this.gui) {
             this.gui.destroy()
         }
@@ -758,5 +795,7 @@ export class AppOne {
         if (this.renderer) {
             this.renderer.dispose()
         }
+        // Notify SDK that game is stopping
+        this.playgamaSDK.gameplayStop()
     }
 }
