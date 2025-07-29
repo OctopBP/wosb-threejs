@@ -458,6 +458,10 @@ export class GameWorld {
         this.debugSystem.toggleVelocityVectors(enabled)
     }
 
+    toggleDebugRestrictedZones(enabled: boolean): void {
+        this.debugSystem.toggleRestrictedZones(enabled)
+    }
+
     // Camera system methods
     transitionToCameraState(stateName: string, duration?: number): void {
         this.cameraSystem.transitionToState(stateName, duration)

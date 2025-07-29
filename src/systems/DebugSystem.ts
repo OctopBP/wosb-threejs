@@ -425,6 +425,7 @@ export class DebugSystem extends System {
     }
 
     private renderRestrictedZones(): void {
+        console.log(`🔍 Rendering ${restrictedZones.length} restricted zones`)
         for (let i = 0; i < restrictedZones.length; i++) {
             const zone = restrictedZones[i]
             

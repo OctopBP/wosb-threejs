@@ -460,6 +460,17 @@ export class AppOne {
                 )
             })
 
+        const restrictedZonesState = { enabled: false }
+        const restrictedZonesController = debugFolder
+            .add(restrictedZonesState, 'enabled')
+            .name('Show Restricted Zones')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugRestrictedZones(enabled)
+                console.log(
+                    `🚫 Restricted Zones: ${enabled ? 'Visible' : 'Hidden'}`,
+                )
+            })
+
         // Weapon system debug controls
         const autoTargetingDebugState = { enabled: false }
         const autoTargetingDebugController = debugFolder
@@ -482,6 +493,7 @@ export class AppOne {
                         collisionShapesState.enabled = true
                         weaponRangeState.enabled = true
                         velocityVectorsState.enabled = true
+                        restrictedZonesState.enabled = true
                         autoTargetingDebugState.enabled = true
 
                         this.gameWorld.setDebugMode(true)
@@ -489,6 +501,7 @@ export class AppOne {
                         this.gameWorld.toggleDebugCollisionShapes(true)
                         this.gameWorld.toggleDebugWeaponRange(true)
                         this.gameWorld.toggleDebugVelocityVectors(true)
+                        this.gameWorld.toggleDebugRestrictedZones(true)
                         this.gameWorld.setAutoTargetingDebug(true)
 
                         // Update UI to reflect changes
@@ -497,6 +510,7 @@ export class AppOne {
                         collisionShapesController.updateDisplay()
                         weaponRangeController.updateDisplay()
                         velocityVectorsController.updateDisplay()
+                        restrictedZonesController.updateDisplay()
                         autoTargetingDebugController.updateDisplay()
                         console.log('🔍 All Debug Features Enabled')
                     },
@@ -514,6 +528,7 @@ export class AppOne {
                         collisionShapesState.enabled = false
                         weaponRangeState.enabled = false
                         velocityVectorsState.enabled = false
+                        restrictedZonesState.enabled = false
                         autoTargetingDebugState.enabled = false
 
                         this.gameWorld.setDebugMode(false)
@@ -521,6 +536,7 @@ export class AppOne {
                         this.gameWorld.toggleDebugCollisionShapes(false)
                         this.gameWorld.toggleDebugWeaponRange(false)
                         this.gameWorld.toggleDebugVelocityVectors(false)
+                        this.gameWorld.toggleDebugRestrictedZones(false)
                         this.gameWorld.setAutoTargetingDebug(false)
 
                         // Update UI to reflect changes
@@ -529,6 +545,7 @@ export class AppOne {
                         collisionShapesController.updateDisplay()
                         weaponRangeController.updateDisplay()
                         velocityVectorsController.updateDisplay()
+                        restrictedZonesController.updateDisplay()
                         autoTargetingDebugController.updateDisplay()
                         console.log('🔍 All Debug Features Disabled')
                     },
