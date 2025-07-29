@@ -26,7 +26,13 @@ import type { World } from '../ecs/World'
 interface DebugGizmo {
     mesh: Object3D
     entityId: number
-    type: 'shootingPoint' | 'collisionShape' | 'weaponRange' | 'velocityVector' | 'restrictedZone' | 'spawnZone'
+    type:
+        | 'shootingPoint'
+        | 'collisionShape'
+        | 'weaponRange'
+        | 'velocityVector'
+        | 'restrictedZone'
+        | 'spawnZone'
 }
 
 export class DebugSystem extends System {
@@ -453,27 +459,28 @@ export class DebugSystem extends System {
         console.log(`🔍 Rendering ${restrictedZones.length} restricted zones`)
         for (let i = 0; i < restrictedZones.length; i++) {
             const zone = restrictedZones[i]
-            
+
             // Calculate zone dimensions
             const width = zone.maxX - zone.minX
             const depth = zone.maxZ - zone.minZ
             const height = 2.0 // Fixed height for visualization
-            
+
             // Calculate zone center
             const centerX = (zone.minX + zone.maxX) / 2
             const centerZ = (zone.minZ + zone.maxZ) / 2
-            const centerY = zone.minY !== undefined ? zone.minY + height / 2 : 1.0
-            
+            const centerY =
+                zone.minY !== undefined ? zone.minY + height / 2 : 1.0
+
             // Create box geometry for the restricted zone
             const geometry = new BoxGeometry(width, height, depth)
             const mesh = new Mesh(geometry, this.restrictedZoneMaterial)
-            
+
             // Position the mesh at the zone center
             mesh.position.set(centerX, centerY, centerZ)
-            
+
             // Add to scene
             this.scene.add(mesh)
-            
+
             // Track this gizmo for cleanup (use negative ID to distinguish from entity IDs)
             this.debugGizmos.push({
                 mesh,
@@ -488,27 +495,27 @@ export class DebugSystem extends System {
         console.log(`🟢 Rendering ${spawnZones.length} spawn zones`)
         for (let i = 0; i < spawnZones.length; i++) {
             const zone = spawnZones[i]
-            
+
             // Calculate zone dimensions
             const width = zone.maxX - zone.minX
             const depth = zone.maxZ - zone.minZ
             const height = 1.5 // Slightly smaller height than restricted zones
-            
+
             // Calculate zone center
             const centerX = (zone.minX + zone.maxX) / 2
             const centerZ = (zone.minZ + zone.maxZ) / 2
-            const centerY = zone.minY !== undefined ? zone.minY + height / 2 : 0.75
-            
+            const centerY = 0.5
+
             // Create box geometry for the spawn zone
             const geometry = new BoxGeometry(width, height, depth)
             const mesh = new Mesh(geometry, this.spawnZoneMaterial)
-            
+
             // Position the mesh at the zone center
             mesh.position.set(centerX, centerY, centerZ)
-            
+
             // Add to scene
             this.scene.add(mesh)
-            
+
             // Track this gizmo for cleanup (use different negative ID range for spawn zones)
             this.debugGizmos.push({
                 mesh,

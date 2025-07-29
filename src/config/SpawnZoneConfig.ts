@@ -3,9 +3,6 @@ export interface SpawnZoneConfig {
     maxX: number
     minZ: number
     maxZ: number
-    minY?: number
-    maxY?: number
-    name?: string // Optional name for debugging
 }
 
 /**
@@ -14,16 +11,12 @@ export interface SpawnZoneConfig {
  */
 export const spawnZones: SpawnZoneConfig[] = [
     // Large open water areas away from islands/obstacles
-    { minX: -80, maxX: -50, minZ: -50, maxZ: 50, name: "Western Ocean" },
-    { minX: 50, maxX: 80, minZ: -50, maxZ: 50, name: "Eastern Ocean" },
-    { minX: -50, maxX: 50, minZ: -80, maxZ: -50, name: "Southern Ocean" },
-    { minX: -50, maxX: 50, minZ: 50, maxZ: 80, name: "Northern Ocean" },
-    
-    // Smaller areas between islands for variety
-    { minX: -15, maxX: 15, minZ: 65, maxZ: 75, name: "North Channel" },
-    { minX: -15, maxX: 15, minZ: -75, maxZ: -65, name: "South Channel" },
-    { minX: 65, maxX: 75, minZ: -15, maxZ: 15, name: "East Channel" },
-    { minX: -75, maxX: -65, minZ: -15, maxZ: 15, name: "West Channel" },
+    { minX: -45, maxX: 15, minZ: 58, maxZ: 75 },
+    { minX: -45, maxX: -25, minZ: 0, maxZ: 58 },
+    { minX: -33, maxX: 10, minZ: -7, maxZ: 10 },
+    { minX: -10, maxX: 25, minZ: 0, maxZ: 57 },
+    { minX: -25, maxX: -10, minZ: 15, maxZ: 45 },
+    { minX: 22, maxX: 32, minZ: 58, maxZ: 75 },
 ]
 
 /**
@@ -33,11 +26,7 @@ export const spawnZones: SpawnZoneConfig[] = [
  * @param y - Y coordinate (optional)
  * @returns The spawn zone if position is inside one, null otherwise
  */
-export function getSpawnZoneAt(
-    x: number,
-    z: number,
-    y?: number,
-): SpawnZoneConfig | null {
+export function getSpawnZoneAt(x: number, z: number): SpawnZoneConfig | null {
     for (const zone of spawnZones) {
         // Check X and Z bounds
         if (
@@ -46,13 +35,6 @@ export function getSpawnZoneAt(
             z >= zone.minZ &&
             z <= zone.maxZ
         ) {
-            // Check Y bounds if specified
-            if (zone.minY !== undefined && y !== undefined && y < zone.minY) {
-                continue
-            }
-            if (zone.maxY !== undefined && y !== undefined && y > zone.maxY) {
-                continue
-            }
             return zone
         }
     }
@@ -78,14 +60,14 @@ export function findValidSpawnPosition(
         const angle = Math.random() * 2 * Math.PI
         const candidateX = playerX + Math.cos(angle) * spawnDistance
         const candidateZ = playerZ + Math.sin(angle) * spawnDistance
-        
+
         // Check if this position is in a valid spawn zone
         const zone = getSpawnZoneAt(candidateX, candidateZ)
         if (zone) {
             return { x: candidateX, z: candidateZ, zone }
         }
     }
-    
+
     // If we can't find a valid position at the exact distance, try to find any position in spawn zones
     // and adjust to maintain approximate distance
     for (const zone of spawnZones) {
@@ -93,20 +75,20 @@ export function findValidSpawnPosition(
             // Random position within the zone
             const zoneX = zone.minX + Math.random() * (zone.maxX - zone.minX)
             const zoneZ = zone.minZ + Math.random() * (zone.maxZ - zone.minZ)
-            
+
             // Check if distance is reasonable (within 50% variance of desired distance)
             const distance = Math.sqrt(
-                (zoneX - playerX) ** 2 + (zoneZ - playerZ) ** 2
+                (zoneX - playerX) ** 2 + (zoneZ - playerZ) ** 2,
             )
             const minDistance = spawnDistance * 0.5
             const maxDistance = spawnDistance * 1.5
-            
+
             if (distance >= minDistance && distance <= maxDistance) {
                 return { x: zoneX, z: zoneZ, zone }
             }
         }
     }
-    
+
     return null
 }
 

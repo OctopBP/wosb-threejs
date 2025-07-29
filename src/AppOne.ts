@@ -471,6 +471,15 @@ export class AppOne {
                 )
             })
 
+        const spawnZonesState = { enabled: false }
+        const spawnZonesController = debugFolder
+            .add(spawnZonesState, 'enabled')
+            .name('Show Spawn Zones')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugSpawnZones(enabled)
+                console.log(`🟢 Spawn Zones: ${enabled ? 'Visible' : 'Hidden'}`)
+            })
+
         // Weapon system debug controls
         const autoTargetingDebugState = { enabled: false }
         const autoTargetingDebugController = debugFolder
@@ -494,6 +503,7 @@ export class AppOne {
                         weaponRangeState.enabled = true
                         velocityVectorsState.enabled = true
                         restrictedZonesState.enabled = true
+                        spawnZonesState.enabled = true
                         autoTargetingDebugState.enabled = true
 
                         this.gameWorld.setDebugMode(true)
@@ -502,6 +512,7 @@ export class AppOne {
                         this.gameWorld.toggleDebugWeaponRange(true)
                         this.gameWorld.toggleDebugVelocityVectors(true)
                         this.gameWorld.toggleDebugRestrictedZones(true)
+                        this.gameWorld.toggleDebugSpawnZones(true)
                         this.gameWorld.setAutoTargetingDebug(true)
 
                         // Update UI to reflect changes
@@ -511,6 +522,7 @@ export class AppOne {
                         weaponRangeController.updateDisplay()
                         velocityVectorsController.updateDisplay()
                         restrictedZonesController.updateDisplay()
+                        spawnZonesController.updateDisplay()
                         autoTargetingDebugController.updateDisplay()
                         console.log('🔍 All Debug Features Enabled')
                     },
@@ -529,6 +541,7 @@ export class AppOne {
                         weaponRangeState.enabled = false
                         velocityVectorsState.enabled = false
                         restrictedZonesState.enabled = false
+                        spawnZonesState.enabled = false
                         autoTargetingDebugState.enabled = false
 
                         this.gameWorld.setDebugMode(false)
@@ -537,6 +550,7 @@ export class AppOne {
                         this.gameWorld.toggleDebugWeaponRange(false)
                         this.gameWorld.toggleDebugVelocityVectors(false)
                         this.gameWorld.toggleDebugRestrictedZones(false)
+                        this.gameWorld.toggleDebugSpawnZones(false)
                         this.gameWorld.setAutoTargetingDebug(false)
 
                         // Update UI to reflect changes
@@ -546,6 +560,7 @@ export class AppOne {
                         weaponRangeController.updateDisplay()
                         velocityVectorsController.updateDisplay()
                         restrictedZonesController.updateDisplay()
+                        spawnZonesController.updateDisplay()
                         autoTargetingDebugController.updateDisplay()
                         console.log('🔍 All Debug Features Disabled')
                     },
