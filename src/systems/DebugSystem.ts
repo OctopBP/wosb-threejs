@@ -12,6 +12,7 @@ import {
     WireframeGeometry,
 } from 'three'
 import { restrictedZones } from '../config/RestrictedZoneConfig'
+import { getAllSpawnZones } from '../config/SpawnZoneConfig'
 import type {
     CollisionComponent,
     DebugComponent,
@@ -25,7 +26,7 @@ import type { World } from '../ecs/World'
 interface DebugGizmo {
     mesh: Object3D
     entityId: number
-    type: 'shootingPoint' | 'collisionShape' | 'weaponRange' | 'velocityVector' | 'restrictedZone'
+    type: 'shootingPoint' | 'collisionShape' | 'weaponRange' | 'velocityVector' | 'restrictedZone' | 'spawnZone'
 }
 
 export class DebugSystem extends System {
@@ -36,6 +37,7 @@ export class DebugSystem extends System {
     private weaponRangeMaterial: MeshBasicMaterial
     private velocityMaterial: LineBasicMaterial
     private restrictedZoneMaterial: MeshBasicMaterial
+    private spawnZoneMaterial: MeshBasicMaterial
 
     constructor(world: World, scene: Scene) {
         super(world, ['debug'])
@@ -74,6 +76,13 @@ export class DebugSystem extends System {
             wireframe: true,
             transparent: true,
             opacity: 0.4,
+        })
+
+        this.spawnZoneMaterial = new MeshBasicMaterial({
+            color: 0x44ff44, // Green for spawn zones
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3,
         })
     }
 
@@ -142,6 +151,11 @@ export class DebugSystem extends System {
         // Render restricted zones (only once, not per entity)
         if (debugComponent.showRestrictedZones) {
             this.renderRestrictedZones()
+        }
+
+        // Render spawn zones (only once, not per entity)
+        if (debugComponent.showSpawnZones) {
+            this.renderSpawnZones()
         }
     }
 
@@ -424,6 +438,17 @@ export class DebugSystem extends System {
         }
     }
 
+    public toggleSpawnZones(enabled: boolean): void {
+        const debugEntities = this.getEntities()
+        if (debugEntities.length > 0) {
+            const debugComponent =
+                debugEntities[0].getComponent<DebugComponent>('debug')
+            if (debugComponent) {
+                debugComponent.showSpawnZones = enabled
+            }
+        }
+    }
+
     private renderRestrictedZones(): void {
         console.log(`🔍 Rendering ${restrictedZones.length} restricted zones`)
         for (let i = 0; i < restrictedZones.length; i++) {
@@ -458,6 +483,41 @@ export class DebugSystem extends System {
         }
     }
 
+    private renderSpawnZones(): void {
+        const spawnZones = getAllSpawnZones()
+        console.log(`🟢 Rendering ${spawnZones.length} spawn zones`)
+        for (let i = 0; i < spawnZones.length; i++) {
+            const zone = spawnZones[i]
+            
+            // Calculate zone dimensions
+            const width = zone.maxX - zone.minX
+            const depth = zone.maxZ - zone.minZ
+            const height = 1.5 // Slightly smaller height than restricted zones
+            
+            // Calculate zone center
+            const centerX = (zone.minX + zone.maxX) / 2
+            const centerZ = (zone.minZ + zone.maxZ) / 2
+            const centerY = zone.minY !== undefined ? zone.minY + height / 2 : 0.75
+            
+            // Create box geometry for the spawn zone
+            const geometry = new BoxGeometry(width, height, depth)
+            const mesh = new Mesh(geometry, this.spawnZoneMaterial)
+            
+            // Position the mesh at the zone center
+            mesh.position.set(centerX, centerY, centerZ)
+            
+            // Add to scene
+            this.scene.add(mesh)
+            
+            // Track this gizmo for cleanup (use different negative ID range for spawn zones)
+            this.debugGizmos.push({
+                mesh,
+                entityId: -1000 - i - 1, // Different negative ID range for spawn zones
+                type: 'spawnZone',
+            })
+        }
+    }
+
     // Cleanup method
     public dispose(): void {
         this.clearDebugGizmos()
@@ -466,5 +526,6 @@ export class DebugSystem extends System {
         this.weaponRangeMaterial.dispose()
         this.velocityMaterial.dispose()
         this.restrictedZoneMaterial.dispose()
+        this.spawnZoneMaterial.dispose()
     }
 }

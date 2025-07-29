@@ -8,6 +8,7 @@ import type {
 import type { Entity } from '../../ecs/Entity'
 import type { World } from '../../ecs/World'
 import { createBossShip, createEnemyShip } from '../../entities/EnemyFactory'
+import { findValidSpawnPosition } from '../../config/SpawnZoneConfig'
 export interface GameStateHandler {
     /**
      * Handle the current state logic
@@ -78,10 +79,33 @@ export abstract class BaseGameState implements GameStateHandler {
         const distance =
             spawnDistance || getRandomSpawnDistanceForWaveOrBoss(config.wave1)
 
-        // Random angle around player
-        const spawnAngle = Math.random() * 2 * Math.PI
-        const spawnX = playerPosition.x + Math.cos(spawnAngle) * distance
-        const spawnZ = playerPosition.z + Math.sin(spawnAngle) * distance
+        // Try to find a valid spawn position within spawn zones
+        const validSpawnPosition = findValidSpawnPosition(
+            playerPosition.x,
+            playerPosition.z,
+            distance,
+            50 // max attempts
+        )
+
+        let spawnX: number
+        let spawnZ: number
+
+        if (validSpawnPosition) {
+            // Use the valid spawn position found within spawn zones
+            spawnX = validSpawnPosition.x
+            spawnZ = validSpawnPosition.z
+            console.log(
+                `🟢 Enemy spawned in zone: ${validSpawnPosition.zone.name || 'Unnamed'} at (${spawnX.toFixed(1)}, ${spawnZ.toFixed(1)})`
+            )
+        } else {
+            // Fallback to original logic if no valid spawn zone position found
+            console.warn(
+                `⚠️ No valid spawn zone found at distance ${distance.toFixed(1)}, using fallback spawn`
+            )
+            const spawnAngle = Math.random() * 2 * Math.PI
+            spawnX = playerPosition.x + Math.cos(spawnAngle) * distance
+            spawnZ = playerPosition.z + Math.sin(spawnAngle) * distance
+        }
 
         // Create enemy ship
         const enemy = createEnemyShip(
