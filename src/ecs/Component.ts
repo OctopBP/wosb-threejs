@@ -327,6 +327,7 @@ export interface DebugComponent extends Component {
     showCollisionShapes: boolean
     showWeaponRange: boolean
     showVelocityVectors: boolean
+    showRestrictedZones: boolean
 }
 
 // Animation states for barrels
@@ -385,4 +386,17 @@ export interface AliveComponent extends Component {
 export interface FoamTrailComponent extends Component {
     type: 'foamTrail'
     size: number
+}
+
+// Restricted Zone component for defining areas where ships cannot move
+export interface RestrictedZoneComponent extends Component {
+    type: 'restrictedZone'
+    // Box-shaped restricted area
+    minX: number
+    maxX: number
+    minZ: number
+    maxZ: number
+    // Optional height constraints
+    minY?: number
+    maxY?: number
 }
