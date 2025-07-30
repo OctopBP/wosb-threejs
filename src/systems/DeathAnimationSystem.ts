@@ -93,7 +93,10 @@ export class DeathAnimationSystem extends System {
 
             // Check if animation is complete
             if (progress >= 1.0) {
-                entitiesToRemove.push(entity.id)
+                // Don't remove player entities - let GameStateSystem handle player death
+                if (!entity.hasComponent('player')) {
+                    entitiesToRemove.push(entity.id)
+                }
             }
         }
 
