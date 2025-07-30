@@ -71,9 +71,6 @@ export class GameStateSystem extends System {
             gameState.currentState !== 'bossFight' &&
             gameState.currentState !== 'newShipOffer'
         ) {
-            console.log(
-                `⏰ ${this.config.boss.forceSpawnTimeSeconds} seconds reached! Forcing boss fight...`,
-            )
             gameState.currentState = 'bossFight'
         }
 
@@ -150,7 +147,6 @@ export class GameStateSystem extends System {
         // If player is dead, transition to new ship offer
         if (playerHealth.isDead) {
             gameState.currentState = 'newShipOffer'
-            console.log('💀 Player died! Showing new ship offer...')
         }
     }
 
@@ -158,8 +154,6 @@ export class GameStateSystem extends System {
     public restartGame(): void {
         const gameState = this.getGameState()
         if (!gameState) return
-
-        console.log('🎮 Starting complete game restart...')
 
         // Reset timing
         this.gameStartTime = 0
@@ -216,8 +210,6 @@ export class GameStateSystem extends System {
             // Remove entity from world
             this.world.removeEntity(entity.id)
         }
-
-        console.log('🎮 Game restart cleanup complete - Initial Wave beginning')
 
         // Recreate the player entity fresh
         if (this.gameWorld) {

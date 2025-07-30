@@ -456,7 +456,6 @@ export class DebugSystem extends System {
     }
 
     private renderRestrictedZones(): void {
-        console.log(`🔍 Rendering ${restrictedZones.length} restricted zones`)
         for (let i = 0; i < restrictedZones.length; i++) {
             const zone = restrictedZones[i]
 
@@ -492,7 +491,6 @@ export class DebugSystem extends System {
 
     private renderSpawnZones(): void {
         const spawnZones = getAllSpawnZones()
-        console.log(`🟢 Rendering ${spawnZones.length} spawn zones`)
         for (let i = 0; i < spawnZones.length; i++) {
             const zone = spawnZones[i]
 

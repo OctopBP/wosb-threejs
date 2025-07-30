@@ -1,7 +1,6 @@
 import type { Scene } from 'three'
 import { Vector3 } from 'three'
 import { createBulletCollision } from '../config/CollisionConfig'
-
 import { getParticleConfig } from '../config/ParticlesConfig'
 import { projectilePhysicsConfig } from '../config/WeaponConfig'
 import type {
@@ -21,7 +20,6 @@ import type { ParticleSystem } from './ParticleSystem'
 
 export class WeaponSystem extends System {
     private scene: Scene
-    private debugAutoTargeting: boolean = false
     private audioSystem: AudioSystem | null = null
     private particleSystem: ParticleSystem | null = null
 
@@ -43,16 +41,6 @@ export class WeaponSystem extends System {
     setParticleSystem(particleSystem: ParticleSystem): void {
         this.particleSystem = particleSystem
         // Note: We no longer pre-create particle systems, they are created per shot
-    }
-
-    // Method to enable/disable debug logging for auto-targeting weapons
-    setAutoTargetingDebug(enabled: boolean): void {
-        this.debugAutoTargeting = enabled
-        if (enabled) {
-            console.log('🎯 Auto-targeting weapon debug logging enabled')
-        } else {
-            console.log('🎯 Auto-targeting weapon debug logging disabled')
-        }
     }
 
     update(_deltaTime: number): void {
@@ -147,13 +135,6 @@ export class WeaponSystem extends System {
 
         if (!closestTarget) {
             // No targets in range, don't fire
-            if (this.debugAutoTargeting) {
-                const entityType = isPlayer ? 'Player' : 'Enemy'
-                const targetType = isPlayer ? 'enemies' : 'player'
-                console.log(
-                    `🎯 ${entityType} auto-targeting weapon: No ${targetType} in detection range, not firing`,
-                )
-            }
             return
         }
 
@@ -174,13 +155,6 @@ export class WeaponSystem extends System {
             const fireInterval = 1 / weapon.fireRate
 
             if (timeSinceLastShot >= fireInterval) {
-                if (this.debugAutoTargeting) {
-                    const entityType = isPlayer ? 'Player' : 'Enemy'
-                    console.log(
-                        `🎯 ${entityType} auto-targeting weapon: Firing at target ${distanceToTarget.toFixed(1)} units away`,
-                    )
-                }
-
                 // Fire projectile toward the target
                 this.fireProjectileToTarget(
                     entityId,
@@ -192,12 +166,6 @@ export class WeaponSystem extends System {
             }
         } else {
             // Target detected but out of firing range
-            if (this.debugAutoTargeting) {
-                const entityType = isPlayer ? 'Player' : 'Enemy'
-                console.log(
-                    `🎯 ${entityType} auto-targeting weapon: Target detected but out of range (${distanceToTarget.toFixed(1)}/${weapon.range})`,
-                )
-            }
         }
     }
 
@@ -250,11 +218,6 @@ export class WeaponSystem extends System {
             .filter((target) => target.distance <= weapon.range)
 
         if (targetsToShoot.length === 0) {
-            if (this.debugAutoTargeting) {
-                console.log(
-                    '🎯 Level 3 Player: No enemies in range for dual targeting',
-                )
-            }
             return
         }
 
@@ -266,23 +229,6 @@ export class WeaponSystem extends System {
                 weapon,
                 position,
                 target.position,
-            )
-
-            if (this.debugAutoTargeting) {
-                console.log(
-                    `🔥 Level 3 Player: Firing at target ${i + 1} at distance ${target.distance.toFixed(1)}`,
-                )
-            }
-        }
-
-        // Log dual targeting action
-        if (targetsToShoot.length === 2) {
-            console.log(
-                '💥 Level 3 Dual Shot: Firing at 2 enemies simultaneously!',
-            )
-        } else {
-            console.log(
-                `💥 Level 3 Shot: Firing at ${targetsToShoot.length} enemy`,
             )
         }
 

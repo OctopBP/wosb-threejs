@@ -219,9 +219,6 @@ export class DeathAnimationSystem extends System {
 
         // Apply the dissolve material
         renderable.mesh.material = dissolveMaterial
-        console.log(
-            'DeathAnimationSystem: Dissolve shader applied successfully',
-        )
     }
 
     private updateDissolveShader(entity: Entity, progress: number): void {

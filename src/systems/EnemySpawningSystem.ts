@@ -46,9 +46,6 @@ export class EnemySpawningSystem extends System {
                     // Award XP for each enemy type (currently only basic enemies)
                     const xpAwarded = enemyXPConfig.basicEnemy
                     this.levelingSystem.awardXP(player.id, xpAwarded)
-                    console.log(
-                        `💀 Enemy defeated! Awarded ${xpAwarded} XP to player`,
-                    )
                 }
             }
         }

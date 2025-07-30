@@ -1,6 +1,6 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
-import { audioAssets, defaultAudioSettings } from './config/AudioConfig'
+import { defaultAudioSettings } from './config/AudioConfig'
 import type { GameStateConfig } from './config/GameStateConfig'
 import { defaultGameStateConfig } from './config/GameStateConfig'
 import type {
@@ -429,11 +429,6 @@ export class GameWorld {
                 enemyArrow.arrowColor = options.arrowColor
             }
         }
-    }
-
-    // Method to enable/disable auto-targeting weapon debug logging
-    setAutoTargetingDebug(enabled: boolean): void {
-        this.weaponSystem.setAutoTargetingDebug(enabled)
     }
 
     // Debug visualization methods
