@@ -60,8 +60,7 @@ export const defaultLevelingStats = {
     damagePerLevel: 25, // Level 2: 50 damage (1 hit), Level 3: 75 damage (overkill for multiple targets)
     baseFireRate: 0.6, // Slower base fire rate for timing scenarios (1.67 shots per second)
     fireRatePerLevel: 0.2, // Level 2: 0.8 fire rate, Level 3: 1.0 fire rate
-    baseMaxHealth: 60, // Lower base health to ensure damage before level-ups
-    healthPerLevel: 60, // +60 max health per level (60 -> 120 -> 180)
+    baseMaxHealth: [60, 120, 240], // Lower base health to ensure damage before level-ups
     baseMaxSpeed: 2.5, // Slower than enemies initially
     speedPerLevel: 0.3, // Gradual speed increase per level
 }

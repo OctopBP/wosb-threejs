@@ -209,8 +209,7 @@ export interface LevelingStatsComponent extends Component {
     damagePerLevel: number
     baseFireRate: number
     fireRatePerLevel: number
-    baseMaxHealth: number
-    healthPerLevel: number
+    baseMaxHealth: number[]
     baseMaxSpeed: number
     speedPerLevel: number
 }
