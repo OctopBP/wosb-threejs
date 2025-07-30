@@ -10,6 +10,7 @@ export class Wave2State extends BaseGameState {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld: import('../../GameWorld').GameWorld,
     ): string | null {
         const waveConfig = config.wave2
 

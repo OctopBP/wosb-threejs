@@ -79,11 +79,12 @@ export class GameStateSystem extends System {
 
         // Handle current state using appropriate handler
         const stateHandler = this.stateHandlers.get(gameState.currentState)
-        if (stateHandler) {
+        if (stateHandler && this.gameWorld) {
             const nextState = stateHandler.handle(
                 gameState,
                 this.config,
                 this.world,
+                this.gameWorld,
             )
             if (nextState) {
                 gameState.currentState = nextState as GameState

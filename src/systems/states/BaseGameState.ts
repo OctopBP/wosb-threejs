@@ -15,13 +15,14 @@ export interface GameStateHandler {
      * @param gameState The current game state component
      * @param config Configuration for this state
      * @param world The ECS world
-     * @param levelingSystem Reference to the leveling system for XP awarding
+     * @param gameWorld The GameWorld instance for accessing camera and other systems
      * @returns Next state to transition to, or null to stay in current state
      */
     handle(
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld: import('../../GameWorld').GameWorld,
     ): string | null
 }
 
@@ -30,6 +31,7 @@ export abstract class BaseGameState implements GameStateHandler {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld: import('../../GameWorld').GameWorld,
     ): string | null
 
     protected getPlayerEntity(world: World): Entity | null {
