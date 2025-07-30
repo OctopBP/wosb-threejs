@@ -147,12 +147,9 @@ export class LevelingSystem extends System {
         // Update health (max health)
         const health = entity.getComponent<HealthComponent>('health')
         if (health) {
-            const newMaxHealth =
-                levelingStats.baseMaxHealth +
-                levelingStats.healthPerLevel * (newLevel - 1)
-            const healthIncrease = newMaxHealth - health.maxHealth
+            const newMaxHealth = levelingStats.baseMaxHealth[newLevel - 1]
             health.maxHealth = newMaxHealth
-            health.currentHealth += healthIncrease // Add the health increase to current health
+            health.currentHealth = newMaxHealth
         }
 
         // Update movement speed

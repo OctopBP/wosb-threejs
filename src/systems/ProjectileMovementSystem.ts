@@ -9,7 +9,6 @@ import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
 export class ProjectileMovementSystem extends System {
-    private debugHoming: boolean = false
     constructor(world: World) {
         super(world, ['projectile', 'position', 'velocity'])
     }
@@ -109,11 +108,6 @@ export class ProjectileMovementSystem extends System {
         )
         if (newTarget) {
             projectile.targetId = newTarget.id
-            if (this.debugHoming) {
-                console.log(
-                    `🎯 Homing projectile acquired new target: ${newTarget.id}`,
-                )
-            }
         }
     }
 
@@ -216,12 +210,6 @@ export class ProjectileMovementSystem extends System {
 
         // Update projectile rotation to face movement direction
         projectilePos.rotationY = Math.atan2(velocity.dx, velocity.dz)
-
-        if (this.debugHoming && Math.abs(effectiveTurn) > 0.01) {
-            console.log(
-                `🎯 Homing projectile turning ${((effectiveTurn * 180) / Math.PI).toFixed(1)}° toward target`,
-            )
-        }
     }
 
     private calculateDistance(

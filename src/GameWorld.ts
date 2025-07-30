@@ -1,6 +1,6 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
-import { audioAssets, defaultAudioSettings } from './config/AudioConfig'
+import { defaultAudioSettings } from './config/AudioConfig'
 import type { GameStateConfig } from './config/GameStateConfig'
 import { defaultGameStateConfig } from './config/GameStateConfig'
 import type {
@@ -431,11 +431,6 @@ export class GameWorld {
         }
     }
 
-    // Method to enable/disable auto-targeting weapon debug logging
-    setAutoTargetingDebug(enabled: boolean): void {
-        this.weaponSystem.setAutoTargetingDebug(enabled)
-    }
-
     // Debug visualization methods
     setDebugMode(enabled: boolean): void {
         this.debugSystem.setDebugEnabled(enabled)
@@ -597,14 +592,10 @@ export class GameWorld {
      * Setup the audio system with assets and initialize on first user interaction
      */
     private async setupAudioSystem(): Promise<void> {
-        // Register audio assets
-        this.audioSystem.registerAssets(audioAssets)
-
         // Apply default settings
         this.audioSystem.setMasterVolume(defaultAudioSettings.masterVolume)
         this.audioSystem.setMusicVolume(defaultAudioSettings.musicVolume)
         this.audioSystem.setSfxVolume(defaultAudioSettings.sfxVolume)
-        this.audioSystem.setUIVolume(defaultAudioSettings.uiVolume)
         this.audioSystem.setMuted(defaultAudioSettings.muted)
 
         // Setup user interaction listener to initialize audio
@@ -620,7 +611,6 @@ export class GameWorld {
 
             try {
                 await this.audioSystem.initialize(this.camera)
-                await this.audioSystem.loadAssets()
                 this.audioInitialized = true
 
                 // Start background music when ready

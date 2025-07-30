@@ -4,6 +4,7 @@ import {
     createLevelComponent,
     createLevelingStatsComponent,
     createXPComponent,
+    defaultLevelingStats,
 } from '../config/LevelingConfig'
 import type { MovementConfigPreset } from '../config/MovementPresets'
 import { createMovementConfig } from '../config/MovementPresets'
@@ -85,8 +86,8 @@ export function createPlayerShip(
     // Health component - player starts with full health
     const health: HealthComponent = {
         type: 'health',
-        maxHealth: 60, // Matches the new base health from leveling config
-        currentHealth: 60,
+        maxHealth: defaultLevelingStats.baseMaxHealth[0],
+        currentHealth: defaultLevelingStats.baseMaxHealth[0],
         isDead: false,
     }
     entity.addComponent(health)

@@ -20,7 +20,6 @@ export class BossFightState extends BaseGameState {
         if (!gameState.bossSpawned) {
             this.spawnBoss(world, config)
             gameState.bossSpawned = true
-            console.log('💀 Boss Fight: Boss spawned!')
         }
 
         // Boss fight continues until player dies or boss is defeated
