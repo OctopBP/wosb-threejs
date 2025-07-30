@@ -3,7 +3,6 @@ import { getRandomSpawnDistanceForWaveOrBoss } from '../../config/GameStateConfi
 import type { GameStateComponent } from '../../ecs/Component'
 import type { World } from '../../ecs/World'
 import { BaseGameState } from './BaseGameState'
-
 export class InitialWaveState extends BaseGameState {
     private initialEnemySpawned = false
 
@@ -23,7 +22,6 @@ export class InitialWaveState extends BaseGameState {
             )
             this.initialEnemySpawned = true
             gameState.initialWaveEnemiesSpawned = 1
-            console.log('🛡️ Initial Wave: First enemy spawned at game start!')
         }
 
         // Check if initial enemy is defeated
@@ -34,7 +32,6 @@ export class InitialWaveState extends BaseGameState {
                 initialWaveConfig.enemyCount &&
             aliveEnemies.length === 0
         ) {
-            console.log('🎮 Game State: Initial Wave Complete! Starting Wave 1')
             return 'enemiesWave1'
         }
 

@@ -98,10 +98,6 @@ export class LevelingSystem extends System {
             level.hasLeveledUp = true
             level.levelUpTime = performance.now() / 1000
 
-            console.log(
-                `🎉 LEVEL UP! Entity ${entity.id} reached level ${level.currentLevel}!`,
-            )
-
             // Play level up sound
             this.playLevelUpSound()
 
@@ -146,9 +142,6 @@ export class LevelingSystem extends System {
             weapon.fireRate =
                 levelingStats.baseFireRate +
                 levelingStats.fireRatePerLevel * (newLevel - 1)
-            console.log(
-                `⚔️ Weapon upgraded: Damage ${weapon.damage}, Fire Rate ${weapon.fireRate}`,
-            )
         }
 
         // Update health (max health)
@@ -160,9 +153,6 @@ export class LevelingSystem extends System {
             const healthIncrease = newMaxHealth - health.maxHealth
             health.maxHealth = newMaxHealth
             health.currentHealth += healthIncrease // Add the health increase to current health
-            console.log(
-                `❤️ Health upgraded: Max Health ${health.maxHealth}, Current Health ${health.currentHealth}`,
-            )
         }
 
         // Update movement speed
@@ -172,9 +162,6 @@ export class LevelingSystem extends System {
             movementConfig.maxSpeed =
                 levelingStats.baseMaxSpeed +
                 levelingStats.speedPerLevel * (newLevel - 1)
-            console.log(
-                `💨 Speed upgraded: Max Speed ${movementConfig.maxSpeed}`,
-            )
         }
     }
 
@@ -183,7 +170,6 @@ export class LevelingSystem extends System {
         if (health) {
             health.currentHealth = health.maxHealth
             health.isDead = false
-            console.log(`🏥 Health restored to max: ${health.maxHealth}`)
         }
     }
 
@@ -197,14 +183,9 @@ export class LevelingSystem extends System {
         if (player) {
             const newShipModel = getShipModelForLevel(level)
             if (renderable.meshType !== newShipModel) {
-                console.log(
-                    `🚢 Upgrading ship model from ${renderable.meshType} to ${newShipModel} for level ${level}`,
-                )
                 renderable.meshType = newShipModel
             }
         }
-
-        console.log(`🎨 Applying visual upgrades for level ${level}`)
     }
 
     private triggerLevelUpAnimation(entity: Entity): void {
@@ -252,7 +233,6 @@ export class LevelingSystem extends System {
         }
 
         animateLevelUp()
-        console.log(`✨ Level-up animation triggered for entity ${entity.id}`)
     }
 
     // Helper method to get current XP progress for UI

@@ -224,7 +224,6 @@ export class GameWorld {
         // Create and add islands to the scene
         const island = createIsland(0, 0, 0, 1.0)
         this.world.addEntity(island)
-        console.log('🏝️ Islands created and added to scene')
     }
 
     update(time: number): void {
@@ -591,8 +590,6 @@ export class GameWorld {
                 'player',
                 10,
             )
-
-            console.log('🎮 Player entity recreated successfully')
         }
     }
 
@@ -628,8 +625,6 @@ export class GameWorld {
 
                 // Start background music when ready
                 this.audioSystem.playMusic('background')
-
-                console.log('🎵 Audio system initialized and ready')
 
                 // Remove event listeners
                 document.removeEventListener('click', initializeAudio)

@@ -124,7 +124,6 @@ export class GameStateSystem extends System {
         }
         this.gameStateEntity.addComponent(gameState)
         this.world.addEntity(this.gameStateEntity)
-        console.log('🎮 Game State: Starting Initial Wave')
     }
 
     private getGameState(): GameStateComponent | null {

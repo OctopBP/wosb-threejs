@@ -94,14 +94,7 @@ export abstract class BaseGameState implements GameStateHandler {
             // Use the valid spawn position found within spawn zones
             spawnX = validSpawnPosition.x
             spawnZ = validSpawnPosition.z
-            console.log(
-                `🟢 Enemy spawned at (${spawnX.toFixed(1)}, ${spawnZ.toFixed(1)})`,
-            )
         } else {
-            // Fallback to original logic if no valid spawn zone position found
-            console.warn(
-                `⚠️ No valid spawn zone found at distance ${distance.toFixed(1)}, using fallback spawn`,
-            )
             const spawnAngle = Math.random() * 2 * Math.PI
             spawnX = playerPosition.x + Math.cos(spawnAngle) * distance
             spawnZ = playerPosition.z + Math.sin(spawnAngle) * distance

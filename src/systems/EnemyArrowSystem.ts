@@ -32,14 +32,6 @@ export class EnemyArrowSystem extends System {
             'assets/sprites/enemy_target.png',
             (texture) => {
                 this.arrowTexture = texture
-                console.log('Arrow texture loaded successfully')
-            },
-            (progress) => {
-                console.log('Loading arrow texture...', progress)
-            },
-            (error) => {
-                console.error('Failed to load arrow texture:', error)
-                // Fallback: we'll create arrows without texture if loading fails
             },
         )
     }

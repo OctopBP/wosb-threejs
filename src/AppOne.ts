@@ -1,5 +1,3 @@
-// Tree-shakeable imports - only import what we actually use
-
 import { GUI } from 'lil-gui'
 import {
     Color,
@@ -706,12 +704,10 @@ export class AppOne {
                 .onChange((v: string) => {
                     uniforms.uPeakColor.value.set(v)
                 })
-            console.log('Water folder created with uniforms:', uniforms)
         } else {
             waterFolder
                 .add({ error: 'Water uniforms not ready' }, 'error')
                 .name('Error')
-            console.error('Water uniforms not available in createWaterFolder.')
         }
     }
 

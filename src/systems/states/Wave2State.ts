@@ -3,7 +3,6 @@ import { getRandomSpawnDistanceForWaveOrBoss } from '../../config/GameStateConfi
 import type { GameStateComponent } from '../../ecs/Component'
 import type { World } from '../../ecs/World'
 import { BaseGameState } from './BaseGameState'
-
 export class Wave2State extends BaseGameState {
     private wave2EnemiesSpawned = false
 
@@ -25,9 +24,6 @@ export class Wave2State extends BaseGameState {
                 gameState.wave2EnemiesSpawned++
             }
             this.wave2EnemiesSpawned = true
-            console.log(
-                `🛡️ Wave 2: Spawned all ${waveConfig.enemyCount} enemies immediately!`,
-            )
         }
 
         // Check if all wave 2 enemies are defeated
@@ -37,7 +33,6 @@ export class Wave2State extends BaseGameState {
             gameState.wave2EnemiesSpawned === waveConfig.enemyCount &&
             aliveEnemies.length === 0
         ) {
-            console.log('🎮 Game State: Wave 2 Complete! Boss Fight Starting!')
             return 'bossFight'
         }
 
