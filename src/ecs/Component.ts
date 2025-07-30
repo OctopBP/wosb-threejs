@@ -294,6 +294,7 @@ export type GameState =
     | 'initialWave'
     | 'enemiesWave1'
     | 'enemiesWave2'
+    | 'bossPreview'
     | 'bossFight'
     | 'newShipOffer'
 

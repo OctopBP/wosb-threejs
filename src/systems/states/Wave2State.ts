@@ -33,7 +33,7 @@ export class Wave2State extends BaseGameState {
             gameState.wave2EnemiesSpawned === waveConfig.enemyCount &&
             aliveEnemies.length === 0
         ) {
-            return 'bossFight'
+            return 'bossPreview'
         }
 
         return null // Stay in current state
