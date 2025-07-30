@@ -52,3 +52,5 @@ export function getRandomSpawnDistanceForWaveOrBoss(config: {
         Math.random() * (maxSpawnDistance - minSpawnDistance) + minSpawnDistance
     )
 }
+
+export const TIME_TO_SHOW_NEW_SHIP_OFFER = 1.5

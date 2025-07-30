@@ -1,6 +1,9 @@
 import { Mesh } from 'three'
 import type { GameStateConfig } from '../config/GameStateConfig'
-import { defaultGameStateConfig } from '../config/GameStateConfig'
+import {
+    defaultGameStateConfig,
+    TIME_TO_SHOW_NEW_SHIP_OFFER,
+} from '../config/GameStateConfig'
 import type {
     GameState,
     GameStateComponent,
@@ -73,9 +76,6 @@ export class GameStateSystem extends System {
             gameState.currentState !== 'bossFight' &&
             gameState.currentState !== 'newShipOffer'
         ) {
-            console.log(
-                `⏰ ${this.config.boss.forceSpawnTimeSeconds} seconds reached! Forcing boss fight...`,
-            )
             gameState.currentState = 'bossFight'
         }
 
@@ -153,9 +153,6 @@ export class GameStateSystem extends System {
         if (playerHealth.isDead && !this.isPlayerDying) {
             this.isPlayerDying = true
             this.playerDeathTime = performance.now()
-            console.log(
-                '💥 Player ship destroyed! Explosion effects playing...',
-            )
         }
 
         // If player is dying and 1 second has passed, show new ship offer
@@ -163,12 +160,9 @@ export class GameStateSystem extends System {
             const currentTime = performance.now()
             const timeSinceDeath = (currentTime - this.playerDeathTime) / 1000 // Convert to seconds
 
-            if (timeSinceDeath >= 1.0) {
+            if (timeSinceDeath >= TIME_TO_SHOW_NEW_SHIP_OFFER) {
                 gameState.currentState = 'newShipOffer'
-                this.isPlayerDying = false // Reset the flag
-                console.log(
-                    '💀 1 second passed since explosion - showing new ship offer...',
-                )
+                this.isPlayerDying = false
             }
         }
     }
@@ -177,8 +171,6 @@ export class GameStateSystem extends System {
     public restartGame(): void {
         const gameState = this.getGameState()
         if (!gameState) return
-
-        console.log('🎮 Starting complete game restart...')
 
         // Reset timing
         this.gameStartTime = 0
@@ -237,8 +229,6 @@ export class GameStateSystem extends System {
             // Remove entity from world
             this.world.removeEntity(entity.id)
         }
-
-        console.log('🎮 Game restart cleanup complete - Initial Wave beginning')
 
         // Recreate the player entity fresh
         if (this.gameWorld) {
