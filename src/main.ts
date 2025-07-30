@@ -12,6 +12,8 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (overlay) overlay.style.display = 'none'
     }
 
+    await initializePlaygamaBridge()
+
     showLoading()
     await preloadModels()
     await preloadAudio()
@@ -24,3 +26,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     app.run()
 })
+
+function initializePlaygamaBridge(): Promise<void> {
+    if (window.bridge && typeof window.bridge.initialize === 'function') {
+        return window.bridge.initialize()
+    }
+
+    return Promise.resolve()
+}
