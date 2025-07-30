@@ -597,14 +597,10 @@ export class GameWorld {
      * Setup the audio system with assets and initialize on first user interaction
      */
     private async setupAudioSystem(): Promise<void> {
-        // Register audio assets
-        this.audioSystem.registerAssets(audioAssets)
-
         // Apply default settings
         this.audioSystem.setMasterVolume(defaultAudioSettings.masterVolume)
         this.audioSystem.setMusicVolume(defaultAudioSettings.musicVolume)
         this.audioSystem.setSfxVolume(defaultAudioSettings.sfxVolume)
-        this.audioSystem.setUIVolume(defaultAudioSettings.uiVolume)
         this.audioSystem.setMuted(defaultAudioSettings.muted)
 
         // Setup user interaction listener to initialize audio
@@ -620,7 +616,6 @@ export class GameWorld {
 
             try {
                 await this.audioSystem.initialize(this.camera)
-                await this.audioSystem.loadAssets()
                 this.audioInitialized = true
 
                 // Start background music when ready

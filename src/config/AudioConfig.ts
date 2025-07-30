@@ -4,7 +4,7 @@ import type { AudioAssets } from '../systems/AudioSystem'
  * Audio configuration for the game
  * Using actual audio files added to the project
  */
-export const audioAssets: AudioAssets = {
+export const AUDIO_ASSETS: AudioAssets = {
     // Background music
     music: {
         background: {
@@ -45,9 +45,6 @@ export const audioAssets: AudioAssets = {
             },
         },
     },
-
-    // UI sounds - empty for now since no UI audio files provided
-    ui: {},
 }
 
 /**

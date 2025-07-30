@@ -9,12 +9,12 @@ import {
     MeshLambertMaterial,
     SphereGeometry,
 } from 'three'
+import { getModelClone } from '../AssetsPreloader'
 import type { ModelConfig, PrimitiveModelConfig } from '../config/ModelConfig'
 import { getModelConfig, isPrimitiveModel } from '../config/ModelConfig'
 import type { PositionComponent, RenderableComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
-import { getModelClone } from '../ModelPreloader'
 export class RenderSystem extends System {
     private scene: Scene
     private loadingManager: LoadingManager
