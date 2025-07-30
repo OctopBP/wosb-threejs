@@ -56,13 +56,13 @@ export const enemyXPConfig: EnemyXPConfig = {
 
 // Default leveling stats configuration
 export const defaultLevelingStats = {
-    baseDamage: 25, // Level 1: 25 damage (enemy has 50 HP = 2 hits)
-    damagePerLevel: 25, // Level 2: 50 damage (1 hit), Level 3: 75 damage (overkill for multiple targets)
-    baseFireRate: 0.6, // Slower base fire rate for timing scenarios (1.67 shots per second)
-    fireRatePerLevel: 0.2, // Level 2: 0.8 fire rate, Level 3: 1.0 fire rate
-    baseMaxHealth: [60, 120, 240], // Lower base health to ensure damage before level-ups
-    baseMaxSpeed: 2.5, // Slower than enemies initially
-    speedPerLevel: 0.3, // Gradual speed increase per level
+    baseDamage: 25,
+    damagePerLevel: 25,
+    baseFireRate: 0.6,
+    fireRatePerLevel: 0.2,
+    baseMaxHealth: [60, 120, 240],
+    baseMaxSpeed: 2.5,
+    speedPerLevel: 1.0,
 }
 
 // Level-up animation configuration

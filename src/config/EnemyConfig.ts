@@ -20,20 +20,20 @@ export interface EnemySpawningConfig {
 
 // Enemy movement configuration preset
 export const enemyMovementPreset: MovementConfigPreset = {
-    maxSpeed: 3.5, // Faster than player's initial speed (2.5)
-    accelerationForce: 8.0, // Quick acceleration to catch player
-    decelerationForce: 3.0,
-    rotationAcceleration: 1.0, // Good rotation acceleration for combat
-    maxRotationSpeed: 5.0, // Good max rotation speed for responsive movement
+    maxSpeed: 5.0,
+    accelerationForce: 8.0,
+    decelerationForce: 0.5,
+    rotationAcceleration: 2.0,
+    maxRotationSpeed: 6.0,
     inputDeadZone: 0.1,
     pointerSensitivity: 0.8,
     linearDampening: 0.95,
-    rotationDampening: 0.75, // Good rotation dampening for stable movement
+    rotationDampening: 0.75,
 }
 
 // Basic enemy health configuration
 export const basicEnemyHealthPreset: EnemyHealthConfig = {
-    maxHealth: 50, // Dies in 2 hits at level 1 (25 damage), 1 hit at level 2 (50 damage)
+    maxHealth: 50,
 }
 
 export const basicEnemyFoamTrailPreset: FoamTrailConfig = {

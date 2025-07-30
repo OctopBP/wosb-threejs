@@ -44,8 +44,8 @@ export function createPlayerShip(
     // Speed component - no initial movement
     const speed: SpeedComponent = {
         type: 'speed',
-        currentSpeed: 0,
-        maxSpeed: 2.5, // Will be overridden by movement config, but good default
+        currentSpeed: defaultLevelingStats.baseMaxSpeed,
+        maxSpeed: defaultLevelingStats.baseMaxSpeed,
     }
     entity.addComponent(speed)
 
