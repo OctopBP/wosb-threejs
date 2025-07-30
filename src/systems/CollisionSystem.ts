@@ -131,6 +131,11 @@ export class CollisionSystem extends System {
                                 target,
                             )
                         }
+
+                        // For player ship, trigger explosion effects immediately
+                        if (target.hasComponent('player')) {
+                            this.triggerPlayerExplosionEffects(targetPos)
+                        }
                     }
 
                     break // Projectile can only hit one target
@@ -256,5 +261,89 @@ export class CollisionSystem extends System {
 
         // Use the death sound for all death events
         this.audioSystem.playSfx('death')
+    }
+
+    /**
+     * Trigger explosion effects when player ship is destroyed
+     */
+    private triggerPlayerExplosionEffects(position: PositionComponent): void {
+        if (!this.particleSystem) return
+
+        const explosionPosition = new Vector3(
+            position.x,
+            position.y + 0.5,
+            position.z,
+        )
+        const timestamp = Date.now()
+        const randomId = Math.random()
+
+        // Stage 1: Nuclear explosion (immediate, intense core blast)
+        const nukeId = `player_nuke_explosion_${timestamp}_${randomId}`
+        const nukeConfig = getParticleConfig(
+            'nukeExplosion',
+            explosionPosition.clone(),
+            new Vector3(0, 1, 0),
+        )
+        this.particleSystem.createAndBurstParticleSystem(nukeId, nukeConfig)
+
+        // Stage 2: Big explosion flames (50ms delay, main blast)
+        setTimeout(() => {
+            if (!this.particleSystem) return
+            const bigExplosionId = `player_big_explosion_${timestamp}_${randomId}`
+            const bigExplosionConfig = getParticleConfig(
+                'bigExplosion',
+                explosionPosition.clone(),
+                new Vector3(0, 1, 0),
+            )
+            this.particleSystem.createAndBurstParticleSystem(
+                bigExplosionId,
+                bigExplosionConfig,
+            )
+        }, 50)
+
+        // Stage 3: Small explosion flames (150ms delay, secondary bursts)
+        setTimeout(() => {
+            if (!this.particleSystem) return
+            const smallExplosionId = `player_small_explosion_${timestamp}_${randomId}`
+            const smallExplosionConfig = getParticleConfig(
+                'smallExplosion',
+                explosionPosition.clone(),
+                new Vector3(0, 1, 0),
+            )
+            this.particleSystem.createAndBurstParticleSystem(
+                smallExplosionId,
+                smallExplosionConfig,
+            )
+        }, 150)
+
+        // Stage 4: Explosion smoke (300ms delay, lingering aftermath)
+        setTimeout(() => {
+            if (!this.particleSystem) return
+            const smokeId = `player_explosion_smoke_${timestamp}_${randomId}`
+            const smokeConfig = getParticleConfig(
+                'explosionSmoke',
+                explosionPosition.clone(),
+                new Vector3(0, 1, 0),
+            )
+            this.particleSystem.createAndBurstParticleSystem(
+                smokeId,
+                smokeConfig,
+            )
+        }, 300)
+
+        // Stage 5: Wreckage particles (400ms delay, debris)
+        setTimeout(() => {
+            if (!this.particleSystem) return
+            const wreckageId = `player_wreckage_death_${timestamp}_${randomId}`
+            const wreckageConfig = getParticleConfig(
+                'deathWreckage',
+                explosionPosition.clone(),
+                new Vector3(0, 1, 0),
+            )
+            this.particleSystem.createAndBurstParticleSystem(
+                wreckageId,
+                wreckageConfig,
+            )
+        }, 400)
     }
 }
