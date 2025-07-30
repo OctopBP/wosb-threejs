@@ -1,6 +1,9 @@
 import { Mesh } from 'three'
 import type { GameStateConfig } from '../config/GameStateConfig'
-import { defaultGameStateConfig } from '../config/GameStateConfig'
+import {
+    defaultGameStateConfig,
+    TIME_TO_SHOW_NEW_SHIP_OFFER,
+} from '../config/GameStateConfig'
 import type {
     GameState,
     GameStateComponent,
@@ -25,6 +28,8 @@ export class GameStateSystem extends System {
     public config: GameStateConfig
     private stateHandlers: Map<string, GameStateHandler> = new Map()
     private gameStartTime: number = 0 // Track game start time
+    private playerDeathTime: number = 0 // Track when player died
+    private isPlayerDying: boolean = false // Flag to track if player is in dying state
 
     constructor(
         world: World,
@@ -144,9 +149,21 @@ export class GameStateSystem extends System {
         const playerHealth = player.getComponent<HealthComponent>('health')
         if (!playerHealth) return
 
-        // If player is dead, transition to new ship offer
-        if (playerHealth.isDead) {
-            gameState.currentState = 'newShipOffer'
+        // Check if player just died (start the explosion delay)
+        if (playerHealth.isDead && !this.isPlayerDying) {
+            this.isPlayerDying = true
+            this.playerDeathTime = performance.now()
+        }
+
+        // If player is dying and 1 second has passed, show new ship offer
+        if (this.isPlayerDying && playerHealth.isDead) {
+            const currentTime = performance.now()
+            const timeSinceDeath = (currentTime - this.playerDeathTime) / 1000 // Convert to seconds
+
+            if (timeSinceDeath >= TIME_TO_SHOW_NEW_SHIP_OFFER) {
+                gameState.currentState = 'newShipOffer'
+                this.isPlayerDying = false
+            }
         }
     }
 
@@ -157,6 +174,8 @@ export class GameStateSystem extends System {
 
         // Reset timing
         this.gameStartTime = 0
+        this.playerDeathTime = 0
+        this.isPlayerDying = false
 
         // Reset game state
         gameState.currentState = 'initialWave'

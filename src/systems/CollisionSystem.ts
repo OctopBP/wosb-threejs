@@ -122,11 +122,8 @@ export class CollisionSystem extends System {
                         // Play death/explosion sound
                         this.playDeathSound()
 
-                        // Start death animation for enemies (not player)
-                        if (
-                            target.hasComponent('enemy') &&
-                            this.deathAnimationSystem
-                        ) {
+                        // Start death animation for all entities (enemies and player)
+                        if (this.deathAnimationSystem) {
                             this.deathAnimationSystem.startDeathAnimation(
                                 target,
                             )
