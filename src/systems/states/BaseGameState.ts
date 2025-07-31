@@ -119,10 +119,29 @@ export abstract class BaseGameState implements GameStateHandler {
         const player = this.getPlayerEntity(world)
         if (!player) return
 
-        // Spawn boss in front of player with random distance
+        // Use random distance from config
         const distance = getRandomSpawnDistanceForWaveOrBoss(config.boss)
-        const spawnX = playerPosition.x
-        const spawnZ = playerPosition.z + distance
+
+        // Try to find a valid spawn position within spawn zones
+        const validSpawnPosition = findValidSpawnPosition(
+            playerPosition.x,
+            playerPosition.z,
+            distance,
+            50, // max attempts
+        )
+
+        let spawnX: number
+        let spawnZ: number
+
+        if (validSpawnPosition) {
+            // Use the valid spawn position found within spawn zones
+            spawnX = validSpawnPosition.x
+            spawnZ = validSpawnPosition.z
+        } else {
+            // Fallback: spawn in front of player if no valid position found
+            spawnX = playerPosition.x
+            spawnZ = playerPosition.z + distance
+        }
 
         // Create boss ship
         const boss = createBossShip(
