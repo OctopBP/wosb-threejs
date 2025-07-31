@@ -18,8 +18,8 @@ export interface BossVisualConfig {
 
 // Boss movement configuration preset
 export const bossMovementPreset: MovementConfigPreset = {
-    maxSpeed: 4.0, // Much faster than player (even at max level)
-    accelerationForce: 5.0, // Very quick acceleration
+    maxSpeed: 7.0, // Much faster than player (even at max level)
+    accelerationForce: 3.0, // Very quick acceleration
     decelerationForce: 4.0,
     rotationAcceleration: 1.0, // Fast rotation acceleration for combat
     maxRotationSpeed: 6.0, // High max rotation speed for agile combat

@@ -32,8 +32,9 @@ export class AccelerationSystem extends System {
             const config =
                 entity.getComponent<MovementConfigComponent>('movementConfig')
 
-            if (!position || !speed || !rotationSpeed || !input || !config)
+            if (!position || !speed || !rotationSpeed || !input || !config) {
                 continue
+            }
 
             if (input.hasInput) {
                 this.applyAcceleration(
@@ -155,7 +156,5 @@ export class AccelerationSystem extends System {
 
 function vectorOrientationAndDifference(A: Vector2, B: Vector2): number {
     const cross = A.x * B.y - A.y * B.x
-    const dot = A.x * B.x + A.y * B.y
-
-    return (Math.sign(cross) * (1 - dot)) / 2
+    return Math.sign(cross)
 }

@@ -20,8 +20,8 @@ export interface EnemySpawningConfig {
 
 // Enemy movement configuration preset
 export const enemyMovementPreset: MovementConfigPreset = {
-    maxSpeed: 5.0,
-    accelerationForce: 8.0,
+    maxSpeed: 7.0,
+    accelerationForce: 5.0,
     decelerationForce: 0.5,
     rotationAcceleration: 2.0,
     maxRotationSpeed: 6.0,

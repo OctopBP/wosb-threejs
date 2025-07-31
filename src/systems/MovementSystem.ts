@@ -34,7 +34,9 @@ export class MovementSystem extends System {
         speed: SpeedComponent,
         deltaTime: number,
     ): void {
-        if (speed.currentSpeed === 0) return
+        if (speed.currentSpeed === 0) {
+            return
+        }
 
         // Calculate forward direction based on ship's Y rotation
         // Ship model faces backwards by default, so we add Math.PI

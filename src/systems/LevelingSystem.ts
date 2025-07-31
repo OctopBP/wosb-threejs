@@ -156,9 +156,7 @@ export class LevelingSystem extends System {
         const movementConfig =
             entity.getComponent<MovementConfigComponent>('movementConfig')
         if (movementConfig) {
-            movementConfig.maxSpeed =
-                levelingStats.baseMaxSpeed +
-                levelingStats.speedPerLevel * (newLevel - 1)
+            movementConfig.maxSpeed = levelingStats.speedPerLevel[newLevel - 1]
         }
     }
 

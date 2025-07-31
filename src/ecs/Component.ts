@@ -210,8 +210,7 @@ export interface LevelingStatsComponent extends Component {
     baseFireRate: number
     fireRatePerLevel: number
     baseMaxHealth: number[]
-    baseMaxSpeed: number
-    speedPerLevel: number
+    speedPerLevel: number[]
 }
 
 // Camera Target component for entities that the camera should focus on

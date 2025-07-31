@@ -61,8 +61,7 @@ export const defaultLevelingStats = {
     baseFireRate: 0.6,
     fireRatePerLevel: 0.2,
     baseMaxHealth: [60, 120, 240],
-    baseMaxSpeed: 2.5,
-    speedPerLevel: 1.0,
+    speedPerLevel: [5.5, 6.0, 6.5],
 }
 
 // Level-up animation configuration

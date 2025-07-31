@@ -41,11 +41,13 @@ export function createPlayerShip(
     }
     entity.addComponent(position)
 
+    const movementConfig = createMovementConfig(configOverrides)
+
     // Speed component - no initial movement
     const speed: SpeedComponent = {
         type: 'speed',
-        currentSpeed: defaultLevelingStats.baseMaxSpeed,
-        maxSpeed: defaultLevelingStats.baseMaxSpeed,
+        currentSpeed: 0,
+        maxSpeed: movementConfig.maxSpeed,
     }
     entity.addComponent(speed)
 
@@ -80,7 +82,6 @@ export function createPlayerShip(
     entity.addComponent(input)
 
     // Movement configuration using balanced preset
-    const movementConfig = createMovementConfig(configOverrides)
     entity.addComponent(movementConfig)
 
     // Health component - player starts with full health
