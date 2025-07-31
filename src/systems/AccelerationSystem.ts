@@ -156,5 +156,7 @@ export class AccelerationSystem extends System {
 
 function vectorOrientationAndDifference(A: Vector2, B: Vector2): number {
     const cross = A.x * B.y - A.y * B.x
-    return Math.sign(cross)
+    const dot = A.x * B.x + A.y * B.y
+
+    return Math.max(Math.min(Math.sign(cross) * (1 - dot) * 3.0, 1.0), -1.0)
 }
