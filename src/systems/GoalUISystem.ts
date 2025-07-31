@@ -94,7 +94,7 @@ export class GoalUISystem extends System {
         const enemyIcon = document.createElement('img')
         enemyIcon.src = 'assets/ui/enemy_icon.png'
         enemyIcon.style.position = 'absolute'
-        enemyIcon.style.left = '8px'
+        enemyIcon.style.left = '4px'
         enemyIcon.style.top = '50%'
         enemyIcon.style.transform = 'translateY(-50%)'
         enemyIcon.style.width = '24px'
@@ -105,12 +105,13 @@ export class GoalUISystem extends System {
         // Counter text
         this.counterText = document.createElement('div')
         this.counterText.style.fontFamily = 'Arial, sans-serif'
-        this.counterText.style.fontSize = '18px'
+        this.counterText.style.fontSize = '16px'
         this.counterText.style.fontWeight = 'bold'
         this.counterText.style.color = '#FFFFFF'
         this.counterText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
         this.counterText.style.position = 'absolute'
-        this.counterText.style.right = '8px'
+        this.counterText.style.right = '4px'
+        this.counterText.style.left = '28px'
         this.counterText.style.top = '50%'
         this.counterText.style.transform = 'translateY(-50%)'
         counterBg.appendChild(this.counterText)
