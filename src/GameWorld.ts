@@ -44,6 +44,7 @@ import { EnemyHealthUISystem } from './systems/EnemyHealthUISystem'
 import { InputSystem } from './systems/InputSystem'
 import { LevelingSystem } from './systems/LevelingSystem'
 import { MovementSystem } from './systems/MovementSystem'
+import { MovementTutorialSystem } from './systems/MovementTutorialSystem'
 import { ParticleSystem } from './systems/ParticleSystem'
 import { PlayerUISystem } from './systems/PlayerUISystem'
 import { ProceduralTextureSystem } from './systems/ProceduralTextureSystem'
@@ -89,6 +90,7 @@ export class GameWorld {
     private particleSystem: ParticleSystem
     private debugSystem: DebugSystem
     private proceduralTextureSystem: ProceduralTextureSystem
+    private movementTutorialSystem: MovementTutorialSystem
     private playerEntity: Entity | null = null
     private debugEntity: Entity | null = null
     private lastTime: number = 0
@@ -142,6 +144,7 @@ export class GameWorld {
         this.particleSystem = new ParticleSystem(this.world, scene, camera)
         this.proceduralTextureSystem = new ProceduralTextureSystem(this.world)
         this.debugSystem = new DebugSystem(this.world, scene)
+        this.movementTutorialSystem = new MovementTutorialSystem(this.world)
 
         // Connect systems that need references to each other
         this.gameStateSystem.setGameWorld(this)
@@ -163,6 +166,7 @@ export class GameWorld {
         // Add systems to world in execution order
         this.world.addSystem(this.audioSystem) //Update audio system
         this.world.addSystem(this.audioUISystem) //Handle audio UI controls
+        this.world.addSystem(this.movementTutorialSystem) //Show movement tutorial at start
         this.world.addSystem(this.virtualJoystickSystem) //Handle virtual joystick UI
         this.world.addSystem(this.inputSystem) //Handle input events and process to direction
         this.world.addSystem(this.gameStateSystem) //Manage game state and spawn enemies
