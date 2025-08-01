@@ -138,7 +138,7 @@ export class AppOne {
             uPeakTransition: { value: 0.2 },
             uTroughThreshold: { value: -1.5 },
             uTroughTransition: { value: 0.75 },
-            uFresnelScale: { value: 0.7 },
+            uFresnelScale: { value: 0.9 },
             uFresnelPower: { value: 0.5 },
             uEnvironmentMap: { value: envMap },
             bwTexture: {
