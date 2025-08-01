@@ -18,6 +18,7 @@ import {
     Vector3,
     WebGLRenderer,
 } from 'three'
+import { defaultCameraConfig } from './config/CameraConfig'
 import { GameWorld } from './GameWorld'
 import waterFragmentShader from './shaders/water.frag?raw'
 import waterVertexShader from './shaders/water.vert?raw'
@@ -169,14 +170,15 @@ export class AppOne {
 
     private createCamera(): PerspectiveCamera {
         const camera = new PerspectiveCamera(
-            50, // field of view
+            defaultCameraConfig.states.playerFocus.fov, // field of view
             window.innerWidth / window.innerHeight, // aspect ratio
             0.1, // near plane
             1000, // far plane
         )
 
         // Position camera
-        camera.position.set(0, 12, -10)
+        const playerOffset = defaultCameraConfig.states.playerFocus.offset
+        camera.position.set(playerOffset.x, playerOffset.y, playerOffset.z)
         camera.lookAt(new Vector3(0, 0, 0)) // Point camera at the origin where the player ship will be
 
         return camera
