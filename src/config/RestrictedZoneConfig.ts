@@ -1,10 +1,8 @@
 export interface RestrictedZoneConfig {
-    minX: number
-    maxX: number
-    minZ: number
-    maxZ: number
-    minY?: number
-    maxY?: number
+    centerX: number
+    centerY: number
+    centerZ: number
+    radius: number
 }
 
 export const restrictedZonesConfig = {
@@ -13,19 +11,19 @@ export const restrictedZonesConfig = {
 
 /**
  * Predefined restricted zones for the game world
- * These areas will be off-limits to ships
+ * These spherical areas will be off-limits to ships
  */
 export const restrictedZones: RestrictedZoneConfig[] = [
-    { minX: -19, maxX: -10, minZ: -33, maxZ: -30 },
-    { minX: -21, maxX: -14, minZ: 2, maxZ: 13 },
-    { minX: 17, maxX: 21.5, minZ: 13.5, maxZ: 18 },
+    { centerX: -14.5, centerY: 0, centerZ: -31.5, radius: 4.5 },
+    { centerX: -17.5, centerY: 0, centerZ: 7.5, radius: 5.5 },
+    { centerX: 19.25, centerY: 0, centerZ: 15.75, radius: 3.0 },
 ]
 
 /**
  * Check if a position is inside any restricted zone
  * @param x - X coordinate
+ * @param y - Y coordinate
  * @param z - Z coordinate
- * @param y - Y coordinate (optional)
  * @returns The restricted zone if position is inside one, null otherwise
  */
 export function getRestrictedZoneAt(
@@ -33,21 +31,17 @@ export function getRestrictedZoneAt(
     z: number,
     y?: number,
 ): RestrictedZoneConfig | null {
+    const yPos = y ?? 0
+
     for (const zone of restrictedZones) {
-        // Check X and Z bounds
-        if (
-            x >= zone.minX &&
-            x <= zone.maxX &&
-            z >= zone.minZ &&
-            z <= zone.maxZ
-        ) {
-            // Check Y bounds if specified
-            if (zone.minY !== undefined && y !== undefined && y < zone.minY) {
-                continue
-            }
-            if (zone.maxY !== undefined && y !== undefined && y > zone.maxY) {
-                continue
-            }
+        // Calculate distance from point to sphere center
+        const dx = x - zone.centerX
+        const dy = yPos - zone.centerY
+        const dz = z - zone.centerZ
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+        // Check if point is inside the sphere
+        if (distance <= zone.radius) {
             return zone
         }
     }
@@ -66,13 +60,9 @@ export function calculatePushBackDirection(
     shipZ: number,
     zone: RestrictedZoneConfig,
 ): { x: number; z: number } {
-    // Find the closest edge of the zone
-    const centerX = (zone.minX + zone.maxX) / 2
-    const centerZ = (zone.minZ + zone.maxZ) / 2
-
-    // Calculate direction from zone center to ship
-    const dirX = shipX - centerX
-    const dirZ = shipZ - centerZ
+    // Calculate direction from sphere center to ship
+    const dirX = shipX - zone.centerX
+    const dirZ = shipZ - zone.centerZ
 
     // If ship is exactly at center, push in a default direction
     if (dirX === 0 && dirZ === 0) {

@@ -9,7 +9,7 @@ import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 /**
  * System that prevents ships from entering restricted zones
- * Checks ship positions and pushes them back if they try to enter forbidden areas
+ * Checks ship positions and pushes them back if they try to enter forbidden spherical areas
  */
 export class RestrictedZoneSystem extends System {
     constructor(world: World) {
