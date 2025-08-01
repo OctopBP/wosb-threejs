@@ -34,7 +34,7 @@ export function createPlayerShip(
         type: 'position',
         x: 0,
         y: -0.1,
-        z: 0,
+        z: -20,
         rotationX: 0,
         rotationY: Math.PI, // Face forward (compensate for model facing backwards by default)
         rotationZ: 0,

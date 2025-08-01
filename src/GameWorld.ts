@@ -35,6 +35,7 @@ import { AccelerationSystem } from './systems/AccelerationSystem'
 import { AudioSystem } from './systems/AudioSystem'
 import { BarrelCollectionSystem } from './systems/BarrelCollectionSystem'
 import { BarrelSpawnSystem } from './systems/BarrelSpawnSystem'
+import { BoundarySystem } from './systems/BoundarySystem'
 import { CameraSystem } from './systems/CameraSystem'
 import { CollisionSystem } from './systems/CollisionSystem'
 import { DeathAnimationSystem } from './systems/DeathAnimationSystem'
@@ -64,6 +65,7 @@ export class GameWorld {
     private rotationSystem: RotationSystem
     private accelerationSystem: AccelerationSystem
     private movementSystem: MovementSystem
+    private boundarySystem: BoundarySystem
     private restrictedZoneSystem: RestrictedZoneSystem
     private waveRockingSystem: WaveRockingSystem
     private weaponSystem: WeaponSystem
@@ -114,6 +116,7 @@ export class GameWorld {
         this.rotationSystem = new RotationSystem(this.world)
         this.accelerationSystem = new AccelerationSystem(this.world)
         this.movementSystem = new MovementSystem(this.world)
+        this.boundarySystem = new BoundarySystem(this.world)
         this.restrictedZoneSystem = new RestrictedZoneSystem(this.world)
         this.waveRockingSystem = new WaveRockingSystem(this.world)
         this.weaponSystem = new WeaponSystem(this.world, scene)
@@ -174,6 +177,7 @@ export class GameWorld {
         this.world.addSystem(this.rotationSystem) //Handle rotation
         this.world.addSystem(this.accelerationSystem) //Apply acceleration/deceleration
         this.world.addSystem(this.movementSystem) //Apply velocity to position (ships only)
+        this.world.addSystem(this.boundarySystem) //Enforce movement boundaries
         this.world.addSystem(this.restrictedZoneSystem) //Prevent ships from entering restricted zones
         this.world.addSystem(this.waveRockingSystem) //Apply wave rocking motion to ships
         this.world.addSystem(this.weaponSystem) // Handle weapon firing
@@ -462,6 +466,10 @@ export class GameWorld {
 
     toggleDebugSpawnZones(enabled: boolean): void {
         this.debugSystem.toggleSpawnZones(enabled)
+    }
+
+    toggleDebugBoundaries(enabled: boolean): void {
+        this.debugSystem.toggleBoundaries(enabled)
     }
 
     // Camera system methods

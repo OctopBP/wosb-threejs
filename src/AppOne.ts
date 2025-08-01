@@ -158,7 +158,7 @@ export class AppOne {
         })
         const water = new Mesh(waterGeometry, waterMaterial)
         water.rotation.x = -Math.PI / 2
-        water.position.set(0, 0, 35)
+        water.position.set(0, 0, 0)
         water.receiveShadow = true
         water.name = 'Water'
         water.renderOrder = 1
@@ -479,6 +479,15 @@ export class AppOne {
                 console.log(`🟢 Spawn Zones: ${enabled ? 'Visible' : 'Hidden'}`)
             })
 
+        const boundariesState = { enabled: false }
+        const boundariesController = debugFolder
+            .add(boundariesState, 'enabled')
+            .name('Show Boundaries')
+            .onChange((enabled: boolean) => {
+                this.gameWorld.toggleDebugBoundaries(enabled)
+                console.log(`🟦 Boundaries: ${enabled ? 'Visible' : 'Hidden'}`)
+            })
+
         // Quick toggle all debug features
         debugFolder
             .add(
@@ -491,6 +500,7 @@ export class AppOne {
                         velocityVectorsState.enabled = true
                         restrictedZonesState.enabled = true
                         spawnZonesState.enabled = true
+                        boundariesState.enabled = true
 
                         this.gameWorld.setDebugMode(true)
                         this.gameWorld.toggleDebugShootingPoints(true)
@@ -499,6 +509,7 @@ export class AppOne {
                         this.gameWorld.toggleDebugVelocityVectors(true)
                         this.gameWorld.toggleDebugRestrictedZones(true)
                         this.gameWorld.toggleDebugSpawnZones(true)
+                        this.gameWorld.toggleDebugBoundaries(true)
 
                         // Update UI to reflect changes
                         debugController.updateDisplay()
@@ -508,6 +519,7 @@ export class AppOne {
                         velocityVectorsController.updateDisplay()
                         restrictedZonesController.updateDisplay()
                         spawnZonesController.updateDisplay()
+                        boundariesController.updateDisplay()
                         console.log('🔍 All Debug Features Enabled')
                     },
                 },
@@ -526,6 +538,7 @@ export class AppOne {
                         velocityVectorsState.enabled = false
                         restrictedZonesState.enabled = false
                         spawnZonesState.enabled = false
+                        boundariesState.enabled = false
 
                         this.gameWorld.setDebugMode(false)
                         this.gameWorld.toggleDebugShootingPoints(false)
@@ -534,6 +547,7 @@ export class AppOne {
                         this.gameWorld.toggleDebugVelocityVectors(false)
                         this.gameWorld.toggleDebugRestrictedZones(false)
                         this.gameWorld.toggleDebugSpawnZones(false)
+                        this.gameWorld.toggleDebugBoundaries(false)
 
                         // Update UI to reflect changes
                         debugController.updateDisplay()
@@ -543,6 +557,7 @@ export class AppOne {
                         velocityVectorsController.updateDisplay()
                         restrictedZonesController.updateDisplay()
                         spawnZonesController.updateDisplay()
+                        boundariesController.updateDisplay()
                         console.log('🔍 All Debug Features Disabled')
                     },
                 },

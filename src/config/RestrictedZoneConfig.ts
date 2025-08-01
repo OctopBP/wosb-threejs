@@ -16,23 +16,9 @@ export const restrictedZonesConfig = {
  * These areas will be off-limits to ships
  */
 export const restrictedZones: RestrictedZoneConfig[] = [
-    { minX: -50, maxX: 35, minZ: 75, maxZ: 85 },
-    { minX: 33, maxX: 43, minZ: 34, maxZ: 84 },
-    { minX: 27, maxX: 37, minZ: -5, maxZ: 35 },
-    { minX: 12, maxX: 50, minZ: -11, maxZ: -1 },
-    { minX: -35, maxX: 15, minZ: -18, maxZ: -8 },
-    { minX: -60, maxX: -34, minZ: -11, maxZ: -1 },
-    { minX: -65, maxX: -55, minZ: -5, maxZ: 40 },
-    { minX: -60, maxX: -45, minZ: 35, maxZ: 70 },
-    { minX: -60, maxX: -45, minZ: 35, maxZ: 80 },
-
-    { minX: -60, maxX: -50, minZ: -15, maxZ: 0 },
-    { minX: -53, maxX: -43, minZ: 74, maxZ: 84 },
-    { minX: 30, maxX: 40, minZ: 73, maxZ: 83 },
-
-    { minX: -23, maxX: -12, minZ: 10, maxZ: 14 },
-    { minX: -25, maxX: -17, minZ: 45, maxZ: 58 },
-    { minX: 16, maxX: 21, minZ: 58, maxZ: 63 },
+    { minX: -19, maxX: -10, minZ: -33, maxZ: -30 },
+    { minX: -21, maxX: -14, minZ: 2, maxZ: 13 },
+    { minX: 17, maxX: 21.5, minZ: 13.5, maxZ: 18 },
 ]
 
 /**
