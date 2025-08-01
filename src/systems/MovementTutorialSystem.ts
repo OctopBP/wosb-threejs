@@ -61,9 +61,11 @@ export class MovementTutorialSystem extends System {
             justify-content: center;
             align-items: center;
             width: 100%;
-            height: 120px;
+            height: 100px;
             gap: 50px;
             margin-bottom: 30px;
+            padding: 0 20px;
+            box-sizing: border-box;
         `
 
         // Create animation container
@@ -72,6 +74,8 @@ export class MovementTutorialSystem extends System {
             position: relative;
             width: 200px;
             height: 120px;
+            min-width: 150px;
+            flex-shrink: 0;
         `
 
         // Create infinity symbol background
@@ -103,7 +107,23 @@ export class MovementTutorialSystem extends System {
             height: 100%;
             width: auto;
             object-fit: contain;
+            min-width: 120px;
+            flex-shrink: 0;
         `
+
+        // Hide wasdBg on narrow screens
+        const mediaQuery = window.matchMedia('(max-width: 767px)')
+        const updateWasdVisibility = (
+            e: MediaQueryListEvent | MediaQueryList,
+        ) => {
+            wasdBg.style.display = e.matches ? 'none' : 'block'
+        }
+
+        // Set initial visibility
+        updateWasdVisibility(mediaQuery)
+
+        // Listen for screen size changes
+        mediaQuery.addEventListener('change', updateWasdVisibility)
 
         // Create instruction text
         const instructionText = document.createElement('div')
