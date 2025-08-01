@@ -1,6 +1,10 @@
 import * as THREE from 'three'
 import type { World } from '../ecs'
-import type { FoamTrailComponent, PositionComponent } from '../ecs/Component'
+import type {
+    AliveComponent,
+    FoamTrailComponent,
+    PositionComponent,
+} from '../ecs/Component'
 import { System } from '../ecs/System'
 
 const PROCEDURAL_TEXTURE_CONFIG = {
@@ -19,7 +23,7 @@ export class ProceduralTextureSystem extends System {
     private size: number
 
     constructor(world: World) {
-        super(world, ['position', 'foamTrail'])
+        super(world, ['position', 'foamTrail', 'alive'])
 
         this.size = PROCEDURAL_TEXTURE_CONFIG.textureSize
         this.canvas = document.createElement('canvas')
@@ -80,6 +84,11 @@ export class ProceduralTextureSystem extends System {
         this.ctx.putImageData(imageData, 0, 0)
 
         for (const entity of this.getEntities()) {
+            const alive = entity.getComponent<AliveComponent>('alive')
+            if (!alive) {
+                continue
+            }
+
             const foamTrail =
                 entity.getComponent<FoamTrailComponent>('foamTrail')
             const position = entity.getComponent<PositionComponent>('position')
