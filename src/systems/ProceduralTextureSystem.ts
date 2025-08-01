@@ -10,8 +10,6 @@ import { System } from '../ecs/System'
 const PROCEDURAL_TEXTURE_CONFIG = {
     textureSize: 512,
     waterSize: 150,
-    waterCenterX: 0,
-    waterCenterZ: 35,
     spotRadius: 0.004, // in UV space
     fadeValue: 1, // 0-255, higher = faster fade
 }
@@ -47,14 +45,10 @@ export class ProceduralTextureSystem extends System {
     private worldToUV(x: number, z: number): { u: number; v: number } {
         // Map world X/Z to [0,1] UV (water is waterSize x waterSize, centered at waterCenterX, waterCenterZ)
         const u =
-            (x -
-                (PROCEDURAL_TEXTURE_CONFIG.waterCenterX -
-                    PROCEDURAL_TEXTURE_CONFIG.waterSize / 2)) /
+            (x + PROCEDURAL_TEXTURE_CONFIG.waterSize / 2) /
             PROCEDURAL_TEXTURE_CONFIG.waterSize
         const v =
-            (z -
-                (PROCEDURAL_TEXTURE_CONFIG.waterCenterZ -
-                    PROCEDURAL_TEXTURE_CONFIG.waterSize / 2)) /
+            (z + PROCEDURAL_TEXTURE_CONFIG.waterSize / 2) /
             PROCEDURAL_TEXTURE_CONFIG.waterSize
         return { u, v }
     }
