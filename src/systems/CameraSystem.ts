@@ -1,117 +1,44 @@
 import type { PerspectiveCamera } from 'three'
 import { Vector3 } from 'three'
-import type { CameraConfig } from '../config/CameraConfig'
-import { defaultCameraConfig } from '../config/CameraConfig'
-import type {
-    CameraStateComponent,
-    CameraTargetComponent,
-    PositionComponent,
-} from '../ecs/Component'
+import type { CameraTargetComponent, PositionComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
-// Easing functions for smooth transitions
-const easingFunctions = {
-    linear: (t: number) => t,
-    easeInOut: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
-    easeIn: (t: number) => t * t,
-    easeOut: (t: number) => t * (2 - t),
-}
-
 export class CameraSystem extends System {
     private camera: PerspectiveCamera
-    private config: CameraConfig
-    private cameraEntityId: number | null = null
     private currentTargetId: number | null = null
-    private isMobile: boolean
+    private lerpFactor: number = 0.05
+    private currentPosition: Vector3 = new Vector3()
+    private currentTarget: Vector3 = new Vector3()
 
     constructor(
         world: World,
         camera: PerspectiveCamera,
-        config: CameraConfig = defaultCameraConfig,
+        lerpFactor: number = 0.05,
     ) {
         super(world)
         this.camera = camera
-        this.config = config
-        this.isMobile = this.detectMobile()
+        this.lerpFactor = lerpFactor
 
-        // Create camera entity with state component
-        this.initializeCameraEntity()
+        // Initialize camera position
+        this.currentPosition.copy(camera.position)
+        this.currentTarget.set(0, 0, 0)
     }
 
-    private detectMobile(): boolean {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent,
-        )
-    }
+    update(): void {
+        // Find the highest priority camera target
+        this.updateCurrentTarget()
 
-    private initializeCameraEntity(): void {
-        // Create camera entity
-        const cameraEntity = this.world.createEntity()
-        this.cameraEntityId = cameraEntity.id
-
-        // Add camera state component
-        const initialState = this.config.states.playerFocus
-        const cameraState: CameraStateComponent = {
-            type: 'cameraState',
-            currentState: 'playerFocus',
-            targetState: 'playerFocus',
-            transitionProgress: 1.0,
-            transitionDuration: 0,
-            transitionEasing: 'easeInOut',
-            screenShake: {
-                active: false,
-                intensity: 0,
-                frequency: 0,
-                duration: 0,
-                elapsedTime: 0,
-                originalPosition: { x: 0, y: 0, z: 0 },
-            },
-            zoom: {
-                active: false,
-                targetFOV: initialState.fov,
-                startFOV: initialState.fov,
-                duration: 0,
-                elapsedTime: 0,
-            },
-            position: { ...initialState.position },
-            target: { ...initialState.target },
-            fov: initialState.fov,
+        // Follow the current target if one exists
+        if (this.currentTargetId) {
+            this.followTarget()
         }
 
-        cameraEntity.addComponent(cameraState)
-
-        // Apply initial camera state
-        this.applyCameraState(cameraState)
+        // Apply the camera position and target
+        this.applyCamera()
     }
 
-    update(deltaTime: number): void {
-        if (!this.cameraEntityId) return
-
-        const cameraEntity = this.world.getEntity(this.cameraEntityId)
-        if (!cameraEntity) return
-        const cameraState =
-            cameraEntity.getComponent<CameraStateComponent>('cameraState')
-        if (!cameraState) return
-
-        // Update camera target
-        this.updateCameraTarget(cameraState)
-
-        // Update transitions
-        this.updateTransitions(cameraState, deltaTime)
-
-        // Update screen shake
-        this.updateScreenShake(cameraState, deltaTime)
-
-        // Update zoom
-        this.updateZoom(cameraState, deltaTime)
-
-        // Apply final camera state
-        this.applyCameraState(cameraState)
-    }
-
-    private updateCameraTarget(cameraState: CameraStateComponent): void {
-        // Find the highest priority camera target
+    private updateCurrentTarget(): void {
         let highestPriority = -1
         let newTargetId: number | null = null
 
@@ -126,35 +53,15 @@ export class CameraSystem extends System {
             }
         }
 
-        // If target changed, transition to new target
-        if (newTargetId !== this.currentTargetId) {
-            this.currentTargetId = newTargetId
-            if (newTargetId) {
-                const targetEntity = this.world.getEntity(newTargetId)
-                if (targetEntity) {
-                    const targetComponent =
-                        targetEntity.getComponent<CameraTargetComponent>(
-                            'cameraTarget',
-                        )
-                    if (targetComponent) {
-                        this.transitionToTarget(targetComponent)
-                    }
-                }
-            }
-        }
-
-        // Update camera position to follow current target
-        if (this.currentTargetId) {
-            this.followTarget(cameraState, this.currentTargetId)
-        }
+        this.currentTargetId = newTargetId
     }
 
-    private followTarget(
-        cameraState: CameraStateComponent,
-        targetId: number,
-    ): void {
-        const targetEntity = this.world.getEntity(targetId)
+    private followTarget(): void {
+        if (!this.currentTargetId) return
+
+        const targetEntity = this.world.getEntity(this.currentTargetId)
         if (!targetEntity) return
+
         const targetPosition =
             targetEntity.getComponent<PositionComponent>('position')
         const targetComponent =
@@ -163,336 +70,50 @@ export class CameraSystem extends System {
         if (!targetPosition || !targetComponent) return
 
         // Calculate target position with offset
-        const targetX = targetPosition.x + targetComponent.offset.x
-        const targetY = targetPosition.y + targetComponent.offset.y
-        const targetZ = targetPosition.z + targetComponent.offset.z
-
-        // Apply mobile adjustments if needed
-        const adjustments = this.isMobile
-            ? this.config.global.mobileAdjustments
-            : { fovMultiplier: 1, heightOffset: 0, distanceMultiplier: 1 }
-
-        // Update camera target
-        cameraState.target.x = targetX
-        cameraState.target.y = targetY
-        cameraState.target.z = targetZ
-
-        // Update camera position based on current state
-        const stateConfig =
-            this.config.states[
-                cameraState.currentState as keyof typeof this.config.states
-            ]
-        if (stateConfig) {
-            const adjustedPosition = {
-                x:
-                    targetX +
-                    stateConfig.position.x * adjustments.distanceMultiplier,
-                y: targetY + stateConfig.position.y + adjustments.heightOffset,
-                z:
-                    targetZ +
-                    stateConfig.position.z * adjustments.distanceMultiplier,
-            }
-
-            // Smoothly interpolate to new position
-            const lerpFactor = 0.05 // Adjust for smoother/faster following
-            cameraState.position.x +=
-                (adjustedPosition.x - cameraState.position.x) * lerpFactor
-            cameraState.position.y +=
-                (adjustedPosition.y - cameraState.position.y) * lerpFactor
-            cameraState.position.z +=
-                (adjustedPosition.z - cameraState.position.z) * lerpFactor
-        }
-    }
-
-    private updateTransitions(
-        cameraState: CameraStateComponent,
-        deltaTime: number,
-    ): void {
-        if (cameraState.transitionProgress < 1.0) {
-            cameraState.transitionProgress +=
-                deltaTime / cameraState.transitionDuration
-            cameraState.transitionProgress = Math.min(
-                cameraState.transitionProgress,
-                1.0,
-            )
-
-            // Apply easing
-            const easedProgress = easingFunctions[cameraState.transitionEasing](
-                cameraState.transitionProgress,
-            )
-
-            // Interpolate between states
-            const currentState =
-                this.config.states[
-                    cameraState.currentState as keyof typeof this.config.states
-                ]
-            const targetState =
-                this.config.states[
-                    cameraState.targetState as keyof typeof this.config.states
-                ]
-
-            if (currentState && targetState) {
-                cameraState.position.x =
-                    currentState.position.x +
-                    (targetState.position.x - currentState.position.x) *
-                        easedProgress
-                cameraState.position.y =
-                    currentState.position.y +
-                    (targetState.position.y - currentState.position.y) *
-                        easedProgress
-                cameraState.position.z =
-                    currentState.position.z +
-                    (targetState.position.z - currentState.position.z) *
-                        easedProgress
-                cameraState.fov =
-                    currentState.fov +
-                    (targetState.fov - currentState.fov) * easedProgress
-            }
-        }
-    }
-
-    private updateScreenShake(
-        cameraState: CameraStateComponent,
-        deltaTime: number,
-    ): void {
-        if (!cameraState.screenShake.active) return
-
-        cameraState.screenShake.elapsedTime += deltaTime
-
-        if (
-            cameraState.screenShake.elapsedTime >=
-            cameraState.screenShake.duration
-        ) {
-            // End screen shake
-            cameraState.screenShake.active = false
-            cameraState.position.x = cameraState.screenShake.originalPosition.x
-            cameraState.position.y = cameraState.screenShake.originalPosition.y
-            cameraState.position.z = cameraState.screenShake.originalPosition.z
-        } else {
-            // Apply screen shake
-            const progress =
-                cameraState.screenShake.elapsedTime /
-                cameraState.screenShake.duration
-            const intensity = cameraState.screenShake.intensity * (1 - progress) // Fade out over time
-
-            const shakeX =
-                Math.sin(
-                    cameraState.screenShake.elapsedTime *
-                        cameraState.screenShake.frequency,
-                ) * intensity
-            const shakeY =
-                Math.cos(
-                    cameraState.screenShake.elapsedTime *
-                        cameraState.screenShake.frequency *
-                        0.7,
-                ) * intensity
-            const shakeZ =
-                Math.sin(
-                    cameraState.screenShake.elapsedTime *
-                        cameraState.screenShake.frequency *
-                        1.3,
-                ) * intensity
-
-            cameraState.position.x =
-                cameraState.screenShake.originalPosition.x + shakeX
-            cameraState.position.y =
-                cameraState.screenShake.originalPosition.y + shakeY
-            cameraState.position.z =
-                cameraState.screenShake.originalPosition.z + shakeZ
-        }
-    }
-
-    private updateZoom(
-        cameraState: CameraStateComponent,
-        deltaTime: number,
-    ): void {
-        if (!cameraState.zoom.active) return
-
-        cameraState.zoom.elapsedTime += deltaTime
-
-        if (cameraState.zoom.elapsedTime >= cameraState.zoom.duration) {
-            // End zoom
-            cameraState.zoom.active = false
-            cameraState.fov = cameraState.zoom.targetFOV
-        } else {
-            // Apply zoom
-            const progress =
-                cameraState.zoom.elapsedTime / cameraState.zoom.duration
-            const easedProgress = easingFunctions.easeInOut(progress)
-
-            cameraState.fov =
-                cameraState.zoom.startFOV +
-                (cameraState.zoom.targetFOV - cameraState.zoom.startFOV) *
-                    easedProgress
-        }
-    }
-
-    private applyCameraState(cameraState: CameraStateComponent): void {
-        // Apply position
-        this.camera.position.set(
-            cameraState.position.x,
-            cameraState.position.y,
-            cameraState.position.z,
+        const targetPos = new Vector3(
+            targetPosition.x + targetComponent.offset.x,
+            targetPosition.y + targetComponent.offset.y,
+            targetPosition.z + targetComponent.offset.z,
         )
 
-        // Apply target (lookAt)
-        this.camera.lookAt(
-            new Vector3(
-                cameraState.target.x,
-                cameraState.target.y,
-                cameraState.target.z,
-            ),
+        // Calculate camera position (target position + camera offset)
+        const cameraPos = new Vector3(
+            targetPos.x + (targetComponent.cameraOffset?.x || 0),
+            targetPos.y + (targetComponent.cameraOffset?.y || 10),
+            targetPos.z + (targetComponent.cameraOffset?.z || 10),
         )
 
-        // Apply FOV
-        this.camera.fov = cameraState.fov
+        // Lerp to the new positions
+        this.currentPosition.lerp(cameraPos, this.lerpFactor)
+        this.currentTarget.lerp(targetPos, this.lerpFactor)
+    }
+
+    private applyCamera(): void {
+        this.camera.position.copy(this.currentPosition)
+        this.camera.lookAt(this.currentTarget)
         this.camera.updateProjectionMatrix()
     }
 
     // Public API methods
-
-    public transitionToState(stateName: string, duration?: number): void {
-        if (!this.cameraEntityId) {
-            return
-        }
-
-        const cameraEntity = this.world.getEntity(this.cameraEntityId)
-        if (!cameraEntity) {
-            return
-        }
-
-        const cameraState =
-            cameraEntity.getComponent<CameraStateComponent>('cameraState')
-        if (!cameraState) {
-            return
-        }
-
-        const targetState =
-            this.config.states[stateName as keyof typeof this.config.states]
-        if (!targetState) {
-            console.warn(`Camera state "${stateName}" not found`)
-            return
-        }
-
-        cameraState.targetState = stateName
-        cameraState.currentState = cameraState.targetState
-        cameraState.transitionProgress = 0.0
-        cameraState.transitionDuration =
-            duration || targetState.transitionDuration
-        cameraState.transitionEasing = targetState.transitionEasing
-
-        // Apply screen shake if configured
-        if (targetState.screenShake) {
-            this.triggerScreenShake(
-                targetState.screenShake.intensity,
-                targetState.screenShake.frequency,
-                targetState.screenShake.duration,
-            )
-        }
-
-        if (targetState.zoom) {
-            this.triggerZoom(
-                targetState.zoom.targetFOV,
-                targetState.zoom.duration,
-            )
-        }
-    }
-
-    public transitionToTarget(targetComponent: CameraTargetComponent): void {
-        const stateName =
-            targetComponent.customCameraState ||
-            this.getDefaultStateForTargetType(targetComponent.targetType)
-        this.transitionToState(stateName)
-    }
-
-    private getDefaultStateForTargetType(targetType: string): string {
-        switch (targetType) {
-            case 'player':
-                return 'playerFocus'
-            case 'enemy':
-                return 'enemyFocus'
-            case 'boss':
-                return 'bossPreview'
-            case 'cinematic':
-                return 'cinematic'
-            default:
-                return 'playerFocus'
-        }
-    }
-
-    public triggerScreenShake(
-        intensity: number,
-        frequency: number,
-        duration: number,
-    ): void {
-        if (!this.cameraEntityId) return
-
-        const cameraEntity = this.world.getEntity(this.cameraEntityId)
-        if (!cameraEntity) return
-        const cameraState =
-            cameraEntity.getComponent<CameraStateComponent>('cameraState')
-        if (!cameraState) return
-
-        cameraState.screenShake.active = true
-        cameraState.screenShake.intensity = intensity
-        cameraState.screenShake.frequency = frequency
-        cameraState.screenShake.duration = duration
-        cameraState.screenShake.elapsedTime = 0
-        cameraState.screenShake.originalPosition = { ...cameraState.position }
-    }
-
-    public triggerScreenShakePreset(
-        presetName: keyof typeof this.config.screenShakePresets,
-    ): void {
-        const preset = this.config.screenShakePresets[presetName]
-        if (preset) {
-            this.triggerScreenShake(
-                preset.intensity,
-                preset.frequency,
-                preset.duration,
-            )
-        }
-    }
-
-    public triggerZoom(targetFOV: number, duration: number): void {
-        if (!this.cameraEntityId) return
-
-        const cameraEntity = this.world.getEntity(this.cameraEntityId)
-        if (!cameraEntity) return
-        const cameraState =
-            cameraEntity.getComponent<CameraStateComponent>('cameraState')
-        if (!cameraState) return
-
-        cameraState.zoom.active = true
-        cameraState.zoom.targetFOV = targetFOV
-        cameraState.zoom.startFOV = cameraState.fov
-        cameraState.zoom.duration = duration
-        cameraState.zoom.elapsedTime = 0
-    }
-
-    public triggerZoomPreset(
-        presetName: keyof typeof this.config.zoomPresets,
-    ): void {
-        const preset = this.config.zoomPresets[presetName]
-        if (preset) {
-            this.triggerZoom(preset.targetFOV, preset.duration)
-        }
+    public setTarget(entityId: number): void {
+        this.currentTargetId = entityId
     }
 
     public addCameraTarget(
         entityId: number,
-        targetType: 'player' | 'enemy' | 'boss' | 'cinematic',
         priority: number = 0,
         offset?: { x: number; y: number; z: number },
+        cameraOffset?: { x: number; y: number; z: number },
     ): void {
-        const cameraTarget = {
-            type: 'cameraTarget',
-            priority,
-            targetType,
-            offset: offset || { x: 0, y: 0, z: 0 },
-        }
         const entity = this.world.getEntity(entityId)
         if (entity) {
+            const cameraTarget: CameraTargetComponent = {
+                type: 'cameraTarget',
+                priority,
+                targetType: 'generic',
+                offset: offset || { x: 0, y: 0, z: 0 },
+                cameraOffset: cameraOffset || { x: 0, y: 10, z: 10 },
+            }
             entity.addComponent(cameraTarget)
         }
     }
@@ -504,20 +125,15 @@ export class CameraSystem extends System {
         }
     }
 
-    public getCurrentState(): string | null {
-        if (!this.cameraEntityId) return null
-        const cameraEntity = this.world.getEntity(this.cameraEntityId)
-        if (!cameraEntity) return null
-        const cameraState =
-            cameraEntity.getComponent<CameraStateComponent>('cameraState')
-        return cameraState?.currentState || null
-    }
-
     public getCurrentTarget(): number | null {
         return this.currentTargetId
     }
 
-    public updateConfig(newConfig: CameraConfig): void {
-        this.config = newConfig
+    public setLerpFactor(factor: number): void {
+        this.lerpFactor = Math.max(0.001, Math.min(1, factor))
+    }
+
+    public getLerpFactor(): number {
+        return this.lerpFactor
     }
 }
