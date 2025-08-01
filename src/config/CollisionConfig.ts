@@ -23,9 +23,9 @@ export const collisionPresets = {
 
     bossShip: {
         shape: 'box' as const,
-        width: 1.4,
+        width: 1.5,
         height: 2,
-        depth: 4.8,
+        depth: 7.0,
     } satisfies BoxCollider,
 
     // Projectile collision presets
