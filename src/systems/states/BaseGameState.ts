@@ -1,6 +1,6 @@
+import { findValidSpawnPositionInBoundary } from '../../config/BoundaryConfig'
 import type { GameStateConfig } from '../../config/GameStateConfig'
 import { getRandomSpawnDistanceForWaveOrBoss } from '../../config/GameStateConfig'
-import { findValidSpawnPosition } from '../../config/SpawnZoneConfig'
 import type {
     GameStateComponent,
     HealthComponent,
@@ -79,8 +79,8 @@ export abstract class BaseGameState implements GameStateHandler {
         const distance =
             spawnDistance || getRandomSpawnDistanceForWaveOrBoss(config.wave1)
 
-        // Try to find a valid spawn position within spawn zones
-        const validSpawnPosition = findValidSpawnPosition(
+        // Try to find a valid spawn position within ship boundary
+        const validSpawnPosition = findValidSpawnPositionInBoundary(
             playerPosition.x,
             playerPosition.z,
             distance,
@@ -91,10 +91,11 @@ export abstract class BaseGameState implements GameStateHandler {
         let spawnZ: number
 
         if (validSpawnPosition) {
-            // Use the valid spawn position found within spawn zones
+            // Use the valid spawn position found within ship boundary
             spawnX = validSpawnPosition.x
             spawnZ = validSpawnPosition.z
         } else {
+            // Fallback: spawn around player if no valid position found
             const spawnAngle = Math.random() * 2 * Math.PI
             spawnX = playerPosition.x + Math.cos(spawnAngle) * distance
             spawnZ = playerPosition.z + Math.sin(spawnAngle) * distance
@@ -122,8 +123,8 @@ export abstract class BaseGameState implements GameStateHandler {
         // Use random distance from config
         const distance = getRandomSpawnDistanceForWaveOrBoss(config.boss)
 
-        // Try to find a valid spawn position within spawn zones
-        const validSpawnPosition = findValidSpawnPosition(
+        // Try to find a valid spawn position within ship boundary
+        const validSpawnPosition = findValidSpawnPositionInBoundary(
             playerPosition.x,
             playerPosition.z,
             distance,
@@ -134,7 +135,7 @@ export abstract class BaseGameState implements GameStateHandler {
         let spawnZ: number
 
         if (validSpawnPosition) {
-            // Use the valid spawn position found within spawn zones
+            // Use the valid spawn position found within ship boundary
             spawnX = validSpawnPosition.x
             spawnZ = validSpawnPosition.z
         } else {
