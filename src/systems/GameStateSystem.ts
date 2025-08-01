@@ -48,10 +48,7 @@ export class GameStateSystem extends System {
         this.stateHandlers.set('initialWave', new InitialWaveState())
         this.stateHandlers.set('enemiesWave1', new Wave1State())
         this.stateHandlers.set('enemiesWave2', new Wave2State())
-        this.stateHandlers.set(
-            'bossFight',
-            new BossFightState(this.cameraSystem),
-        )
+        this.stateHandlers.set('bossFight', new BossFightState())
         this.stateHandlers.set('newShipOffer', new NewShipOfferState())
     }
 
