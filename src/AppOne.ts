@@ -158,7 +158,7 @@ export class AppOne {
         })
         const water = new Mesh(waterGeometry, waterMaterial)
         water.rotation.x = -Math.PI / 2
-        water.position.set(0, 0, 35)
+        water.position.set(0, 0, 0)
         water.receiveShadow = true
         water.name = 'Water'
         water.renderOrder = 1

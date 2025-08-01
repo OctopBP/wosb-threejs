@@ -4,6 +4,13 @@ import { System } from '../ecs/System'
 
 import type { World } from '../ecs/World'
 
+const GOAL_TEXTS = {
+    initialWave: 'Уничтожьте {enemyCount} врага',
+    wave1: 'Уничтожьте {enemyCount} врагов',
+    wave2: 'Уничтожьте {enemyCount} врагов',
+    bossFight: 'Уничтожьте босса',
+}
+
 export class GoalUISystem extends System {
     private goalContainer: HTMLElement | null = null
     private goalText: HTMLElement | null = null
@@ -133,7 +140,10 @@ export class GoalUISystem extends System {
 
         switch (gameState.currentState) {
             case 'initialWave':
-                goalMessage = `Defeat ${this.config.initialWave.enemyCount} enemy`
+                goalMessage = GOAL_TEXTS.initialWave.replace(
+                    '{enemyCount}',
+                    this.config.initialWave.enemyCount.toString(),
+                )
                 totalCount = this.config.initialWave.enemyCount
                 killedCount = this.calculateKilledEnemies(
                     gameState,
@@ -142,19 +152,25 @@ export class GoalUISystem extends System {
                 break
 
             case 'enemiesWave1':
-                goalMessage = `Defeat ${this.config.wave1.enemyCount} enemies`
+                goalMessage = GOAL_TEXTS.wave1.replace(
+                    '{enemyCount}',
+                    this.config.wave1.enemyCount.toString(),
+                )
                 totalCount = this.config.wave1.enemyCount
                 killedCount = this.calculateKilledEnemies(gameState, 'wave1')
                 break
 
             case 'enemiesWave2':
-                goalMessage = `Defeat ${this.config.wave2.enemyCount} enemies`
+                goalMessage = GOAL_TEXTS.wave2.replace(
+                    '{enemyCount}',
+                    this.config.wave2.enemyCount.toString(),
+                )
                 totalCount = this.config.wave2.enemyCount
                 killedCount = this.calculateKilledEnemies(gameState, 'wave2')
                 break
 
             case 'bossFight': {
-                goalMessage = 'Defeat the Boss'
+                goalMessage = GOAL_TEXTS.bossFight
                 // For boss, we'll show different counter logic
                 const bossEntities = this.world.getEntitiesWithComponents([
                     'boss',

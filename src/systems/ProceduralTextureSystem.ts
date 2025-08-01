@@ -1,13 +1,15 @@
 import * as THREE from 'three'
 import type { World } from '../ecs'
-import type { FoamTrailComponent, PositionComponent } from '../ecs/Component'
+import type {
+    AliveComponent,
+    FoamTrailComponent,
+    PositionComponent,
+} from '../ecs/Component'
 import { System } from '../ecs/System'
 
 const PROCEDURAL_TEXTURE_CONFIG = {
     textureSize: 512,
     waterSize: 150,
-    waterCenterX: 0,
-    waterCenterZ: 35,
     spotRadius: 0.004, // in UV space
     fadeValue: 1, // 0-255, higher = faster fade
 }
@@ -19,7 +21,7 @@ export class ProceduralTextureSystem extends System {
     private size: number
 
     constructor(world: World) {
-        super(world, ['position', 'foamTrail'])
+        super(world, ['position', 'foamTrail', 'alive'])
 
         this.size = PROCEDURAL_TEXTURE_CONFIG.textureSize
         this.canvas = document.createElement('canvas')
@@ -43,14 +45,10 @@ export class ProceduralTextureSystem extends System {
     private worldToUV(x: number, z: number): { u: number; v: number } {
         // Map world X/Z to [0,1] UV (water is waterSize x waterSize, centered at waterCenterX, waterCenterZ)
         const u =
-            (x -
-                (PROCEDURAL_TEXTURE_CONFIG.waterCenterX -
-                    PROCEDURAL_TEXTURE_CONFIG.waterSize / 2)) /
+            (x + PROCEDURAL_TEXTURE_CONFIG.waterSize / 2) /
             PROCEDURAL_TEXTURE_CONFIG.waterSize
         const v =
-            (z -
-                (PROCEDURAL_TEXTURE_CONFIG.waterCenterZ -
-                    PROCEDURAL_TEXTURE_CONFIG.waterSize / 2)) /
+            (z + PROCEDURAL_TEXTURE_CONFIG.waterSize / 2) /
             PROCEDURAL_TEXTURE_CONFIG.waterSize
         return { u, v }
     }
@@ -80,6 +78,11 @@ export class ProceduralTextureSystem extends System {
         this.ctx.putImageData(imageData, 0, 0)
 
         for (const entity of this.getEntities()) {
+            const alive = entity.getComponent<AliveComponent>('alive')
+            if (!alive) {
+                continue
+            }
+
             const foamTrail =
                 entity.getComponent<FoamTrailComponent>('foamTrail')
             const position = entity.getComponent<PositionComponent>('position')
