@@ -136,4 +136,21 @@ export class CameraSystem extends System {
     public getLerpFactor(): number {
         return this.lerpFactor
     }
+
+    public getCurrentState(): string | null {
+        if (!this.currentTargetId) {
+            return 'No Target'
+        }
+
+        const targetEntity = this.world.getEntity(this.currentTargetId)
+        if (!targetEntity) {
+            return 'Invalid Target'
+        }
+
+        const targetComponent =
+            targetEntity.getComponent<CameraTargetComponent>('cameraTarget')
+        return targetComponent
+            ? `Following ${targetComponent.targetType} (ID: ${this.currentTargetId})`
+            : 'Unknown Target'
+    }
 }
