@@ -1,3 +1,5 @@
+import { getRestrictedZoneAt } from './RestrictedZoneConfig'
+
 export interface BoundaryConfig {
     minX: number
     maxX: number
@@ -88,4 +90,64 @@ export function clampToBoundary(
         z: clampedZ,
         ...(clampedY !== undefined && { y: clampedY }),
     }
+}
+
+/**
+ * Find a random valid spawn position within the ship boundary, at a given distance from player
+ * @param playerX - Player's X position
+ * @param playerZ - Player's Z position
+ * @param spawnDistance - Desired distance from player
+ * @param maxAttempts - Maximum attempts to find a valid position
+ * @returns Valid spawn position or null if none found
+ */
+export function findValidSpawnPositionInBoundary(
+    playerX: number,
+    playerZ: number,
+    spawnDistance: number,
+    maxAttempts: number = 50,
+): { x: number; z: number } | null {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        // Generate random angle around player
+        const angle = Math.random() * 2 * Math.PI
+        const candidateX = playerX + Math.cos(angle) * spawnDistance
+        const candidateZ = playerZ + Math.sin(angle) * spawnDistance
+
+        // Check if this position is within ship boundary
+        if (!isOutsideBoundary(candidateX, candidateZ)) {
+            // Check if this position is not in a restricted zone
+            const restrictedZone = getRestrictedZoneAt(candidateX, candidateZ)
+            if (!restrictedZone) {
+                return { x: candidateX, z: candidateZ }
+            }
+        }
+    }
+
+    // If we can't find a valid position at the exact distance, try to find any position in boundary
+    // and adjust to maintain approximate distance
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        // Random position within the boundary
+        const boundaryX =
+            shipBoundaryConfig.minX +
+            Math.random() * (shipBoundaryConfig.maxX - shipBoundaryConfig.minX)
+        const boundaryZ =
+            shipBoundaryConfig.minZ +
+            Math.random() * (shipBoundaryConfig.maxZ - shipBoundaryConfig.minZ)
+
+        // Check if this position is not in a restricted zone
+        const restrictedZone = getRestrictedZoneAt(boundaryX, boundaryZ)
+        if (!restrictedZone) {
+            // Check if distance is reasonable (within 50% variance of desired distance)
+            const distance = Math.sqrt(
+                (boundaryX - playerX) ** 2 + (boundaryZ - playerZ) ** 2,
+            )
+            const minDistance = spawnDistance * 0.5
+            const maxDistance = spawnDistance * 1.5
+
+            if (distance >= minDistance && distance <= maxDistance) {
+                return { x: boundaryX, z: boundaryZ }
+            }
+        }
+    }
+
+    return null
 }

@@ -464,10 +464,6 @@ export class GameWorld {
         this.debugSystem.toggleRestrictedZones(enabled)
     }
 
-    toggleDebugSpawnZones(enabled: boolean): void {
-        this.debugSystem.toggleSpawnZones(enabled)
-    }
-
     toggleDebugBoundaries(enabled: boolean): void {
         this.debugSystem.toggleBoundaries(enabled)
     }
