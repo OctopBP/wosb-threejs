@@ -170,7 +170,7 @@ export function createBossShip(
     entity.addComponent<CameraTargetComponent>({
         type: 'cameraTarget',
         priority: 2,
-        offset: { x: 0, y: 30, z: -15 },
+        offset: { x: 0, y: 18, z: -12 },
         lerpFactor: 0.02,
     })
 

@@ -1,15 +1,11 @@
 import type { RestrictedZoneConfig } from '../config/RestrictedZoneConfig'
-import {
-    calculatePushBackDirection,
-    getRestrictedZoneAt,
-    restrictedZonesConfig,
-} from '../config/RestrictedZoneConfig'
+import { getRestrictedZoneAt } from '../config/RestrictedZoneConfig'
 import type { PositionComponent, SpeedComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 /**
  * System that prevents ships from entering restricted zones
- * Checks ship positions and pushes them back if they try to enter forbidden areas
+ * Checks ship positions and trims them to stay within allowed areas
  */
 export class RestrictedZoneSystem extends System {
     constructor(world: World) {
@@ -17,7 +13,7 @@ export class RestrictedZoneSystem extends System {
         super(world, ['position', 'speed', 'alive'])
     }
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         const entities = this.getEntities()
 
         for (const entity of entities) {
@@ -36,39 +32,44 @@ export class RestrictedZoneSystem extends System {
             )
 
             if (restrictedZone) {
-                // Ship is in a restricted zone - push it back
-                this.pushShipOutOfZone(
-                    position,
-                    speed,
-                    restrictedZone,
-                    deltaTime,
-                )
+                // Ship is in a restricted zone - trim its position
+                this.trimShipPosition(position, speed, restrictedZone)
             }
         }
     }
 
     /**
-     * Push a ship out of a restricted zone
+     * Trim a ship's position to stay outside of a restricted zone
      */
-    private pushShipOutOfZone(
+    private trimShipPosition(
         position: PositionComponent,
         speed: SpeedComponent,
         zone: RestrictedZoneConfig,
-        deltaTime: number,
     ): void {
-        // Calculate the direction to push the ship
-        const pushDirection = calculatePushBackDirection(
-            position.x,
-            position.z,
-            zone,
-        )
+        // Calculate direction from zone center to ship
+        const dirX = position.x - zone.centerX
+        const dirZ = position.z - zone.centerZ
 
-        // Apply push-back force
-        const pushForce = restrictedZonesConfig.pushBackForce * deltaTime
+        // If ship is exactly at center, move it in a default direction
+        if (dirX === 0 && dirZ === 0) {
+            position.x = zone.centerX + zone.radius
+            position.z = zone.centerZ
+            return
+        }
 
-        // Move the ship in the push-back direction
-        position.x += pushDirection.x * pushForce
-        position.z += pushDirection.z * pushForce
+        // Calculate distance from zone center
+        const distance = Math.sqrt(dirX * dirX + dirZ * dirZ)
+
+        // If ship is inside the zone, move it to the boundary
+        if (distance < zone.radius) {
+            // Normalize direction and scale to radius
+            const normalizedDirX = dirX / distance
+            const normalizedDirZ = dirZ / distance
+
+            // Set position to boundary of the zone
+            position.x = zone.centerX + normalizedDirX * zone.radius
+            position.z = zone.centerZ + normalizedDirZ * zone.radius
+        }
 
         // Reduce the ship's speed to make the collision feel more realistic
         speed.currentSpeed = Math.max(0, speed.currentSpeed * 0.5)

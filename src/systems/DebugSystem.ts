@@ -459,23 +459,12 @@ export class DebugSystem extends System {
         for (let i = 0; i < restrictedZones.length; i++) {
             const zone = restrictedZones[i]
 
-            // Calculate zone dimensions
-            const width = zone.maxX - zone.minX
-            const depth = zone.maxZ - zone.minZ
-            const height = 2.0 // Fixed height for visualization
-
-            // Calculate zone center
-            const centerX = (zone.minX + zone.maxX) / 2
-            const centerZ = (zone.minZ + zone.maxZ) / 2
-            const centerY =
-                zone.minY !== undefined ? zone.minY + height / 2 : 1.0
-
-            // Create box geometry for the restricted zone
-            const geometry = new BoxGeometry(width, height, depth)
+            // Create sphere geometry for the restricted zone
+            const geometry = new SphereGeometry(zone.radius, 16, 12)
             const mesh = new Mesh(geometry, this.restrictedZoneMaterial)
 
             // Position the mesh at the zone center
-            mesh.position.set(centerX, centerY, centerZ)
+            mesh.position.set(zone.centerX, zone.centerY, zone.centerZ)
 
             // Add to scene
             this.scene.add(mesh)
