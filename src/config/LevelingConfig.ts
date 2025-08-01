@@ -46,7 +46,7 @@ export interface LevelUpAnimationConfig {
 
 // Default XP progression configuration for a 6-level system
 export const defaultXPProgression: XPProgressionConfig = {
-    levelXpThresholds: [0, 25, 75],
+    levelXpThresholds: [0, 30, 90],
 }
 
 // Enemy XP values configuration

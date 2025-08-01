@@ -35,41 +35,41 @@ export interface BarrelConfig {
 // Default barrel configuration
 export const defaultBarrelConfig: BarrelConfig = {
     // XP and spawning
-    xpPerBarrel: 5, // Each barrel gives 5 XP (5 barrels = 25 XP total for regular enemy)
-    regularEnemyBarrelCount: 5, // Regular enemies drop 5 barrels
-    bossBarrelCount: 25, // Bosses drop 25 barrels (maintains 20x multiplier: 500 XP total)
+    xpPerBarrel: 10,
+    regularEnemyBarrelCount: 3,
+    bossBarrelCount: 25,
 
     // Collection behavior
-    collectionRange: 3.0, // Player needs to be within 3 units to start attraction
-    attractionSpeed: 20.0, // Barrels move toward player at 8 units/second
+    collectionRange: 3.0,
+    attractionSpeed: 20.0,
 
     // Spawning and scattering
-    spawnRadius: 2.0, // Scatter barrels within 2 units of death position
+    spawnRadius: 2.0,
 
     // Flight animation
-    flightTimeMin: 1.0, // Minimum 1 second flight time
-    flightTimeMax: 1.5, // Maximum 1.5 seconds flight time
-    arcHeightMin: 2.0, // Minimum 2 units arc height
-    arcHeightMax: 4.0, // Maximum 4 units arc height
+    flightTimeMin: 1.0,
+    flightTimeMax: 1.5,
+    arcHeightMin: 2.0,
+    arcHeightMax: 4.0,
 
     // Spinning during flight
-    spinSpeedX: 3.0, // Rotation speed on X axis during flight
-    spinSpeedY: 2.0, // Rotation speed on Y axis during flight
-    spinSpeedZ: 4.0, // Rotation speed on Z axis during flight
+    spinSpeedX: 3.0,
+    spinSpeedY: 2.0,
+    spinSpeedZ: 4.0,
 
     // Floating behavior
-    driftSpeedMin: 0.1, // Minimum drift velocity
-    driftSpeedMax: 0.2, // Maximum drift velocity
+    driftSpeedMin: 0.1,
+    driftSpeedMax: 0.2,
 
     // Lifespan
-    regularBarrelLifespan: 30.0, // Regular barrels last 30 seconds
-    bossBarrelLifespan: 60.0, // Boss barrels last 60 seconds
+    regularBarrelLifespan: 30.0,
+    bossBarrelLifespan: 60.0,
 }
 
 // Boss-specific barrel configuration
 export const bossBarrelConfig: BarrelConfig = {
     ...defaultBarrelConfig,
     // Override boss-specific values
-    xpPerBarrel: 20, // Boss barrels give 20 XP each
-    spawnRadius: 4.0, // Larger spread for boss barrels
+    xpPerBarrel: 20,
+    spawnRadius: 4.0,
 }
