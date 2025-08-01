@@ -1,7 +1,15 @@
+import type { GameStateConfig } from '../../config/GameStateConfig'
+import type { GameStateComponent } from '../../ecs/Component'
+import type { World } from '../../ecs/World'
 import { BaseGameState } from './BaseGameState'
 
 export class NewShipOfferState extends BaseGameState {
-    handle(): string | null {
+    handle(
+        gameState: GameStateComponent,
+        config: GameStateConfig,
+        world: World,
+        gameWorld: import('../../GameWorld').GameWorld,
+    ): string | null {
         // This state is primarily handled by the NewShipOfferUISystem
         // The UI system will call restart methods when the user clicks "Get it"
 

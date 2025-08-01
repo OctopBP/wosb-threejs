@@ -1,5 +1,6 @@
 export * from './BaseGameState'
 export * from './BossFightState'
+export * from './BossPreviewState'
 export * from './InitialWaveState'
 export * from './NewShipOfferState'
 export * from './Wave1State'

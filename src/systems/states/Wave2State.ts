@@ -10,6 +10,7 @@ export class Wave2State extends BaseGameState {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld: import('../../GameWorld').GameWorld,
     ): string | null {
         const waveConfig = config.wave2
 
@@ -33,7 +34,7 @@ export class Wave2State extends BaseGameState {
             gameState.wave2EnemiesSpawned === waveConfig.enemyCount &&
             aliveEnemies.length === 0
         ) {
-            return 'bossFight'
+            return 'bossPreview'
         }
 
         return null // Stay in current state

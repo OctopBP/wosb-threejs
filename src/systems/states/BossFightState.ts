@@ -10,6 +10,7 @@ export class BossFightState extends BaseGameState {
         gameState: GameStateComponent,
         config: GameStateConfig,
         world: World,
+        gameWorld: import('../../GameWorld').GameWorld,
     ): string | null {
         // Initialize game start time if not set
         if (this.gameStartTime === 0) {

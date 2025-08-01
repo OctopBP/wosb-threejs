@@ -17,6 +17,7 @@ import type { GameWorld } from '../GameWorld'
 import type { GameStateHandler } from './states'
 import {
     BossFightState,
+    BossPreviewState,
     InitialWaveState,
     NewShipOfferState,
     Wave1State,
@@ -44,6 +45,7 @@ export class GameStateSystem extends System {
         this.stateHandlers.set('initialWave', new InitialWaveState())
         this.stateHandlers.set('enemiesWave1', new Wave1State())
         this.stateHandlers.set('enemiesWave2', new Wave2State())
+        this.stateHandlers.set('bossPreview', new BossPreviewState())
         this.stateHandlers.set('bossFight', new BossFightState())
         this.stateHandlers.set('newShipOffer', new NewShipOfferState())
     }
@@ -73,19 +75,21 @@ export class GameStateSystem extends System {
 
         if (
             gameTime >= this.config.boss.forceSpawnTimeSeconds &&
+            gameState.currentState !== 'bossPreview' &&
             gameState.currentState !== 'bossFight' &&
             gameState.currentState !== 'newShipOffer'
         ) {
-            gameState.currentState = 'bossFight'
+            gameState.currentState = 'bossPreview'
         }
 
         // Handle current state using appropriate handler
         const stateHandler = this.stateHandlers.get(gameState.currentState)
-        if (stateHandler) {
+        if (stateHandler && this.gameWorld) {
             const nextState = stateHandler.handle(
                 gameState,
                 this.config,
                 this.world,
+                this.gameWorld,
             )
             if (nextState) {
                 gameState.currentState = nextState as GameState
