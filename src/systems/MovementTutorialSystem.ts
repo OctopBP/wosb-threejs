@@ -53,14 +53,27 @@ export class MovementTutorialSystem extends System {
             user-select: none;
         `
 
+        const imagesContainer = document.createElement('div')
+        imagesContainer.style.cssText = `
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 120px;
+            gap: 50px;
+            margin-bottom: 30px;
+        `
+
         // Create animation container
         const animationContainer = document.createElement('div')
         animationContainer.style.cssText = `
             position: relative;
             width: 200px;
             height: 120px;
-            margin-bottom: 30px;
         `
+
         // Create infinity symbol background
         const infinityBg = document.createElement('img')
         infinityBg.src = 'assets/ui/infinity.png'
@@ -68,21 +81,28 @@ export class MovementTutorialSystem extends System {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            width: auto;
             height: 100%;
             object-fit: contain;
-            opacity: 0.8;
         `
 
         // Create cursor hand
         this.cursorHand = document.createElement('img') as HTMLImageElement
-        this.cursorHand.src = 'assets/ui/cursor_hand.png'
+        this.cursorHand.src = 'assets/ui/cursor.png'
         this.cursorHand.style.cssText = `
             position: absolute;
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             object-fit: contain;
             transition: none;
+        `
+
+        const wasdBg = document.createElement('img')
+        wasdBg.src = 'assets/ui/wasd.png'
+        wasdBg.style.cssText = `
+            height: 100%;
+            width: auto;
+            object-fit: contain;
         `
 
         // Create instruction text
@@ -102,7 +122,10 @@ export class MovementTutorialSystem extends System {
         animationContainer.appendChild(infinityBg)
         animationContainer.appendChild(this.cursorHand)
 
-        this.tutorialContainer.appendChild(animationContainer)
+        imagesContainer.appendChild(animationContainer)
+        imagesContainer.appendChild(wasdBg)
+
+        this.tutorialContainer.appendChild(imagesContainer)
         this.tutorialContainer.appendChild(instructionText)
 
         document.body.appendChild(this.tutorialContainer)
@@ -120,7 +143,7 @@ export class MovementTutorialSystem extends System {
         // Infinity curve parametric equations
         // x = a * cos(t) / (1 + sin²(t))
         // y = a * sin(t) * cos(t) / (1 + sin²(t))
-        const a = 95 // Scale factor
+        const a = 90 // Scale factor
         const sinT = Math.sin(t)
         const cosT = Math.cos(t)
         const denominator = 1 + sinT * sinT
