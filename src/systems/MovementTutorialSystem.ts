@@ -1,5 +1,8 @@
 import { System } from '../ecs/System'
+
 import type { World } from '../ecs/World'
+
+const MOVE_INSTRUCTION = 'Перемещайтесь с помощью WASD или стрелок'
 
 export class MovementTutorialSystem extends System {
     private tutorialContainer: HTMLElement | null = null
@@ -40,10 +43,10 @@ export class MovementTutorialSystem extends System {
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: end;
             align-items: center;
             z-index: 10000;
             pointer-events: none;
@@ -58,7 +61,6 @@ export class MovementTutorialSystem extends System {
             height: 120px;
             margin-bottom: 30px;
         `
-
         // Create infinity symbol background
         const infinityBg = document.createElement('img')
         infinityBg.src = 'assets/ui/infinity.png'
@@ -80,13 +82,12 @@ export class MovementTutorialSystem extends System {
             width: 24px;
             height: 24px;
             object-fit: contain;
-            transform: translate(-50%, -50%);
             transition: none;
         `
 
         // Create instruction text
         const instructionText = document.createElement('div')
-        instructionText.textContent = 'Move with WASD or arrows'
+        instructionText.textContent = MOVE_INSTRUCTION
         instructionText.style.cssText = `
             color: white;
             font-family: Arial, sans-serif;
@@ -94,6 +95,7 @@ export class MovementTutorialSystem extends System {
             font-weight: bold;
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 100px;
         `
 
         // Assemble the tutorial
@@ -112,13 +114,13 @@ export class MovementTutorialSystem extends System {
 
         const currentTime = performance.now()
         const elapsed = (currentTime - this.startTime) / 1000 // Convert to seconds
-        const speed = 0.8 // Animation speed
+        const speed = 2.0 // Animation speed
         const t = (elapsed * speed) % (2 * Math.PI) // Parameter for infinity curve
 
         // Infinity curve parametric equations
         // x = a * cos(t) / (1 + sin²(t))
         // y = a * sin(t) * cos(t) / (1 + sin²(t))
-        const a = 80 // Scale factor
+        const a = 95 // Scale factor
         const sinT = Math.sin(t)
         const cosT = Math.cos(t)
         const denominator = 1 + sinT * sinT
