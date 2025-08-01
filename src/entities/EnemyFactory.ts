@@ -20,6 +20,7 @@ import { createMovementConfig } from '../config/MovementPresets'
 import type {
     AliveComponent,
     BossComponent,
+    CameraTargetComponent,
     DamageableComponent,
     EnemyComponent,
     FoamTrailComponent,
@@ -165,6 +166,13 @@ export function createBossShip(
     // Movement configuration - use boss preset
     const bossMovementConfig = createMovementConfig(bossMovementPreset)
     entity.addComponent(bossMovementConfig)
+
+    entity.addComponent<CameraTargetComponent>({
+        type: 'cameraTarget',
+        priority: 2,
+        offset: { x: 0, y: 30, z: -15 },
+        lerpFactor: 0.02,
+    })
 
     // Health component - use boss health config
     const health = createBossHealthConfig()

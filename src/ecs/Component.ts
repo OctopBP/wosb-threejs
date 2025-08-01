@@ -217,7 +217,6 @@ export interface LevelingStatsComponent extends Component {
 export interface CameraTargetComponent extends Component {
     type: 'cameraTarget'
     priority: number // Higher priority targets are focused on first
-    targetType: 'player' | 'enemy' | 'boss' | 'cinematic'
     offset: {
         x: number
         y: number
@@ -225,6 +224,7 @@ export interface CameraTargetComponent extends Component {
     }
     // Optional custom camera state for this target
     customCameraState?: string
+    lerpFactor: number
 }
 
 // Camera State component for managing camera transitions and effects

@@ -7,18 +7,12 @@ import type { World } from '../ecs/World'
 export class CameraSystem extends System {
     private camera: PerspectiveCamera
     private currentTargetId: number | null = null
-    private lerpFactor: number = 0.05
     private currentPosition: Vector3 = new Vector3()
     private currentTarget: Vector3 = new Vector3()
 
-    constructor(
-        world: World,
-        camera: PerspectiveCamera,
-        lerpFactor: number = 0.05,
-    ) {
+    constructor(world: World, camera: PerspectiveCamera) {
         super(world)
         this.camera = camera
-        this.lerpFactor = lerpFactor
 
         // Initialize camera position
         this.currentPosition.copy(camera.position)
@@ -57,17 +51,23 @@ export class CameraSystem extends System {
     }
 
     private followTarget(): void {
-        if (!this.currentTargetId) return
+        if (!this.currentTargetId) {
+            return
+        }
 
         const targetEntity = this.world.getEntity(this.currentTargetId)
-        if (!targetEntity) return
+        if (!targetEntity) {
+            return
+        }
 
         const targetPosition =
             targetEntity.getComponent<PositionComponent>('position')
         const targetComponent =
             targetEntity.getComponent<CameraTargetComponent>('cameraTarget')
 
-        if (!targetPosition || !targetComponent) return
+        if (!targetPosition || !targetComponent) {
+            return
+        }
 
         // Calculate target position with offset
         const targetPos = new Vector3(
@@ -76,65 +76,15 @@ export class CameraSystem extends System {
             targetPosition.z + targetComponent.offset.z,
         )
 
-        // Calculate camera position (target position + camera offset)
-        const cameraPos = new Vector3(
-            targetPos.x + (targetComponent.cameraOffset?.x || 0),
-            targetPos.y + (targetComponent.cameraOffset?.y || 10),
-            targetPos.z + (targetComponent.cameraOffset?.z || 10),
-        )
-
         // Lerp to the new positions
-        this.currentPosition.lerp(cameraPos, this.lerpFactor)
-        this.currentTarget.lerp(targetPos, this.lerpFactor)
+        this.currentPosition.lerp(targetPos, targetComponent.lerpFactor)
+        this.currentTarget.lerp(targetPosition, targetComponent.lerpFactor)
     }
 
     private applyCamera(): void {
         this.camera.position.copy(this.currentPosition)
         this.camera.lookAt(this.currentTarget)
         this.camera.updateProjectionMatrix()
-    }
-
-    // Public API methods
-    public setTarget(entityId: number): void {
-        this.currentTargetId = entityId
-    }
-
-    public addCameraTarget(
-        entityId: number,
-        priority: number = 0,
-        offset?: { x: number; y: number; z: number },
-        cameraOffset?: { x: number; y: number; z: number },
-    ): void {
-        const entity = this.world.getEntity(entityId)
-        if (entity) {
-            const cameraTarget: CameraTargetComponent = {
-                type: 'cameraTarget',
-                priority,
-                targetType: 'generic',
-                offset: offset || { x: 0, y: 0, z: 0 },
-                cameraOffset: cameraOffset || { x: 0, y: 10, z: 10 },
-            }
-            entity.addComponent(cameraTarget)
-        }
-    }
-
-    public removeCameraTarget(entityId: number): void {
-        const entity = this.world.getEntity(entityId)
-        if (entity) {
-            entity.removeComponent('cameraTarget')
-        }
-    }
-
-    public getCurrentTarget(): number | null {
-        return this.currentTargetId
-    }
-
-    public setLerpFactor(factor: number): void {
-        this.lerpFactor = Math.max(0.001, Math.min(1, factor))
-    }
-
-    public getLerpFactor(): number {
-        return this.lerpFactor
     }
 
     public getCurrentState(): string | null {
@@ -150,7 +100,7 @@ export class CameraSystem extends System {
         const targetComponent =
             targetEntity.getComponent<CameraTargetComponent>('cameraTarget')
         return targetComponent
-            ? `Following ${targetComponent.targetType} (ID: ${this.currentTargetId})`
+            ? `Following (ID: ${this.currentTargetId})`
             : 'Unknown Target'
     }
 }
