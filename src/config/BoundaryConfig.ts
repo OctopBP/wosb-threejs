@@ -8,10 +8,10 @@ export interface BoundaryConfig {
 }
 
 export const shipBoundaryConfig: BoundaryConfig = {
-    minX: -60,
-    maxX: 50,
-    minZ: -10,
-    maxZ: 80,
+    minX: -42,
+    maxX: 33,
+    minZ: -46,
+    maxZ: 32,
 }
 
 export const boundarySystemConfig = {
