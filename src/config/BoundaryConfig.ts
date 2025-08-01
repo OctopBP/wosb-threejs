@@ -72,8 +72,12 @@ export function clampToBoundary(
     const clampedZ = Math.max(boundary.minZ, Math.min(boundary.maxZ, z))
     let clampedY = y
 
-    if (boundary.minY !== undefined && y !== undefined) {
-        clampedY = Math.max(boundary.minY, clampedY!)
+    if (
+        boundary.minY !== undefined &&
+        y !== undefined &&
+        clampedY !== undefined
+    ) {
+        clampedY = Math.max(boundary.minY, clampedY)
     }
     if (boundary.maxY !== undefined && clampedY !== undefined) {
         clampedY = Math.min(boundary.maxY, clampedY)
