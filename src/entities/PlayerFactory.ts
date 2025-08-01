@@ -1,4 +1,5 @@
 import { Vector2 } from 'three'
+import { defaultCameraConfig } from '../config/CameraConfig'
 import { createPlayerShipCollision } from '../config/CollisionConfig'
 import {
     createLevelComponent,
@@ -11,6 +12,7 @@ import { createMovementConfig } from '../config/MovementPresets'
 import { createPlayerWeaponConfig } from '../config/WeaponConfig'
 import type {
     AliveComponent,
+    CameraTargetComponent,
     DamageableComponent,
     FoamTrailComponent,
     HealthComponent,
@@ -62,6 +64,13 @@ export function createPlayerShip(
     entity.addComponent<FoamTrailComponent>({
         type: 'foamTrail',
         size: 0.004,
+    })
+
+    entity.addComponent<CameraTargetComponent>({
+        type: 'cameraTarget',
+        priority: 1,
+        offset: defaultCameraConfig.states.playerFocus.offset,
+        lerpFactor: 0.1,
     })
 
     // Input component - no initial input with direction output

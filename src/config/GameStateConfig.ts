@@ -36,8 +36,8 @@ export const defaultGameStateConfig: GameStateConfig = {
         maxSpawnDistance: 45,
     },
     boss: {
-        minSpawnDistance: 25,
-        maxSpawnDistance: 25, // Fixed distance for consistent boss encounter
+        minSpawnDistance: 30,
+        maxSpawnDistance: 30, // Fixed distance for consistent boss encounter
         forceSpawnTimeSeconds: 20, // Boss appears after 20 seconds if waves aren't complete
     },
 }

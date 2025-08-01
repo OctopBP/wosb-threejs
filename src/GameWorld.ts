@@ -125,7 +125,12 @@ export class GameWorld {
         this.collisionSystem = new CollisionSystem(this.world)
         this.deathAnimationSystem = new DeathAnimationSystem(this.world)
         this.renderSystem = new RenderSystem(this.world, scene)
-        this.gameStateSystem = new GameStateSystem(this.world, gameStateConfig)
+        this.cameraSystem = new CameraSystem(this.world, camera)
+        this.gameStateSystem = new GameStateSystem(
+            this.world,
+            gameStateConfig,
+            this.cameraSystem,
+        )
         this.enemyAISystem = new EnemyAISystem(this.world)
         this.levelingSystem = new LevelingSystem(this.world)
         this.barrelSpawnSystem = new BarrelSpawnSystem(this.world)
@@ -139,7 +144,6 @@ export class GameWorld {
         this.newShipOfferUISystem = new NewShipOfferUISystem(this.world)
         this.bossFightUISystem = new BossFightUISystem(this.world)
         this.goalUISystem = new GoalUISystem(this.world, gameStateConfig)
-        this.cameraSystem = new CameraSystem(this.world, camera)
         this.rangeIndicatorSystem = new RangeIndicatorSystem(this.world, scene)
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
         this.audioSystem = new AudioSystem(this.world)
@@ -206,12 +210,6 @@ export class GameWorld {
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
-            // Add camera target to player
-            this.cameraSystem.addCameraTarget(
-                this.playerEntity.id,
-                'player',
-                10,
-            )
         }
 
         // Create debug entity for debug visualizations
@@ -472,43 +470,6 @@ export class GameWorld {
         this.debugSystem.toggleBoundaries(enabled)
     }
 
-    // Camera system methods
-    transitionToCameraState(stateName: string, duration?: number): void {
-        this.cameraSystem.transitionToState(stateName, duration)
-    }
-
-    triggerScreenShake(
-        intensity: number,
-        frequency: number,
-        duration: number,
-    ): void {
-        this.cameraSystem.triggerScreenShake(intensity, frequency, duration)
-    }
-
-    triggerScreenShakePreset(
-        presetName: 'light' | 'medium' | 'heavy' | 'boss',
-    ): void {
-        this.cameraSystem.triggerScreenShakePreset(presetName)
-    }
-
-    triggerZoom(targetFOV: number, duration: number): void {
-        this.cameraSystem.triggerZoom(targetFOV, duration)
-    }
-
-    triggerZoomPreset(
-        presetName: 'close' | 'medium' | 'far' | 'cinematic',
-    ): void {
-        this.cameraSystem.triggerZoomPreset(presetName)
-    }
-
-    addCameraTarget(
-        entityId: number,
-        targetType: 'player' | 'enemy' | 'boss' | 'cinematic',
-        priority: number = 0,
-    ): void {
-        this.cameraSystem.addCameraTarget(entityId, targetType, priority)
-    }
-
     getCurrentCameraState(): string | null {
         return this.cameraSystem.getCurrentState()
     }
@@ -590,13 +551,6 @@ export class GameWorld {
         this.playerEntity = createPlayerShip()
         if (this.playerEntity) {
             this.world.addEntity(this.playerEntity)
-
-            // Reset camera target to the new player
-            this.cameraSystem.addCameraTarget(
-                this.playerEntity.id,
-                'player',
-                10,
-            )
         }
     }
 
