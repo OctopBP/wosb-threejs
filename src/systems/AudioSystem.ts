@@ -246,18 +246,12 @@ export class AudioSystem extends System {
         this.audioMuted = muted
 
         if (muted) {
-            // Stop all currently playing audio
             for (const audio of this.playingAudio.values()) {
-                if (audio.isPlaying) {
-                    audio.pause()
-                }
+                audio.setVolume(0)
             }
         } else {
-            // Resume all paused audio
             for (const audio of this.playingAudio.values()) {
-                if (!audio.isPlaying) {
-                    audio.play()
-                }
+                audio.setVolume(1)
             }
         }
     }
