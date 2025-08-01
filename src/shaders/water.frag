@@ -109,8 +109,9 @@ void main() {
 
   // Add noise where we have bw value, using foam texture and animated voronoi
   float v = voronoi(vUv, uTime * 3.0, 200.0);
+  float v2 = voronoi(vUv, uTime * 0.5, 100.0);
   float foam = texture2D(foamTexture, mod((v - 0.5) * 0.03 + vUv * 20.0, 1.0)).r;
-  finalColor = mix(finalColor, vec3(foam), clamp(bw - 0.2, 0.0, 1.0));
+  finalColor = mix(finalColor, vec3(foam), clamp(bw - ((1.0 - v2) * 0.8), 0.0, 1.0));
 
   gl_FragColor = vec4(finalColor, uOpacity);
 
