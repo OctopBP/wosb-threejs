@@ -11,6 +11,7 @@ import {
     Vector3,
     WireframeGeometry,
 } from 'three'
+import { shipBoundaryConfig } from '../config/BoundaryConfig'
 import { restrictedZones } from '../config/RestrictedZoneConfig'
 import { getAllSpawnZones } from '../config/SpawnZoneConfig'
 import type {
@@ -33,6 +34,7 @@ interface DebugGizmo {
         | 'velocityVector'
         | 'restrictedZone'
         | 'spawnZone'
+        | 'boundary'
 }
 
 export class DebugSystem extends System {
@@ -44,6 +46,7 @@ export class DebugSystem extends System {
     private velocityMaterial: LineBasicMaterial
     private restrictedZoneMaterial: MeshBasicMaterial
     private spawnZoneMaterial: MeshBasicMaterial
+    private boundaryMaterial: MeshBasicMaterial
 
     constructor(world: World, scene: Scene) {
         super(world, ['debug'])
@@ -89,6 +92,13 @@ export class DebugSystem extends System {
             wireframe: true,
             transparent: true,
             opacity: 0.3,
+        })
+
+        this.boundaryMaterial = new MeshBasicMaterial({
+            color: 0x00ffff, // Cyan for boundaries
+            wireframe: true,
+            transparent: true,
+            opacity: 0.5,
         })
     }
 
@@ -162,6 +172,11 @@ export class DebugSystem extends System {
         // Render spawn zones (only once, not per entity)
         if (debugComponent.showSpawnZones) {
             this.renderSpawnZones()
+        }
+
+        // Render boundaries (only once, not per entity)
+        if (debugComponent.showBoundaries) {
+            this.renderBoundaries()
         }
     }
 
@@ -455,6 +470,17 @@ export class DebugSystem extends System {
         }
     }
 
+    public toggleBoundaries(enabled: boolean): void {
+        const debugEntities = this.getEntities()
+        if (debugEntities.length > 0) {
+            const debugComponent =
+                debugEntities[0].getComponent<DebugComponent>('debug')
+            if (debugComponent) {
+                debugComponent.showBoundaries = enabled
+            }
+        }
+    }
+
     private renderRestrictedZones(): void {
         for (let i = 0; i < restrictedZones.length; i++) {
             const zone = restrictedZones[i]
@@ -523,6 +549,37 @@ export class DebugSystem extends System {
         }
     }
 
+    private renderBoundaries(): void {
+        const boundary = shipBoundaryConfig
+
+        // Calculate boundary dimensions
+        const width = boundary.maxX - boundary.minX
+        const depth = boundary.maxZ - boundary.minZ
+        const height = 3.0 // Tall enough to be visible
+
+        // Calculate boundary center
+        const centerX = (boundary.minX + boundary.maxX) / 2
+        const centerZ = (boundary.minZ + boundary.maxZ) / 2
+        const centerY = height / 2
+
+        // Create box geometry for the boundary
+        const geometry = new BoxGeometry(width, height, depth)
+        const mesh = new Mesh(geometry, this.boundaryMaterial)
+
+        // Position the mesh at the boundary center
+        mesh.position.set(centerX, centerY, centerZ)
+
+        // Add to scene
+        this.scene.add(mesh)
+
+        // Track this gizmo for cleanup (use unique negative ID for boundary)
+        this.debugGizmos.push({
+            mesh,
+            entityId: -2000, // Unique negative ID for boundary visualization
+            type: 'boundary',
+        })
+    }
+
     // Cleanup method
     public dispose(): void {
         this.clearDebugGizmos()
@@ -532,5 +589,6 @@ export class DebugSystem extends System {
         this.velocityMaterial.dispose()
         this.restrictedZoneMaterial.dispose()
         this.spawnZoneMaterial.dispose()
+        this.boundaryMaterial.dispose()
     }
 }

@@ -464,6 +464,10 @@ export class GameWorld {
         this.debugSystem.toggleSpawnZones(enabled)
     }
 
+    toggleDebugBoundaries(enabled: boolean): void {
+        this.debugSystem.toggleBoundaries(enabled)
+    }
+
     // Camera system methods
     transitionToCameraState(stateName: string, duration?: number): void {
         this.cameraSystem.transitionToState(stateName, duration)
