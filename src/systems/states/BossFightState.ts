@@ -3,6 +3,8 @@ import type { GameStateComponent } from '../../ecs/Component'
 import type { World } from '../../ecs/World'
 import { BaseGameState } from './BaseGameState'
 
+const CAMERA_TRANSITION_TIME = 1500
+
 export class BossFightState extends BaseGameState {
     private gameStartTime: number = 0
 
@@ -20,12 +22,14 @@ export class BossFightState extends BaseGameState {
         if (!gameState.bossSpawned) {
             this.spawnBoss(world, config)
             gameState.bossSpawned = true
+
+            setTimeout(() => {
+                const bossEntities = world.getEntitiesWithComponents(['boss'])
+                const bossEntity = bossEntities[0]
+                bossEntity.removeComponent('cameraTarget')
+            }, CAMERA_TRANSITION_TIME)
         }
 
-        // Boss fight continues until player dies or boss is defeated
-        // Player death is handled by the main GameStateSystem
-        // Boss death would lead to victory (not implemented yet in requirements)
-
-        return null // Stay in current state
+        return null
     }
 }

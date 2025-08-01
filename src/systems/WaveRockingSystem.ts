@@ -72,8 +72,8 @@ export class WaveRockingSystem extends System {
             // Only apply to ship meshes
             if (!this.isShipMesh(renderable.meshType)) continue
 
-            // this.applyWaveMotion(position)
-            // this.applyWaveMovementEffects(position, speed, deltaTime)
+            this.applyWaveMotion(position)
+            this.applyWaveMovementEffects(position, speed, deltaTime)
         }
     }
 

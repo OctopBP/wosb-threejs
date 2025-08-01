@@ -14,6 +14,7 @@ import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { GameWorld } from '../GameWorld'
+import type { CameraSystem } from './CameraSystem'
 import type { GameStateHandler } from './states'
 import {
     BossFightState,
@@ -30,13 +31,16 @@ export class GameStateSystem extends System {
     private gameStartTime: number = 0 // Track game start time
     private playerDeathTime: number = 0 // Track when player died
     private isPlayerDying: boolean = false // Flag to track if player is in dying state
+    private cameraSystem: CameraSystem
 
     constructor(
         world: World,
         config: GameStateConfig = defaultGameStateConfig,
+        cameraSystem: CameraSystem,
     ) {
         super(world, [])
         this.config = config
+        this.cameraSystem = cameraSystem
         this.initializeStateHandlers()
     }
 
@@ -44,7 +48,10 @@ export class GameStateSystem extends System {
         this.stateHandlers.set('initialWave', new InitialWaveState())
         this.stateHandlers.set('enemiesWave1', new Wave1State())
         this.stateHandlers.set('enemiesWave2', new Wave2State())
-        this.stateHandlers.set('bossFight', new BossFightState())
+        this.stateHandlers.set(
+            'bossFight',
+            new BossFightState(this.cameraSystem),
+        )
         this.stateHandlers.set('newShipOffer', new NewShipOfferState())
     }
 
