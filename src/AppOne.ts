@@ -90,7 +90,7 @@ export class AppOne {
 
         // Create directional light for better depth perception and shadows
         const directionalLight = new DirectionalLight(0xffffff, 2.5)
-        directionalLight.position.set(10, 10, 10)
+        directionalLight.position.set(3, 10, -5)
         directionalLight.target.position.set(0, 0, 0)
         directionalLight.castShadow = true
         directionalLight.shadow.mapSize.width = 2048
@@ -101,6 +101,7 @@ export class AppOne {
         directionalLight.shadow.camera.right = 25
         directionalLight.shadow.camera.top = 25
         directionalLight.shadow.camera.bottom = -25
+        directionalLight.intensity = 3.5
         scene.add(directionalLight)
 
         // Add fog for atmosphere
@@ -567,7 +568,7 @@ export class AppOne {
         }
         if (directionalLight) {
             lightFolder
-                .add(directionalLight, 'intensity', 0, 5, 0.01)
+                .add(directionalLight, 'intensity', 0, 7, 0.01)
                 .name('Directional Intensity')
         }
 
