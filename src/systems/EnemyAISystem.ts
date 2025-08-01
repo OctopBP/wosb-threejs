@@ -1,4 +1,5 @@
 import { Vector2 } from 'three'
+import type { RestrictedZoneConfig } from '../config/RestrictedZoneConfig'
 import {
     calculatePushBackDirection,
     getRestrictedZoneAt,
@@ -113,26 +114,38 @@ export class EnemyAISystem extends System {
         position: PositionComponent,
         targetDirection: Vector2,
     ): Vector2 {
-        const lookAheadDistance = 3.0 // How far ahead to check for zones
-        const avoidanceAngle = Math.PI / 4 // 45 degrees turn for avoidance
+        const lookAheadDistance = 8.0 // How far ahead to check for zones
+        const checksCount = 3
 
-        // Calculate look-ahead position
-        const lookAheadX = position.x + targetDirection.x * lookAheadDistance
-        const lookAheadZ = position.z + targetDirection.y * lookAheadDistance
+        var maybeRestrictedZone: RestrictedZoneConfig | null = null
+        for (let i = 1; i <= checksCount; i++) {
+            // Calculate look-ahead position
+            const lookAheadX =
+                position.x +
+                (targetDirection.x * lookAheadDistance * i) / checksCount
+            const lookAheadZ =
+                position.z +
+                (targetDirection.y * lookAheadDistance * i) / checksCount
 
-        // Check if there's a restricted zone ahead
-        const restrictedZone = getRestrictedZoneAt(
-            lookAheadX,
-            lookAheadZ,
-            position.y,
-        )
-
-        if (restrictedZone) {
-            // Get push-back direction from the zone
-            const pushBack = calculatePushBackDirection(
+            // Check if there's a restricted zone ahead
+            const restrictedZone = getRestrictedZoneAt(
                 lookAheadX,
                 lookAheadZ,
-                restrictedZone,
+                position.y,
+            )
+
+            if (restrictedZone) {
+                maybeRestrictedZone = restrictedZone
+                break
+            }
+        }
+
+        if (maybeRestrictedZone) {
+            // Get push-back direction from the zone
+            const pushBack = calculatePushBackDirection(
+                position.x,
+                position.z,
+                maybeRestrictedZone,
             )
 
             // Convert push-back to avoidance direction
