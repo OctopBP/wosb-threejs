@@ -5,7 +5,7 @@ import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
 const GOAL_TEXTS = {
-    tutorial: 'Используйте WASD или стрелки для управления кораблем',
+    tutorial: '',
     initialWave: 'Уничтожьте {enemyCount} врага',
     wave1: 'Уничтожьте {enemyCount} врагов',
     wave2: 'Уничтожьте {enemyCount} врагов',
