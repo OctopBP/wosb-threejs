@@ -41,16 +41,16 @@ export const defaultBarrelConfig: BarrelConfig = {
 
     // Collection behavior
     collectionRange: 3.0,
-    attractionSpeed: 20.0,
+    attractionSpeed: 30.0,
 
     // Spawning and scattering
     spawnRadius: 2.0,
 
     // Flight animation
-    flightTimeMin: 1.0,
-    flightTimeMax: 1.5,
-    arcHeightMin: 2.0,
-    arcHeightMax: 4.0,
+    flightTimeMin: 0.1,
+    flightTimeMax: 0.6,
+    arcHeightMin: 1.5,
+    arcHeightMax: 3.0,
 
     // Spinning during flight
     spinSpeedX: 3.0,
