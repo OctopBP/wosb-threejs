@@ -1,7 +1,13 @@
 import { Vector2 } from 'three'
+import type { RestrictedZoneConfig } from '../config/RestrictedZoneConfig'
+import {
+    calculatePushBackDirection,
+    getRestrictedZoneAt,
+} from '../config/RestrictedZoneConfig'
 import type {
     InputComponent,
     PositionComponent,
+    SpeedComponent,
     WeaponComponent,
 } from '../ecs/Component'
 import { System } from '../ecs/System'
@@ -34,13 +40,14 @@ export class EnemyAISystem extends System {
             const position = enemy.getComponent<PositionComponent>('position')
             const weapon = enemy.getComponent<WeaponComponent>('weapon')
             const input = enemy.getComponent<InputComponent>('input')
+            const speed = enemy.getComponent<SpeedComponent>('speed')
 
-            if (!position || !weapon || !input) {
+            if (!position || !weapon || !input || !speed) {
                 continue
             }
 
             // Update AI behavior
-            this.updateMovement(position, playerPosition, input)
+            this.updateMovement(position, playerPosition, input, speed)
 
             // Only handle shooting for manual weapons - auto-targeting weapons are handled by WeaponSystem
             if (!weapon.isAutoTargeting) {
@@ -53,13 +60,111 @@ export class EnemyAISystem extends System {
         position: PositionComponent,
         playerPosition: PositionComponent,
         input: InputComponent,
+        speed: SpeedComponent,
     ): void {
         // Calculate direction to player
         const dx = playerPosition.x - position.x
         const dz = playerPosition.z - position.z
+        const distanceToPlayer = Math.sqrt(dx * dx + dz * dz)
 
-        input.direction = new Vector2(dx, dz).normalize()
+        // Apply speed reduction when near player
+        this.applyProximitySpeedReduction(speed, distanceToPlayer)
+
+        // Calculate base direction to player
+        let targetDirection = new Vector2(dx, dz).normalize()
+
+        // Check for restricted zones ahead and adjust direction
+        targetDirection = this.avoidRestrictedZones(position, targetDirection)
+
+        input.direction = targetDirection
         input.hasInput = true
+    }
+
+    /**
+     * Reduce enemy speed when close to player to prevent ramming
+     */
+    private applyProximitySpeedReduction(
+        speed: SpeedComponent,
+        distanceToPlayer: number,
+    ): void {
+        const slowdownDistance = 8.0 // Distance at which to start slowing down
+        const minSpeedRatio = 0.3 // Minimum speed as a ratio of max speed
+
+        if (distanceToPlayer < slowdownDistance) {
+            // Calculate speed reduction based on proximity
+            const proximityRatio = distanceToPlayer / slowdownDistance
+            const speedReduction =
+                1.0 - (1.0 - minSpeedRatio) * (1.0 - proximityRatio)
+
+            // Apply speed reduction by modifying max speed temporarily
+            const originalMaxSpeed = speed.maxSpeed
+            const reducedMaxSpeed = originalMaxSpeed * speedReduction
+
+            // Clamp current speed to reduced max speed
+            if (speed.currentSpeed > reducedMaxSpeed) {
+                speed.currentSpeed = reducedMaxSpeed
+            }
+        }
+    }
+
+    /**
+     * Check for restricted zones ahead and turn to avoid them
+     */
+    private avoidRestrictedZones(
+        position: PositionComponent,
+        targetDirection: Vector2,
+    ): Vector2 {
+        const lookAheadDistance = 8.0 // How far ahead to check for zones
+        const checksCount = 3
+
+        var maybeRestrictedZone: RestrictedZoneConfig | null = null
+        for (let i = 1; i <= checksCount; i++) {
+            // Calculate look-ahead position
+            const lookAheadX =
+                position.x +
+                (targetDirection.x * lookAheadDistance * i) / checksCount
+            const lookAheadZ =
+                position.z +
+                (targetDirection.y * lookAheadDistance * i) / checksCount
+
+            // Check if there's a restricted zone ahead
+            const restrictedZone = getRestrictedZoneAt(
+                lookAheadX,
+                lookAheadZ,
+                position.y,
+            )
+
+            if (restrictedZone) {
+                maybeRestrictedZone = restrictedZone
+                break
+            }
+        }
+
+        if (maybeRestrictedZone) {
+            // Get push-back direction from the zone
+            const pushBack = calculatePushBackDirection(
+                position.x,
+                position.z,
+                maybeRestrictedZone,
+            )
+
+            // Convert push-back to avoidance direction
+            // We want to turn perpendicular to the zone boundary
+            const avoidanceDirection = new Vector2(-pushBack.z, pushBack.x)
+
+            // Blend the avoidance direction with the original target direction
+            const avoidanceWeight = 0.7 // How strongly to avoid vs pursue player
+            const blendedDirection = new Vector2(
+                targetDirection.x * (1 - avoidanceWeight) +
+                    avoidanceDirection.x * avoidanceWeight,
+                targetDirection.y * (1 - avoidanceWeight) +
+                    avoidanceDirection.y * avoidanceWeight,
+            )
+
+            return blendedDirection.normalize()
+        }
+
+        return targetDirection
     }
 
     private updateShooting(
