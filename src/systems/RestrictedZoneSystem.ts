@@ -10,7 +10,7 @@ import type { World } from '../ecs/World'
 export class RestrictedZoneSystem extends System {
     constructor(world: World) {
         // Target entities that have position, speed, and are alive (ships)
-        super(world, ['position', 'speed', 'alive'])
+        super(world, ['position', 'speed', 'alive', 'player'])
     }
 
     update(_deltaTime: number): void {

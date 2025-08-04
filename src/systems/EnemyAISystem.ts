@@ -1,4 +1,6 @@
 import { Vector2 } from 'three'
+import { enemyAIConfig } from '../config/EnemyAIConfig'
+import { getRestrictedZoneAt } from '../config/RestrictedZoneConfig'
 import type {
     InputComponent,
     PositionComponent,
@@ -39,8 +41,12 @@ export class EnemyAISystem extends System {
                 continue
             }
 
-            // Update AI behavior
-            this.updateMovement(position, playerPosition, input)
+            // Update AI behavior with obstacle avoidance
+            this.updateMovementWithObstacleAvoidance(
+                position,
+                playerPosition,
+                input,
+            )
 
             // Only handle shooting for manual weapons - auto-targeting weapons are handled by WeaponSystem
             if (!weapon.isAutoTargeting) {
@@ -49,17 +55,103 @@ export class EnemyAISystem extends System {
         }
     }
 
-    private updateMovement(
+    private updateMovementWithObstacleAvoidance(
         position: PositionComponent,
         playerPosition: PositionComponent,
         input: InputComponent,
     ): void {
-        // Calculate direction to player
-        const dx = playerPosition.x - position.x
-        const dz = playerPosition.z - position.z
+        // Try to find a clear path to the player
+        const safeDirection = this.findSafeDirection(position, playerPosition)
 
-        input.direction = new Vector2(dx, dz).normalize()
+        // Use the safe direction for movement
+        input.direction = safeDirection
         input.hasInput = true
+    }
+
+    private findSafeDirection(
+        enemyPosition: PositionComponent,
+        playerPosition: PositionComponent,
+    ): Vector2 {
+        // Calculate direct direction to player
+        const dx = playerPosition.x - enemyPosition.x
+        const dz = playerPosition.z - enemyPosition.z
+        const directDirection = new Vector2(dx, dz).normalize()
+
+        // First, try the direct path
+        if (!this.isPathBlocked(enemyPosition, directDirection)) {
+            return directDirection
+        }
+
+        // If direct path is blocked, try alternative angles
+        const baseAngle = Math.atan2(directDirection.y, directDirection.x)
+
+        // Try angles to the right (positive offset)
+        for (
+            let i = 1;
+            i <= enemyAIConfig.rayCasting.maxAngleAttempts / 2;
+            i++
+        ) {
+            const rightAngle =
+                baseAngle + i * enemyAIConfig.rayCasting.angleStep
+            const rightDirection = new Vector2(
+                Math.cos(rightAngle),
+                Math.sin(rightAngle),
+            )
+
+            if (!this.isPathBlocked(enemyPosition, rightDirection)) {
+                return rightDirection
+            }
+        }
+
+        // Try angles to the left (negative offset)
+        for (
+            let i = 1;
+            i <= enemyAIConfig.rayCasting.maxAngleAttempts / 2;
+            i++
+        ) {
+            const leftAngle = baseAngle - i * enemyAIConfig.rayCasting.angleStep
+            const leftDirection = new Vector2(
+                Math.cos(leftAngle),
+                Math.sin(leftAngle),
+            )
+
+            if (!this.isPathBlocked(enemyPosition, leftDirection)) {
+                return leftDirection
+            }
+        }
+
+        // If no clear path found, return the direct direction as fallback
+        // The RestrictedZoneSystem will handle collision response
+        return directDirection
+    }
+
+    private isPathBlocked(
+        startPosition: PositionComponent,
+        direction: Vector2,
+    ): boolean {
+        // Cast ray from enemy position in the given direction
+        const maxSteps = Math.floor(
+            enemyAIConfig.rayCasting.maxRayDistance /
+                enemyAIConfig.rayCasting.rayStep,
+        )
+
+        for (let step = 1; step <= maxSteps; step++) {
+            const distance = step * enemyAIConfig.rayCasting.rayStep
+            const checkX = startPosition.x + direction.x * distance
+            const checkZ = startPosition.z + direction.y * distance
+
+            // Check if this point is inside a restricted zone
+            const restrictedZone = getRestrictedZoneAt(
+                checkX,
+                checkZ,
+                startPosition.y,
+            )
+            if (restrictedZone) {
+                return true // Path is blocked
+            }
+        }
+
+        return false // Path is clear
     }
 
     private updateShooting(
@@ -82,7 +174,6 @@ export class EnemyAISystem extends System {
             if (timeSinceLastShot >= fireInterval) {
                 // Enemy shooting is handled by WeaponSystem
                 // We just need to update the last shot time
-                weapon.lastShotTime = currentTime
                 weapon.lastShotTime = currentTime
             }
         }
