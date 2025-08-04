@@ -1,5 +1,7 @@
 import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig } from 'vite'
+import { readFileSync, existsSync } from 'fs'
+import { resolve } from 'path'
 
 export default defineConfig(({ mode }) => {
     const isProduction = mode === 'production'
@@ -48,6 +50,30 @@ export default defineConfig(({ mode }) => {
         },
 
         plugins: [
+            // Copy playgama bridge files to build output
+            {
+                name: 'copy-playgama-files',
+                generateBundle() {
+                    const bridgeJsPath = resolve(__dirname, 'playgama-bridge.js')
+                    const bridgeConfigPath = resolve(__dirname, 'playgama-bridge-config.json')
+
+                    if (existsSync(bridgeJsPath)) {
+                        this.emitFile({
+                            type: 'asset',
+                            fileName: 'playgama-bridge.js',
+                            source: readFileSync(bridgeJsPath, 'utf-8')
+                        })
+                    }
+
+                    if (existsSync(bridgeConfigPath)) {
+                        this.emitFile({
+                            type: 'asset',
+                            fileName: 'playgama-bridge-config.json',
+                            source: readFileSync(bridgeConfigPath, 'utf-8')
+                        })
+                    }
+                }
+            },
             isAnalyze &&
                 visualizer({
                     filename: 'dist/stats.html',
