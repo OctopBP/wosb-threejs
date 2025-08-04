@@ -20,6 +20,7 @@ import {
     BossFightState,
     InitialWaveState,
     NewShipOfferState,
+    TutorialState,
     Wave1State,
     Wave2State,
 } from './states'
@@ -45,6 +46,7 @@ export class GameStateSystem extends System {
     }
 
     private initializeStateHandlers(): void {
+        this.stateHandlers.set('tutorial', new TutorialState())
         this.stateHandlers.set('initialWave', new InitialWaveState())
         this.stateHandlers.set('enemiesWave1', new Wave1State())
         this.stateHandlers.set('enemiesWave2', new Wave2State())
@@ -121,7 +123,7 @@ export class GameStateSystem extends System {
         this.gameStateEntity = this.world.createEntity()
         const gameState: GameStateComponent = {
             type: 'gameState',
-            currentState: 'initialWave',
+            currentState: 'tutorial',
             initialWaveEnemiesSpawned: 0,
             initialWaveEnemiesDefeated: 0,
             wave1EnemiesSpawned: 0,
@@ -185,7 +187,7 @@ export class GameStateSystem extends System {
         this.isPlayerDying = false
 
         // Reset game state
-        gameState.currentState = 'initialWave'
+        gameState.currentState = 'tutorial'
         gameState.initialWaveEnemiesSpawned = 0
         gameState.initialWaveEnemiesDefeated = 0
         gameState.wave1EnemiesSpawned = 0
