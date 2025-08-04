@@ -1,3 +1,4 @@
+import { Vector3 } from 'three'
 import type { XPProgressionConfig } from '../config/LevelingConfig'
 import {
     calculateNextLevelXP,
@@ -5,12 +6,14 @@ import {
     levelUpAnimation,
 } from '../config/LevelingConfig'
 import { getShipModelForLevel } from '../config/ModelConfig'
+import { getParticleConfig } from '../config/ParticlesConfig'
 import type {
     HealthComponent,
     LevelComponent,
     LevelingStatsComponent,
     MovementConfigComponent,
     PlayerComponent,
+    PositionComponent,
     RenderableComponent,
     WeaponComponent,
     XPComponent,
@@ -19,17 +22,21 @@ import type { Entity } from '../ecs/Entity'
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import type { AudioSystem } from './AudioSystem'
+import type { ParticleSystem } from './ParticleSystem'
 
 export class LevelingSystem extends System {
     private xpProgressionConfig: XPProgressionConfig
     private audioSystem: AudioSystem | null = null
+    private particleSystem: ParticleSystem | null = null
 
     constructor(
         world: World,
         xpConfig: XPProgressionConfig = defaultXPProgression,
+        particleSystem: ParticleSystem,
     ) {
         super(world, ['xp', 'level', 'levelingStats'])
         this.xpProgressionConfig = xpConfig
+        this.particleSystem = particleSystem
     }
 
     /**
@@ -108,6 +115,8 @@ export class LevelingSystem extends System {
                 level.currentLevel,
             )
 
+            this.playSparksParticleEffect(entity)
+
             // Restore health to max on level up
             this.restoreHealthToMax(entity)
 
@@ -126,6 +135,29 @@ export class LevelingSystem extends System {
                 this.processLevelUp(entity, xp, level, levelingStats)
             }
         }
+    }
+
+    private playSparksParticleEffect(entity: Entity): void {
+        const position = entity.getComponent<PositionComponent>('position')
+
+        if (!position) {
+            return
+        }
+
+        const timestamp = Date.now()
+        const randomId = Math.random()
+
+        // Stage 1: Nuclear explosion (immediate, intense core blast)
+        const sparksId = `sparks_${timestamp}_${randomId}`
+        const sparksConfig = getParticleConfig(
+            'sparks',
+            new Vector3(position.x, position.y + 0.5, position.z),
+            new Vector3(0, 1, 0),
+        )
+        this.particleSystem?.createAndBurstParticleSystem(
+            sparksId,
+            sparksConfig,
+        )
     }
 
     private applyStatImprovements(

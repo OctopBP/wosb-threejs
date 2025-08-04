@@ -3,6 +3,7 @@ import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
 import { defaultAudioSettings } from './config/AudioConfig'
 import type { GameStateConfig } from './config/GameStateConfig'
 import { defaultGameStateConfig } from './config/GameStateConfig'
+import { defaultXPProgression } from './config/LevelingConfig'
 import type {
     EnemyArrowComponent,
     HealthComponent,
@@ -132,7 +133,12 @@ export class GameWorld {
             this.cameraSystem,
         )
         this.enemyAISystem = new EnemyAISystem(this.world)
-        this.levelingSystem = new LevelingSystem(this.world)
+        this.particleSystem = new ParticleSystem(this.world, scene, camera)
+        this.levelingSystem = new LevelingSystem(
+            this.world,
+            defaultXPProgression,
+            this.particleSystem,
+        )
         this.barrelSpawnSystem = new BarrelSpawnSystem(this.world)
         this.barrelCollectionSystem = new BarrelCollectionSystem(this.world)
         this.playerUISystem = new PlayerUISystem(this.world, camera, canvas)
@@ -148,7 +154,6 @@ export class GameWorld {
         this.enemyArrowSystem = new EnemyArrowSystem(this.world, scene)
         this.audioSystem = new AudioSystem(this.world)
         this.audioUISystem = new AudioUISystem(this.world)
-        this.particleSystem = new ParticleSystem(this.world, scene, camera)
         this.proceduralTextureSystem = new ProceduralTextureSystem(this.world)
         this.debugSystem = new DebugSystem(this.world, scene)
         this.movementTutorialSystem = new MovementTutorialSystem(this.world)
