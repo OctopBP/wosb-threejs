@@ -20,6 +20,7 @@ import {
     BossFightState,
     InitialWaveState,
     NewShipOfferState,
+    TutorialState,
     Wave1State,
     Wave2State,
 } from './states'
@@ -29,6 +30,7 @@ export class GameStateSystem extends System {
     public config: GameStateConfig
     private stateHandlers: Map<string, GameStateHandler> = new Map()
     private gameStartTime: number = 0 // Track game start time
+    private bossTimerStartTime: number = 0 // Track when boss timer should start (after tutorial)
     private playerDeathTime: number = 0 // Track when player died
     private isPlayerDying: boolean = false // Flag to track if player is in dying state
     private cameraSystem: CameraSystem
@@ -45,6 +47,7 @@ export class GameStateSystem extends System {
     }
 
     private initializeStateHandlers(): void {
+        this.stateHandlers.set('tutorial', new TutorialState())
         this.stateHandlers.set('initialWave', new InitialWaveState())
         this.stateHandlers.set('enemiesWave1', new Wave1State())
         this.stateHandlers.set('enemiesWave2', new Wave2State())
@@ -71,15 +74,37 @@ export class GameStateSystem extends System {
             this.gameStartTime = performance.now() / 1000
         }
 
+        // Initialize boss timer when entering initial wave (after tutorial)
+        if (
+            gameState.currentState === 'initialWave' &&
+            this.bossTimerStartTime === 0
+        ) {
+            this.bossTimerStartTime = performance.now() / 1000
+            console.log(
+                '🎯 Boss timer started! Boss will appear in',
+                this.config.boss.forceSpawnTimeSeconds,
+                'seconds',
+            )
+        }
+
         // Check if configured time has passed and force boss fight if not already in boss fight
         const currentTime = performance.now() / 1000
-        const gameTime = currentTime - this.gameStartTime
+        const bossTime =
+            this.bossTimerStartTime > 0
+                ? currentTime - this.bossTimerStartTime
+                : 0
 
         if (
-            gameTime >= this.config.boss.forceSpawnTimeSeconds &&
+            this.bossTimerStartTime > 0 &&
+            bossTime >= this.config.boss.forceSpawnTimeSeconds &&
             gameState.currentState !== 'bossFight' &&
             gameState.currentState !== 'newShipOffer'
         ) {
+            console.log(
+                '👹 Boss fight triggered! Time since initial wave:',
+                bossTime.toFixed(1),
+                'seconds',
+            )
             gameState.currentState = 'bossFight'
         }
 
@@ -118,7 +143,7 @@ export class GameStateSystem extends System {
         this.gameStateEntity = this.world.createEntity()
         const gameState: GameStateComponent = {
             type: 'gameState',
-            currentState: 'initialWave',
+            currentState: 'tutorial',
             initialWaveEnemiesSpawned: 0,
             initialWaveEnemiesDefeated: 0,
             wave1EnemiesSpawned: 0,
@@ -178,11 +203,12 @@ export class GameStateSystem extends System {
 
         // Reset timing
         this.gameStartTime = 0
+        this.bossTimerStartTime = 0
         this.playerDeathTime = 0
         this.isPlayerDying = false
 
         // Reset game state
-        gameState.currentState = 'initialWave'
+        gameState.currentState = 'tutorial'
         gameState.initialWaveEnemiesSpawned = 0
         gameState.initialWaveEnemiesDefeated = 0
         gameState.wave1EnemiesSpawned = 0
