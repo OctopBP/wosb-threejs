@@ -9,7 +9,7 @@ import { System } from '../ecs/System'
 
 const PROCEDURAL_TEXTURE_CONFIG = {
     textureSize: 512,
-    waterSize: 150,
+    waterSize: 200,
     spotRadius: 0.004, // in UV space
     fadeValue: 1, // 0-255, higher = faster fade
 }

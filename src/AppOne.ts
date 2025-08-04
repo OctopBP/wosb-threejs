@@ -112,7 +112,7 @@ export class AppOne {
     }
 
     private createWater() {
-        const waterGeometry = new PlaneGeometry(150, 150, 512, 512)
+        const waterGeometry = new PlaneGeometry(200, 200, 512, 512)
         const skyTexturePath = 'assets/textures/sky.png'
         const envMap = new CubeTextureLoader().load([
             skyTexturePath, // px
@@ -129,7 +129,7 @@ export class AppOne {
             uWavesSpeed: { value: 0.15 },
             uWavesFrequency: { value: 0.08 },
             uWavesPersistence: { value: 0.6 },
-            uWavesLacunarity: { value: 2.0 },
+            uWavesLacunarity: { value: 2.2 },
             uWavesIterations: { value: 6.0 },
             uOpacity: { value: 0.8 },
             uTroughColor: { value: new Color(0.1, 0.2, 0.4) },
