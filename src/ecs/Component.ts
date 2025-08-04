@@ -290,6 +290,7 @@ export interface EnemyArrowComponent extends Component {
 
 // Game state and boss components from dev branch
 export type GameState =
+    | 'tutorial'
     | 'initialWave'
     | 'enemiesWave1'
     | 'enemiesWave2'

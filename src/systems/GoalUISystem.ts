@@ -5,6 +5,7 @@ import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 
 const GOAL_TEXTS = {
+    tutorial: '',
     initialWave: 'Уничтожьте {enemyCount} врага',
     wave1: 'Уничтожьте {enemyCount} врагов',
     wave2: 'Уничтожьте {enemyCount} врагов',
@@ -15,6 +16,7 @@ export class GoalUISystem extends System {
     private goalContainer: HTMLElement | null = null
     private goalText: HTMLElement | null = null
     private counterText: HTMLElement | null = null
+    private counterWrapper: HTMLElement | null = null
     private isUICreated = false
     private config: GameStateConfig | null = null
 
@@ -82,10 +84,10 @@ export class GoalUISystem extends System {
         this.goalContainer.appendChild(this.goalText)
 
         // Counter (icon + text, in a flex row)
-        const counterWrapper = document.createElement('div')
-        counterWrapper.style.display = 'flex'
-        counterWrapper.style.alignItems = 'center'
-        counterWrapper.style.gap = '12px'
+        this.counterWrapper = document.createElement('div')
+        this.counterWrapper.style.display = 'flex'
+        this.counterWrapper.style.alignItems = 'center'
+        this.counterWrapper.style.gap = '12px'
 
         // Counter background with enemy icon
         const counterBg = document.createElement('div')
@@ -123,8 +125,8 @@ export class GoalUISystem extends System {
         this.counterText.style.transform = 'translateY(-50%)'
         counterBg.appendChild(this.counterText)
 
-        counterWrapper.appendChild(counterBg)
-        this.goalContainer.appendChild(counterWrapper)
+        this.counterWrapper.appendChild(counterBg)
+        this.goalContainer.appendChild(this.counterWrapper)
 
         // Add to page
         document.body.appendChild(this.goalContainer)
@@ -139,6 +141,13 @@ export class GoalUISystem extends System {
         let totalCount = 0
 
         switch (gameState.currentState) {
+            case 'tutorial':
+                goalMessage = GOAL_TEXTS.tutorial
+                // No counter for tutorial
+                killedCount = 0
+                totalCount = 0
+                break
+
             case 'initialWave':
                 goalMessage = GOAL_TEXTS.initialWave.replace(
                     '{enemyCount}',
@@ -197,6 +206,15 @@ export class GoalUISystem extends System {
 
         this.goalText.textContent = goalMessage
         this.counterText.textContent = `${killedCount}/${totalCount}`
+
+        // Hide counter during tutorial
+        if (this.counterWrapper) {
+            if (gameState.currentState === 'tutorial') {
+                this.counterWrapper.style.display = 'none'
+            } else {
+                this.counterWrapper.style.display = 'flex'
+            }
+        }
     }
 
     private calculateKilledEnemies(

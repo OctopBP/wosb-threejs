@@ -368,6 +368,49 @@ export const explosionSmokeParticleConfig: ParticleSystemConfig = {
     ],
 }
 
+export const sparksParticleConfig: ParticleSystemConfig = {
+    position: new Vector3(0, 0, 0),
+
+    emissionRate: 0,
+    burstCount: 20,
+    burstInterval: -1,
+
+    life: { min: 1.5, max: 2.0 },
+    size: { min: 0.25, max: 0.75 },
+    speed: { min: 5.0, max: 7.0 },
+
+    spawnArea: {
+        type: 'sphere',
+        size: new Vector3(1.5, 1.5, 1.5),
+    },
+
+    direction: new Vector3(0, 1, 0),
+    directionSpread: Math.PI * 0.3,
+
+    gravity: new Vector3(0, 0.5, 0),
+    drag: 1.0,
+
+    startColor: new Color(0xfeff2a),
+    endColor: new Color(0xff9f4a),
+
+    rotation: { min: 0, max: Math.PI * 2 },
+    rotationSpeed: { min: -1, max: 1 },
+
+    texture: 'assets/sprites/spark.png',
+
+    // sizeOverTime: [
+    //     { time: 0.0, value: 0.5 },
+    //     { time: 0.3, value: 1.0 },
+    //     { time: 1.0, value: 2.0 },
+    // ],
+    alphaOverTime: [
+        { time: 0.0, value: 0.0 },
+        { time: 0.2, value: 1.0 },
+        { time: 0.6, value: 1.0 },
+        { time: 1.0, value: 0.0 },
+    ],
+}
+
 /**
  * All particle configurations for easy access
  */
@@ -379,6 +422,7 @@ export const particleConfigs = {
     smallExplosion: smallExplosionParticleConfig,
     nukeExplosion: nukeExplosionParticleConfig,
     explosionSmoke: explosionSmokeParticleConfig,
+    sparks: sparksParticleConfig,
 } as const
 
 /**
