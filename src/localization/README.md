@@ -18,6 +18,12 @@ The localization system supports multiple languages and automatically detects th
 The actual localization data is stored in `public/localization/` :
 * `en.json` - English translations
 * `ru.json` - Russian translations
+* `de.json` - German translations
+* `es.json` - Spanish translations
+* `fr.json` - French translations
+* `pt.json` - Portuguese translations
+* `pl.json` - Polish translations
+* `hi.json` - Hindi translations
 
 ## Usage
 
@@ -76,12 +82,18 @@ The system automatically detects the user's language:
 
 * `en` - English (default)
 * `ru` - Russian
+* `de` - German
+* `es` - Spanish
+* `fr` - French
+* `pt` - Portuguese
+* `pl` - Polish
+* `hi` - Hindi
 
 ## Adding New Languages
 
-1. Create a new JSON file in `public/localization/` (e.g.,  `fr.json`)
-2. Add the language loading in `LocalizationManager.ts`
-3. Update the language mapping if needed
+1. Create a new JSON file in `public/localization/` (e.g.,   `ja.json`)
+2. The language will be automatically loaded by the LocalizationManager
+3. Update the language mapping in `detectLanguage()` if needed
 
 ## Adding New Text Keys
 

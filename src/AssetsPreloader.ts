@@ -69,3 +69,33 @@ export function getModelClone(key: ModelType): Group | undefined {
 export function getAudioBuffer(key: string): AudioBuffer | undefined {
     return audioCache[key]
 }
+
+export function preloadLocalization(): Promise<void> {
+    const languages = ['en', 'ru', 'de', 'es', 'fr', 'pt', 'pl', 'hi']
+
+    const promises = languages.map(
+        (lang) =>
+            new Promise<void>((resolve, reject) => {
+                fetch(`/localization/${lang}.json`)
+                    .then((response) => {
+                        if (response.ok) {
+                            resolve()
+                        } else {
+                            console.warn(
+                                `Failed to preload ${lang} localization`,
+                            )
+                            resolve()
+                        }
+                    })
+                    .catch((error) => {
+                        console.warn(
+                            `Failed to preload ${lang} localization:`,
+                            error,
+                        )
+                        resolve()
+                    })
+            }),
+    )
+
+    return Promise.all(promises).then(() => undefined)
+}

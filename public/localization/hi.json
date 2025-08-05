@@ -1,0 +1,17 @@
+{
+  "goals": {
+    "tutorial": "",
+    "initialWave": "{enemyCount} दुश्मन को नष्ट करें",
+    "wave1": "{enemyCount} दुश्मनों को नष्ट करें",
+    "wave2": "{enemyCount} दुश्मनों को नष्ट करें",
+    "bossFight": "बॉस को नष्ट करें"
+  },
+  "tutorial": {
+    "moveInstruction": "WASD या एरो कीज़ का उपयोग करके चलें"
+  },
+  "newShipOffer": {
+    "topText": "कुछ और शक्तिशाली चाहिए?",
+    "bottomText": "अपना \"Black Prince\"\nअभी मुफ्त में प्राप्त करें",
+    "buttonText": "प्राप्त करें"
+  }
+}

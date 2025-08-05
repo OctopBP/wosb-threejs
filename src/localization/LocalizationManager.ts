@@ -35,14 +35,27 @@ export class LocalizationManager {
             // Check if bridge is available and has language property
             if (
                 typeof window !== 'undefined' &&
-                (window as any).bridge?.platform?.language
+                window.bridge?.platform?.language
             ) {
-                const bridgeLanguage = (window as any).bridge.platform.language
+                const bridgeLanguage = window.bridge.platform.language
                 if (bridgeLanguage && typeof bridgeLanguage === 'string') {
                     // Map common language codes to our supported languages
                     const languageMap: { [key: string]: string } = {
                         ru: 'ru',
                         'ru-RU': 'ru',
+                        de: 'de',
+                        'de-DE': 'de',
+                        es: 'es',
+                        'es-ES': 'es',
+                        fr: 'fr',
+                        'fr-FR': 'fr',
+                        pt: 'pt',
+                        'pt-BR': 'pt',
+                        'pt-PT': 'pt',
+                        pl: 'pl',
+                        'pl-PL': 'pl',
+                        hi: 'hi',
+                        'hi-IN': 'hi',
                         en: 'en',
                         'en-US': 'en',
                         'en-GB': 'en',
@@ -65,8 +78,19 @@ export class LocalizationManager {
             navigator.language || navigator.languages?.[0] || 'en'
         const languageCode = browserLanguage.split('-')[0].toLowerCase()
 
-        if (languageCode === 'ru') {
-            this.currentLanguage = 'ru'
+        // Map browser language codes to our supported languages
+        const supportedLanguages = [
+            'en',
+            'ru',
+            'de',
+            'es',
+            'fr',
+            'pt',
+            'pl',
+            'hi',
+        ]
+        if (supportedLanguages.includes(languageCode)) {
+            this.currentLanguage = languageCode
         } else {
             this.currentLanguage = 'en'
         }
@@ -74,13 +98,23 @@ export class LocalizationManager {
 
     private async loadLocalizationData(): Promise<void> {
         try {
-            // Load English (fallback)
-            const enResponse = await fetch('/localization/en.json')
-            this.localizationData.en = await enResponse.json()
+            const languages = ['en', 'ru', 'de', 'es', 'fr', 'pt', 'pl', 'hi']
 
-            // Load Russian
-            const ruResponse = await fetch('/localization/ru.json')
-            this.localizationData.ru = await ruResponse.json()
+            for (const lang of languages) {
+                try {
+                    const response = await fetch(`/localization/${lang}.json`)
+                    if (response.ok) {
+                        this.localizationData[lang] = await response.json()
+                    } else {
+                        console.warn(`Failed to load ${lang} localization data`)
+                    }
+                } catch (error) {
+                    console.warn(
+                        `Failed to load ${lang} localization data:`,
+                        error,
+                    )
+                }
+            }
         } catch (error) {
             console.error('Failed to load localization data:', error)
             // Create minimal fallback data
@@ -106,7 +140,7 @@ export class LocalizationManager {
 
     getText(key: string, params?: { [key: string]: string | number }): string {
         const keys = key.split('.')
-        let data =
+        let data: LocalizationData | string =
             this.localizationData[this.currentLanguage] ||
             this.localizationData[this.fallbackLanguage]
 
@@ -120,7 +154,7 @@ export class LocalizationManager {
         // Navigate to the nested key
         for (const k of keys) {
             if (data && typeof data === 'object' && k in data) {
-                data = data[k]
+                data = data[k] as LocalizationData | string
             } else {
                 console.warn(`Localization key not found: ${key}`)
                 return key
@@ -134,9 +168,12 @@ export class LocalizationManager {
 
         // Interpolate parameters
         if (params) {
-            return data.replace(/\{(\w+)\}/g, (match, paramName) => {
-                return params[paramName]?.toString() || match
-            })
+            return data.replace(
+                /\{(\w+)\}/g,
+                (match: string, paramName: string) => {
+                    return params[paramName]?.toString() || match
+                },
+            )
         }
 
         return data

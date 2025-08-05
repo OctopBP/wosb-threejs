@@ -1,0 +1,17 @@
+{
+  "goals": {
+    "tutorial": "",
+    "initialWave": "Destruye {enemyCount} enemigo",
+    "wave1": "Destruye {enemyCount} enemigos",
+    "wave2": "Destruye {enemyCount} enemigos",
+    "bossFight": "Destruye al jefe"
+  },
+  "tutorial": {
+    "moveInstruction": "Muévete usando WASD o las teclas de dirección"
+  },
+  "newShipOffer": {
+    "topText": "¿Necesitas algo más poderoso?",
+    "bottomText": "Obtén tu \"Black Prince\"\ngratis ahora mismo",
+    "buttonText": "OBTENER"
+  }
+}

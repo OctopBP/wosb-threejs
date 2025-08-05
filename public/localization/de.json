@@ -1,0 +1,17 @@
+{
+  "goals": {
+    "tutorial": "",
+    "initialWave": "Zerstöre {enemyCount} Feind",
+    "wave1": "Zerstöre {enemyCount} Feinde",
+    "wave2": "Zerstöre {enemyCount} Feinde",
+    "bossFight": "Zerstöre den Boss"
+  },
+  "tutorial": {
+    "moveInstruction": "Bewege dich mit WASD oder Pfeiltasten"
+  },
+  "newShipOffer": {
+    "topText": "Brauchst du etwas Stärkeres?",
+    "bottomText": "Hole dir deinen \"Black Prince\"\nkostenlos jetzt",
+    "buttonText": "HOLEN"
+  }
+}
