@@ -170,8 +170,8 @@ export function createBossShip(
     entity.addComponent<CameraTargetComponent>({
         type: 'cameraTarget',
         priority: 2,
-        offset: { x: 0, y: 18, z: -12 },
-        lerpFactor: 0.02,
+        offset: { x: 0, y: 20, z: -12 },
+        lerpFactor: 0.05,
     })
 
     // Health component - use boss health config

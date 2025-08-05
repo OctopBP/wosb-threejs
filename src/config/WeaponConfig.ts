@@ -42,7 +42,7 @@ export const enemyWeaponPreset: WeaponConfigPreset = {
 }
 
 export const bossWeaponPreset: WeaponConfigPreset = {
-    damage: 40, // High damage to significantly lower player health
+    damage: 40,
     fireRate: 1.2,
     projectileSpeed: 35.0,
     range: 18.0, // Long range
@@ -51,7 +51,7 @@ export const bossWeaponPreset: WeaponConfigPreset = {
     detectionRange: 20.0, // Very long detection range
     requiresLineOfSight: false,
     leadTargetDistance: 1.0, // Aim 1.0 units in front of player ship for better boss accuracy
-    homingStrength: 0.7, // 70% homing strength - strong but dodgeable
+    homingStrength: 1.0, // 100% homing strength - no dodging
     homingRange: 15.0, // Can track targets within 15 units
     homingUpdateInterval: 0.1, // Update targeting 10 times per second
     homingTurnRate: Math.PI * 1.5, // Can turn up to 270 degrees per second
