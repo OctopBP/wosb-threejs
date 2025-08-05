@@ -65,6 +65,7 @@ export const bossWeaponPreset: WeaponConfigPreset = {
         { x: -0.45, y: -1 },
         { x: 0.45, y: -1 },
         { x: 0, y: -2 },
+        { x: 0, y: 0 },
     ],
 }
 
