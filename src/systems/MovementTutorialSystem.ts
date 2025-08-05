@@ -1,8 +1,6 @@
 import { System } from '../ecs/System'
-
 import type { World } from '../ecs/World'
-
-const MOVE_INSTRUCTION = 'Перемещайтесь с помощью WASD или стрелок'
+import { LocalizationManager } from '../localization/LocalizationManager'
 
 export class MovementTutorialSystem extends System {
     private tutorialContainer: HTMLElement | null = null
@@ -11,9 +9,11 @@ export class MovementTutorialSystem extends System {
     private isUICreated = false
     private animationId: number | null = null
     private startTime = 0
+    private localizationManager: LocalizationManager
 
     constructor(world: World) {
         super(world, [])
+        this.localizationManager = LocalizationManager.getInstance()
     }
 
     init(): void {
@@ -127,7 +127,9 @@ export class MovementTutorialSystem extends System {
 
         // Create instruction text
         const instructionText = document.createElement('div')
-        instructionText.textContent = MOVE_INSTRUCTION
+        instructionText.textContent = this.localizationManager.getText(
+            'tutorial.moveInstruction',
+        )
         instructionText.style.cssText = `
             color: white;
             font-family: Arial, sans-serif;

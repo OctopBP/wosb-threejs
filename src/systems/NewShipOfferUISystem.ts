@@ -1,13 +1,9 @@
 import type { GameStateComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
-
 import type { World } from '../ecs/World'
+import { LocalizationManager } from '../localization/LocalizationManager'
 import type { GameStateSystem } from './GameStateSystem'
 
-// UI Text Constants
-const TOP_TEXT = 'Нужно что-то помощнее?'
-const BOTTOM_TEXT = 'Забери свой "Black Prince"\nбесплатно прямо сейчас'
-const BUTTON_TEXT = 'ЗАБРАТЬ'
 const OFFER_LINK = 'https://www.worldofseabattle.com'
 
 export class NewShipOfferUISystem extends System {
@@ -19,9 +15,11 @@ export class NewShipOfferUISystem extends System {
     private isUICreated = false
     private gameStateSystem: GameStateSystem | null = null
     private isVisible = false
+    private localizationManager: LocalizationManager
 
     constructor(world: World) {
         super(world, [])
+        this.localizationManager = LocalizationManager.getInstance()
     }
 
     // Method to set the game state system reference for restarting
@@ -94,7 +92,9 @@ export class NewShipOfferUISystem extends System {
 
         // Create text above image
         this.topText = document.createElement('h1')
-        this.topText.textContent = TOP_TEXT
+        this.topText.textContent = this.localizationManager.getText(
+            'newShipOffer.topText',
+        )
         this.topText.style.color = '#FFFFFF'
         this.topText.style.fontSize = '34px'
         this.topText.style.fontWeight = 'bold'
@@ -142,7 +142,9 @@ export class NewShipOfferUISystem extends System {
         buttonImage.style.filter = 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'
 
         const buttonText = document.createElement('div')
-        buttonText.textContent = BUTTON_TEXT
+        buttonText.textContent = this.localizationManager.getText(
+            'newShipOffer.buttonText',
+        )
         buttonText.style.position = 'absolute'
         buttonText.style.top = '50%'
         buttonText.style.left = '50%'
@@ -184,7 +186,9 @@ export class NewShipOfferUISystem extends System {
 
         // Create text below image
         this.bottomText = document.createElement('p')
-        this.bottomText.textContent = BOTTOM_TEXT
+        this.bottomText.textContent = this.localizationManager.getText(
+            'newShipOffer.bottomText',
+        )
         this.bottomText.style.color = '#FFFFFF'
         this.bottomText.style.fontSize = '24px'
         this.bottomText.style.margin = '30px 0 40px 0'

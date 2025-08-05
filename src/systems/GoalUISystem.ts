@@ -1,16 +1,8 @@
 import type { GameStateConfig } from '../config/GameStateConfig'
 import type { GameStateComponent, HealthComponent } from '../ecs/Component'
 import { System } from '../ecs/System'
-
 import type { World } from '../ecs/World'
-
-const GOAL_TEXTS = {
-    tutorial: '',
-    initialWave: 'Уничтожьте {enemyCount} врага',
-    wave1: 'Уничтожьте {enemyCount} врагов',
-    wave2: 'Уничтожьте {enemyCount} врагов',
-    bossFight: 'Уничтожьте босса',
-}
+import { LocalizationManager } from '../localization/LocalizationManager'
 
 export class GoalUISystem extends System {
     private goalContainer: HTMLElement | null = null
@@ -19,10 +11,12 @@ export class GoalUISystem extends System {
     private counterWrapper: HTMLElement | null = null
     private isUICreated = false
     private config: GameStateConfig | null = null
+    private localizationManager: LocalizationManager
 
     constructor(world: World, config: GameStateConfig) {
         super(world, [])
         this.config = config
+        this.localizationManager = LocalizationManager.getInstance()
     }
 
     init(): void {
@@ -142,16 +136,18 @@ export class GoalUISystem extends System {
 
         switch (gameState.currentState) {
             case 'tutorial':
-                goalMessage = GOAL_TEXTS.tutorial
+                goalMessage = this.localizationManager.getText('goals.tutorial')
                 // No counter for tutorial
                 killedCount = 0
                 totalCount = 0
                 break
 
             case 'initialWave':
-                goalMessage = GOAL_TEXTS.initialWave.replace(
-                    '{enemyCount}',
-                    this.config.initialWave.enemyCount.toString(),
+                goalMessage = this.localizationManager.getText(
+                    'goals.initialWave',
+                    {
+                        enemyCount: this.config.initialWave.enemyCount,
+                    },
                 )
                 totalCount = this.config.initialWave.enemyCount
                 killedCount = this.calculateKilledEnemies(
@@ -161,25 +157,24 @@ export class GoalUISystem extends System {
                 break
 
             case 'enemiesWave1':
-                goalMessage = GOAL_TEXTS.wave1.replace(
-                    '{enemyCount}',
-                    this.config.wave1.enemyCount.toString(),
-                )
+                goalMessage = this.localizationManager.getText('goals.wave1', {
+                    enemyCount: this.config.wave1.enemyCount,
+                })
                 totalCount = this.config.wave1.enemyCount
                 killedCount = this.calculateKilledEnemies(gameState, 'wave1')
                 break
 
             case 'enemiesWave2':
-                goalMessage = GOAL_TEXTS.wave2.replace(
-                    '{enemyCount}',
-                    this.config.wave2.enemyCount.toString(),
-                )
+                goalMessage = this.localizationManager.getText('goals.wave2', {
+                    enemyCount: this.config.wave2.enemyCount,
+                })
                 totalCount = this.config.wave2.enemyCount
                 killedCount = this.calculateKilledEnemies(gameState, 'wave2')
                 break
 
             case 'bossFight': {
-                goalMessage = GOAL_TEXTS.bossFight
+                goalMessage =
+                    this.localizationManager.getText('goals.bossFight')
                 // For boss, we'll show different counter logic
                 const bossEntities = this.world.getEntitiesWithComponents([
                     'boss',

@@ -1,0 +1,17 @@
+{
+  "goals": {
+    "tutorial": "",
+    "initialWave": "Уничтожьте {enemyCount} врага",
+    "wave1": "Уничтожьте {enemyCount} врагов",
+    "wave2": "Уничтожьте {enemyCount} врагов",
+    "bossFight": "Уничтожьте босса"
+  },
+  "tutorial": {
+    "moveInstruction": "Перемещайтесь с помощью WASD или стрелок"
+  },
+  "newShipOffer": {
+    "topText": "Нужно что-то помощнее?",
+    "bottomText": "Забери свой \"Black Prince\"\nбесплатно прямо сейчас",
+    "buttonText": "ЗАБРАТЬ"
+  }
+}

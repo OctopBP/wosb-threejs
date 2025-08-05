@@ -1,5 +1,6 @@
 import { AppOne as App } from './AppOne'
 import { preloadAudio, preloadModels } from './AssetsPreloader'
+import { LocalizationManager } from './localization/LocalizationManager'
 
 window.addEventListener('DOMContentLoaded', async () => {
     const showLoading = () => {
@@ -13,6 +14,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     await initializePlaygamaBridge()
+
+    // Initialize localization
+    const localizationManager = LocalizationManager.getInstance()
+    await localizationManager.initialize()
 
     showLoading()
     await preloadModels()
