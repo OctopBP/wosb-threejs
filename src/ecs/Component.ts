@@ -308,6 +308,7 @@ export interface GameStateComponent extends Component {
     wave2EnemiesSpawned: number
     wave2EnemiesDefeated: number
     bossSpawned: boolean
+    bossKilled: boolean // Track if boss has been defeated
     playerHits: number // Track hits taken by player for boss encounter
 }
 

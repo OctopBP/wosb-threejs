@@ -125,6 +125,11 @@ export class GameStateSystem extends System {
         if (gameState.currentState !== 'newShipOffer') {
             this.checkPlayerDeath(gameState)
         }
+
+        // Check for boss death and transition to new ship offer
+        if (gameState.currentState === 'bossFight' && !gameState.bossKilled) {
+            this.checkBossDeath(gameState)
+        }
     }
 
     private ensureGameStateEntity(): void {
@@ -151,6 +156,7 @@ export class GameStateSystem extends System {
             wave2EnemiesSpawned: 0,
             wave2EnemiesDefeated: 0,
             bossSpawned: false,
+            bossKilled: false,
             playerHits: 0,
         }
         this.gameStateEntity.addComponent(gameState)
@@ -196,6 +202,28 @@ export class GameStateSystem extends System {
         }
     }
 
+    private checkBossDeath(gameState: GameStateComponent): void {
+        // Get boss entities and check if any are alive
+        const bossEntities = this.world.getEntitiesWithComponents([
+            'boss',
+            'health',
+        ])
+
+        if (bossEntities.length === 0) return
+
+        // Check if all bosses are dead
+        const aliveBosses = bossEntities.filter((boss) => {
+            const health = boss.getComponent<HealthComponent>('health')
+            return health && !health.isDead
+        })
+
+        // If no bosses are alive, transition to new ship offer
+        if (aliveBosses.length === 0 && !gameState.bossKilled) {
+            gameState.bossKilled = true
+            gameState.currentState = 'newShipOffer'
+        }
+    }
+
     // Method to restart the game (reset to wave 1)
     public restartGame(): void {
         const gameState = this.getGameState()
@@ -216,6 +244,7 @@ export class GameStateSystem extends System {
         gameState.wave2EnemiesSpawned = 0
         gameState.wave2EnemiesDefeated = 0
         gameState.bossSpawned = false
+        gameState.bossKilled = false
         gameState.playerHits = 0
 
         // Get all entities BEFORE removing any (to avoid iterator issues)
