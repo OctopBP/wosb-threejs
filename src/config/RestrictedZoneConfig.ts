@@ -14,9 +14,17 @@ export const restrictedZonesConfig = {
  * These spherical areas will be off-limits to ships
  */
 export const restrictedZones: RestrictedZoneConfig[] = [
-    { centerX: -14.5, centerY: 0, centerZ: -31.5, radius: 4.5 },
-    { centerX: -17.5, centerY: 0, centerZ: 7.5, radius: 5.5 },
-    { centerX: 19.25, centerY: 0, centerZ: 15.75, radius: 3.0 },
+    { centerX: -11.5, centerY: 0, centerZ: -31.5, radius: 1 },
+    { centerX: -13, centerY: 0, centerZ: -31.5, radius: 1 },
+    { centerX: -14.5, centerY: 0, centerZ: -31.5, radius: 1.5 },
+    { centerX: -17, centerY: 0, centerZ: -31.5, radius: 2 },
+
+    { centerX: -16.5, centerY: 0, centerZ: 10, radius: 3 },
+    { centerX: -18.5, centerY: 0, centerZ: 7, radius: 2.5 },
+    { centerX: -19.75, centerY: 0, centerZ: 5.25, radius: 1 },
+    { centerX: -20.5, centerY: 0, centerZ: 4, radius: 1 },
+
+    { centerX: 19.25, centerY: 0, centerZ: 15.75, radius: 2.5 },
 ]
 
 /**
