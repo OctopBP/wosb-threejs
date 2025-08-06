@@ -78,7 +78,70 @@ export class AppOne {
 
         this.gameWorld.init()
 
+        // Add manual audio initialization shortcut
+        this.setupAudioShortcut()
+
         this.startRenderLoop()
+    }
+
+    private setupAudioShortcut(): void {
+        // Add keyboard shortcut to manually initialize audio
+        document.addEventListener('keydown', (event) => {
+            if (
+                event.code === 'Space' &&
+                !this.gameWorld.isAudioInitialized()
+            ) {
+                event.preventDefault()
+                console.log('Manual audio initialization triggered by spacebar')
+                this.gameWorld.initializeAudioAndStartMusic()
+            }
+
+            // Test audio system (T key)
+            if (event.code === 'KeyT') {
+                event.preventDefault()
+                console.log('Audio system test triggered by T key')
+                this.gameWorld.testAudioSystem()
+            }
+        })
+
+        // Also add a visual indicator for mobile users
+        if ('ontouchstart' in window) {
+            this.createAudioInitButton()
+        }
+    }
+
+    private createAudioInitButton(): void {
+        const button = document.createElement('button')
+        button.textContent = '🎵 Start Audio'
+        button.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0.8;
+        `
+
+        button.addEventListener('click', () => {
+            console.log('Manual audio initialization triggered by button')
+            this.gameWorld.initializeAudioAndStartMusic()
+            button.remove()
+        })
+
+        // Remove button after 10 seconds or when audio is initialized
+        setTimeout(() => {
+            if (button.parentNode) {
+                button.remove()
+            }
+        }, 10000)
+
+        document.body.appendChild(button)
     }
 
     private createScene(): Scene {

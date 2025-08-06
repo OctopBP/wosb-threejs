@@ -578,24 +578,48 @@ export class GameWorld {
 
             try {
                 await this.audioSystem.initialize(this.camera)
+
+                // Force resume context if needed (for mobile)
+                await this.audioSystem.resumeContextIfNeeded()
+
                 this.audioInitialized = true
 
                 // Start background music when ready
-                this.audioSystem.playMusic('background')
+                if (this.audioSystem.isReady()) {
+                    await this.audioSystem.playMusicWithRetry('background')
+                    console.log('Background music started successfully')
+                } else {
+                    console.warn(
+                        'Audio system not ready, music will start on next interaction',
+                    )
+                }
 
                 // Remove event listeners
                 document.removeEventListener('click', initializeAudio)
                 document.removeEventListener('keydown', initializeAudio)
                 document.removeEventListener('touchstart', initializeAudio)
+                document.removeEventListener('pointerdown', initializeAudio)
             } catch (error) {
                 console.error('Failed to initialize audio system:', error)
             }
         }
 
         // Listen for user interactions to initialize audio
+        // Use multiple event types for better mobile compatibility
         document.addEventListener('click', initializeAudio, { once: true })
         document.addEventListener('keydown', initializeAudio, { once: true })
         document.addEventListener('touchstart', initializeAudio, { once: true })
+        document.addEventListener('pointerdown', initializeAudio, {
+            once: true,
+        })
+
+        // Also try to initialize on canvas interaction
+        this.canvas.addEventListener('touchstart', initializeAudio, {
+            once: true,
+        })
+        this.canvas.addEventListener('pointerdown', initializeAudio, {
+            once: true,
+        })
     }
 
     /**
@@ -610,6 +634,50 @@ export class GameWorld {
      */
     isAudioInitialized(): boolean {
         return this.audioInitialized
+    }
+
+    /**
+     * Manually initialize audio system and start music
+     * Useful for testing or if automatic initialization fails
+     */
+    async initializeAudioAndStartMusic(): Promise<void> {
+        if (this.audioInitialized) return
+
+        try {
+            await this.audioSystem.initialize(this.camera)
+            await this.audioSystem.resumeContextIfNeeded()
+
+            this.audioInitialized = true
+
+            if (this.audioSystem.isReady()) {
+                await this.audioSystem.playMusicWithRetry('background')
+                console.log('Background music started successfully')
+            } else {
+                console.warn(
+                    'Audio system not ready, music will start on next interaction',
+                )
+            }
+        } catch (error) {
+            console.error('Failed to manually initialize audio system:', error)
+        }
+    }
+
+    /**
+     * Test audio system and get detailed status
+     * Useful for debugging audio issues
+     */
+    testAudioSystem(): void {
+        console.log('=== Audio System Debug Info ===')
+        console.log('Audio initialized:', this.audioInitialized)
+        console.log(
+            'Audio system status:',
+            this.audioSystem.getDetailedStatus(),
+        )
+
+        // Test audio playback
+        this.audioSystem.testAudio()
+
+        console.log('=== End Audio Debug Info ===')
     }
 
     getProceduralTextureSystem(): ProceduralTextureSystem {

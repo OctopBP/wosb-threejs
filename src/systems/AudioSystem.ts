@@ -48,10 +48,14 @@ export class AudioSystem extends System {
         if (this.isInitialized) return
 
         try {
+            console.log('Initializing audio system...')
+
             // Create AudioContext
             this.audioContext = new (
                 window.AudioContext || window.webkitAudioContext
             )()
+
+            console.log('AudioContext created, state:', this.audioContext.state)
 
             // Create AudioListener and attach to camera
             this.audioListener = new AudioListener()
@@ -59,14 +63,60 @@ export class AudioSystem extends System {
 
             // Resume context if suspended (required by some browsers)
             if (this.audioContext.state === 'suspended') {
+                console.log('AudioContext suspended, attempting to resume...')
                 await this.audioContext.resume()
+                console.log('AudioContext resumed:', this.audioContext.state)
+            }
+
+            // Additional check for mobile browsers
+            if (this.audioContext.state !== 'running') {
+                console.warn(
+                    'AudioContext not running. State:',
+                    this.audioContext.state,
+                )
+                console.warn('Audio may not work until user interaction')
             }
 
             this.isInitialized = true
             console.log('Audio system initialized successfully')
+
+            // Log available audio buffers
+            console.log(
+                'Available audio buffers:',
+                this.getLoadedAudioBuffers(),
+            )
         } catch (error) {
             console.error('Failed to initialize audio system:', error)
         }
+    }
+
+    /**
+     * Force resume the audio context if it's suspended
+     * Useful for mobile devices that may suspend the context
+     */
+    public async resumeContextIfNeeded(): Promise<void> {
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            await this.audioContext.resume()
+            console.log('AudioContext force resumed:', this.audioContext.state)
+        }
+    }
+
+    /**
+     * Check if audio system is ready to play
+     */
+    public isReady(): boolean {
+        return (
+            this.isInitialized &&
+            this.audioContext?.state === 'running' &&
+            !this.audioMuted
+        )
+    }
+
+    /**
+     * Check if a specific audio buffer is loaded
+     */
+    public isAudioBufferLoaded(name: string): boolean {
+        return getAudioBuffer(name) !== undefined
     }
 
     playSfx(name: string, config?: Partial<AudioConfig>): Audio | null {
@@ -84,6 +134,35 @@ export class AudioSystem extends System {
             this.currentMusic = music
         }
         return music
+    }
+
+    /**
+     * Try to play music with retry logic for mobile devices
+     */
+    async playMusicWithRetry(
+        name: string,
+        config?: Partial<AudioConfig>,
+        maxRetries = 3,
+    ): Promise<Audio | null> {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const music = this.playMusic(attempt === 1 ? name : name, config)
+
+            if (music?.isPlaying) {
+                console.log(`Music started successfully on attempt ${attempt}`)
+                return music
+            }
+
+            if (attempt < maxRetries) {
+                console.log(`Music attempt ${attempt} failed, retrying...`)
+                await new Promise((resolve) => setTimeout(resolve, 500))
+
+                // Try to resume context before retry
+                await this.resumeContextIfNeeded()
+            }
+        }
+
+        console.warn(`Failed to play music after ${maxRetries} attempts`)
+        return null
     }
 
     stopMusic(): void {
@@ -153,6 +232,7 @@ export class AudioSystem extends System {
 
         if (!buffer) {
             console.warn(`Audio buffer not found: ${name}`)
+            console.warn('Available buffers:', this.getLoadedAudioBuffers())
             return null
         }
 
@@ -177,7 +257,12 @@ export class AudioSystem extends System {
 
         // Play audio
         if (finalConfig.autoplay) {
-            audio.play()
+            try {
+                audio.play()
+            } catch (error) {
+                console.warn(`Failed to play audio ${name}:`, error)
+                return null
+            }
         }
 
         // Track playing audio
@@ -191,6 +276,20 @@ export class AudioSystem extends System {
         }
 
         return audio
+    }
+
+    /**
+     * Get list of loaded audio buffers
+     */
+    private getLoadedAudioBuffers(): string[] {
+        const audioEntries = Object.entries({
+            ...AUDIO_ASSETS.music,
+            ...AUDIO_ASSETS.sfx,
+        })
+
+        return audioEntries
+            .filter(([key]) => this.isAudioBufferLoaded(key))
+            .map(([key]) => key)
     }
 
     private getCategoryVolume(category: 'music' | 'sfx'): number {
@@ -295,6 +394,56 @@ export class AudioSystem extends System {
             initialized: this.isInitialized,
             currentlyPlaying: this.playingAudio.size,
             musicPlaying: this.currentMusic?.isPlaying || false,
+        }
+    }
+
+    /**
+     * Test audio playback with a simple sound
+     * Useful for debugging audio issues
+     */
+    public testAudio(): void {
+        if (!this.isReady()) {
+            console.warn('Audio system not ready for testing')
+            return
+        }
+
+        console.log('Testing audio playback...')
+
+        // Try to play a test sound
+        const testSound = this.playSfx('shoot')
+        if (testSound) {
+            console.log('Test sound played successfully')
+        } else {
+            console.warn('Test sound failed to play')
+        }
+    }
+
+    /**
+     * Get detailed audio system status for debugging
+     */
+    public getDetailedStatus(): {
+        initialized: boolean
+        contextState: string | null
+        audioMuted: boolean
+        masterVolume: number
+        musicVolume: number
+        sfxVolume: number
+        currentlyPlaying: number
+        musicPlaying: boolean
+        loadedBuffers: string[]
+        ready: boolean
+    } {
+        return {
+            initialized: this.isInitialized,
+            contextState: this.audioContext?.state || null,
+            audioMuted: this.audioMuted,
+            masterVolume: this.masterVolume,
+            musicVolume: this.musicVolume,
+            sfxVolume: this.sfxVolume,
+            currentlyPlaying: this.playingAudio.size,
+            musicPlaying: this.currentMusic?.isPlaying || false,
+            loadedBuffers: this.getLoadedAudioBuffers(),
+            ready: this.isReady(),
         }
     }
 
