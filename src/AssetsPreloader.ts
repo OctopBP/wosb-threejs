@@ -75,8 +75,8 @@ export function preloadLocalization(): Promise<void> {
 
     const promises = languages.map(
         (lang) =>
-            new Promise<void>((resolve, reject) => {
-                fetch(`/localization/${lang}.json`)
+            new Promise<void>((resolve) => {
+                fetch(`assets/localization/${lang}.json`)
                     .then((response) => {
                         if (response.ok) {
                             resolve()

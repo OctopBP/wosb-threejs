@@ -102,7 +102,9 @@ export class LocalizationManager {
 
             for (const lang of languages) {
                 try {
-                    const response = await fetch(`/localization/${lang}.json`)
+                    const response = await fetch(
+                        `assets/localization/${lang}.json`,
+                    )
                     if (response.ok) {
                         this.localizationData[lang] = await response.json()
                     } else {
