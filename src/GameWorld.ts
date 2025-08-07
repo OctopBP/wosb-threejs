@@ -1,5 +1,6 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
 import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
+import { defaultAudioSettings } from './config/AudioConfig'
 import type { GameStateConfig } from './config/GameStateConfig'
 import { defaultGameStateConfig } from './config/GameStateConfig'
 import { defaultXPProgression } from './config/LevelingConfig'
@@ -559,12 +560,13 @@ export class GameWorld {
      */
     private async setupAudioSystem(): Promise<void> {
         // Apply default settings
-        // this.audioSystem.setMasterVolume(defaultAudioSettings.masterVolume)
-        // this.audioSystem.setMusicVolume(defaultAudioSettings.musicVolume)
-        // this.audioSystem.setSfxVolume(defaultAudioSettings.sfxVolume)
-        // this.audioSystem.setMuted(defaultAudioSettings.muted)
-        // // Setup user interaction listener to initialize audio
-        // this.setupAudioInitialization()
+        this.audioSystem.setMasterVolume(defaultAudioSettings.masterVolume)
+        this.audioSystem.setMusicVolume(defaultAudioSettings.musicVolume)
+        this.audioSystem.setSfxVolume(defaultAudioSettings.sfxVolume)
+        this.audioSystem.setMuted(defaultAudioSettings.muted)
+
+        // Setup user interaction listener to initialize audio
+        this.setupAudioInitialization()
     }
 
     /**
@@ -632,6 +634,50 @@ export class GameWorld {
      */
     isAudioInitialized(): boolean {
         return this.audioInitialized
+    }
+
+    /**
+     * Manually initialize audio system and start music
+     * Useful for testing or if automatic initialization fails
+     */
+    async initializeAudioAndStartMusic(): Promise<void> {
+        if (this.audioInitialized) return
+
+        try {
+            await this.audioSystem.initialize(this.camera)
+            await this.audioSystem.resumeContextIfNeeded()
+
+            this.audioInitialized = true
+
+            if (this.audioSystem.isReady()) {
+                await this.audioSystem.playMusicWithRetry('background')
+                console.log('Background music started successfully')
+            } else {
+                console.warn(
+                    'Audio system not ready, music will start on next interaction',
+                )
+            }
+        } catch (error) {
+            console.error('Failed to manually initialize audio system:', error)
+        }
+    }
+
+    /**
+     * Test audio system and get detailed status
+     * Useful for debugging audio issues
+     */
+    testAudioSystem(): void {
+        console.log('=== Audio System Debug Info ===')
+        console.log('Audio initialized:', this.audioInitialized)
+        console.log(
+            'Audio system status:',
+            this.audioSystem.getDetailedStatus(),
+        )
+
+        // Test audio playback
+        this.audioSystem.testAudio()
+
+        console.log('=== End Audio Debug Info ===')
     }
 
     getProceduralTextureSystem(): ProceduralTextureSystem {

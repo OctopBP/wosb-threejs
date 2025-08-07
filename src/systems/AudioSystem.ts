@@ -120,22 +120,20 @@ export class AudioSystem extends System {
     }
 
     playSfx(name: string, config?: Partial<AudioConfig>): Audio | null {
-        return null
-        // return this.playAudio('sfx', name, config)
+        return this.playAudio('sfx', name, config)
     }
 
     playMusic(name: string, config?: Partial<AudioConfig>): Audio | null {
-        return null
-        // // Stop current music if playing
-        // if (this.currentMusic?.isPlaying) {
-        //     this.stopMusic()
-        // }
+        // Stop current music if playing
+        if (this.currentMusic?.isPlaying) {
+            this.stopMusic()
+        }
 
-        // const music = this.playAudio('music', name, { loop: true, ...config })
-        // if (music) {
-        //     this.currentMusic = music
-        // }
-        // return music
+        const music = this.playAudio('music', name, { loop: true, ...config })
+        if (music) {
+            this.currentMusic = music
+        }
+        return music
     }
 
     /**
@@ -344,19 +342,17 @@ export class AudioSystem extends System {
     }
 
     setMuted(muted: boolean): void {
-        return
+        this.audioMuted = muted
 
-        // this.audioMuted = muted
-
-        // if (muted) {
-        //     for (const audio of this.playingAudio.values()) {
-        //         audio.setVolume(0)
-        //     }
-        // } else {
-        //     for (const audio of this.playingAudio.values()) {
-        //         audio.setVolume(1)
-        //     }
-        // }
+        if (muted) {
+            for (const audio of this.playingAudio.values()) {
+                audio.setVolume(0)
+            }
+        } else {
+            for (const audio of this.playingAudio.values()) {
+                audio.setVolume(1)
+            }
+        }
     }
 
     getMasterVolume(): number {

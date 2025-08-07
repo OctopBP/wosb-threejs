@@ -39,7 +39,6 @@ export function preloadAudio(): Promise<void> {
     const loader = new AudioLoader(manager)
 
     const audioEntries = Object.entries({
-        ...AUDIO_ASSETS.music,
         ...AUDIO_ASSETS.sfx,
     })
 
