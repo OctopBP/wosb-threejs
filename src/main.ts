@@ -1,9 +1,5 @@
 import { AppOne as App } from './AppOne'
-import {
-    preloadAudio,
-    preloadLocalization,
-    preloadModels,
-} from './AssetsPreloader'
+import { preloadLocalization, preloadModels } from './AssetsPreloader'
 import { LocalizationManager } from './localization/LocalizationManager'
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -25,7 +21,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     showLoading()
     await preloadModels()
-    await preloadAudio()
+    // await preloadAudio()
     await preloadLocalization()
     hideLoading()
 

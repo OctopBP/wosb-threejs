@@ -77,13 +77,15 @@ export class AudioUISystem extends System {
     }
 
     private updateButtonState(): void {
-        if (!this.muteButton || !this.audioSystem) {
-            return
-        }
+        return
 
-        const isMuted = this.audioSystem.isMuted()
-        this.muteButton.title = isMuted ? 'Unmute' : 'Mute'
-        this.updateButtonIcon()
+        // if (!this.muteButton || !this.audioSystem) {
+        //     return
+        // }
+
+        // const isMuted = this.audioSystem.isMuted()
+        // this.muteButton.title = isMuted ? 'Unmute' : 'Mute'
+        // this.updateButtonIcon()
     }
 
     private updateButtonIcon(): void {

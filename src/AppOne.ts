@@ -85,29 +85,27 @@ export class AppOne {
     }
 
     private setupAudioShortcut(): void {
-        // Add keyboard shortcut to manually initialize audio
-        document.addEventListener('keydown', (event) => {
-            if (
-                event.code === 'Space' &&
-                !this.gameWorld.isAudioInitialized()
-            ) {
-                event.preventDefault()
-                console.log('Manual audio initialization triggered by spacebar')
-                this.gameWorld.initializeAudioAndStartMusic()
-            }
-
-            // Test audio system (T key)
-            if (event.code === 'KeyT') {
-                event.preventDefault()
-                console.log('Audio system test triggered by T key')
-                this.gameWorld.testAudioSystem()
-            }
-        })
-
-        // Also add a visual indicator for mobile users
-        if ('ontouchstart' in window) {
-            this.createAudioInitButton()
-        }
+        // // Add keyboard shortcut to manually initialize audio
+        // document.addEventListener('keydown', (event) => {
+        //     if (
+        //         event.code === 'Space' &&
+        //         !this.gameWorld.isAudioInitialized()
+        //     ) {
+        //         event.preventDefault()
+        //         console.log('Manual audio initialization triggered by spacebar')
+        //         this.gameWorld.initializeAudioAndStartMusic()
+        //     }
+        //     // Test audio system (T key)
+        //     if (event.code === 'KeyT') {
+        //         event.preventDefault()
+        //         console.log('Audio system test triggered by T key')
+        //         this.gameWorld.testAudioSystem()
+        //     }
+        // })
+        // // Also add a visual indicator for mobile users
+        // if ('ontouchstart' in window) {
+        //     this.createAudioInitButton()
+        // }
     }
 
     private createAudioInitButton(): void {
@@ -128,11 +126,11 @@ export class AppOne {
             opacity: 0.8;
         `
 
-        button.addEventListener('click', () => {
-            console.log('Manual audio initialization triggered by button')
-            this.gameWorld.initializeAudioAndStartMusic()
-            button.remove()
-        })
+        // button.addEventListener('click', () => {
+        //     console.log('Manual audio initialization triggered by button')
+        //     this.gameWorld.initializeAudioAndStartMusic()
+        //     button.remove()
+        // })
 
         // Remove button after 10 seconds or when audio is initialized
         setTimeout(() => {
