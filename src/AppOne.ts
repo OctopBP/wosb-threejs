@@ -108,9 +108,13 @@ export class AppOne {
             this.gameWorld.initializeAudioAndStartMusic()
         })
 
-        document.addEventListener('touchstart', () => {
-            this.gameWorld.initializeAudioAndStartMusic()
-        })
+        document.addEventListener(
+            'touchstart',
+            () => {
+                this.gameWorld.initializeAudioAndStartMusic()
+            },
+            { passive: true },
+        )
 
         // // Also add a visual indicator for mobile users
         // if ('ontouchstart' in window) {

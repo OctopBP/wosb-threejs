@@ -608,7 +608,10 @@ export class GameWorld {
         // Use multiple event types for better mobile compatibility
         document.addEventListener('click', initializeAudio, { once: true })
         document.addEventListener('keydown', initializeAudio, { once: true })
-        document.addEventListener('touchstart', initializeAudio, { once: true })
+        document.addEventListener('touchstart', initializeAudio, {
+            once: true,
+            passive: true,
+        })
         document.addEventListener('pointerdown', initializeAudio, {
             once: true,
         })
@@ -616,6 +619,7 @@ export class GameWorld {
         // Also try to initialize on canvas interaction
         this.canvas.addEventListener('touchstart', initializeAudio, {
             once: true,
+            passive: true,
         })
         this.canvas.addEventListener('pointerdown', initializeAudio, {
             once: true,

@@ -206,7 +206,7 @@ export class MovementTutorialSystem extends System {
 
         window.addEventListener('keydown', onKeyDown)
         window.addEventListener('mousedown', onInteraction)
-        window.addEventListener('touchstart', onInteraction)
+        window.addEventListener('touchstart', onInteraction, { passive: true })
 
         // Store listeners for cleanup
         this.keyDownListener = onKeyDown

@@ -26,7 +26,11 @@ export class ProceduralTextureSystem extends System {
         this.size = PROCEDURAL_TEXTURE_CONFIG.textureSize
         this.canvas = document.createElement('canvas')
         this.canvas.width = this.canvas.height = this.size
-        const ctx = this.canvas.getContext('2d')
+        const ctx = this.canvas.getContext('2d', {
+            // Frequent getImageData readbacks benefit from this flag
+            // See https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
+            willReadFrequently: true,
+        } as CanvasRenderingContext2DSettings)
         if (!ctx) {
             throw new Error('Failed to get canvas context')
         }
