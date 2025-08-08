@@ -106,7 +106,8 @@ export class AppOne {
 
         // Also add a visual indicator for mobile users
         if ('ontouchstart' in window) {
-            this.createAudioInitButton()
+            // this.createAudioInitButton()
+            this.gameWorld.initializeAudioAndStartMusic()
         }
     }
 
