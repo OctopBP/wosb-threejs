@@ -45,21 +45,29 @@ float voronoi(vec2 uv, float angleOffset, float cellDensity) {
     float minDist = 8.0; // Large initial value
 
     // Check current cell and 8 neighbors
-    // Unroll fixed-size neighborhood to avoid dynamic loops on some mobile GPUs
-    for (int yi = -1; yi <= 1; yi++) {
-        for (int xi = -1; xi <= 1; xi++) {
-            vec2 neighbor = vec2(float(xi), float(yi));
+    for (int y = -1; y <= 1; ++y) {
+        for (int x = -1; x <= 1; ++x) {
+            vec2 neighbor = vec2(float(x), float(y));
             vec2 cellId = cell + neighbor;
 
+            // Generate random angle influenced by angleOffset
             float hash = hash21(cellId);
-            float angle = hash * 6.283185 + angleOffset;
+            float angle = hash * 6.283185 + angleOffset; // 2 * PI
 
+            // Generate random radius (0.0 to 1.0)
             vec2 randomOffset = hash22(cellId);
-            float radius = 0.5 + 0.5 * randomOffset.x;
+            float radius = 0.5 + 0.5 * randomOffset.x; // Bias towards center if desired
 
+            // Compute point position within the cell (polar coordinates for angular offset)
             vec2 point = vec2(0.5 + radius * cos(angle), 0.5 + radius * sin(angle));
+
+            // Vector from fractional position to point
             vec2 diff = neighbor + point - frac;
+
+            // Euclidean distance
             float dist = length(diff);
+
+            // Track minimum distance
             minDist = min(minDist, dist);
         }
     }
