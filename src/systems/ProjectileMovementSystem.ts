@@ -165,50 +165,32 @@ export class ProjectileMovementSystem extends System {
             return
         }
 
-        // Calculate direction to target
-        const dx = targetPos.x - projectilePos.x
-        const dz = targetPos.z - projectilePos.z
-        const distance = Math.sqrt(dx * dx + dz * dz)
-
+        // Calculate 3D direction to target
+        const dirX = targetPos.x - projectilePos.x
+        const dirY = targetPos.y - projectilePos.y
+        const dirZ = targetPos.z - projectilePos.z
+        const distance = Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ)
         if (distance === 0) return // Avoid division by zero
 
-        // Normalize target direction
-        const targetDirX = dx / distance
-        const targetDirZ = dz / distance
-
-        // Current velocity direction
-        const currentSpeed = Math.sqrt(
-            velocity.dx * velocity.dx + velocity.dz * velocity.dz,
+        // Determine current speed magnitude (fallback to projectile.speed)
+        let currentSpeed = Math.sqrt(
+            velocity.dx * velocity.dx +
+                velocity.dy * velocity.dy +
+                velocity.dz * velocity.dz,
         )
-        if (currentSpeed === 0) return
+        if (currentSpeed === 0) {
+            currentSpeed = projectile.speed
+        }
 
-        const currentDirX = velocity.dx / currentSpeed
-        const currentDirZ = velocity.dz / currentSpeed
+        // Normalize direction and set velocity directly toward target
+        const normX = dirX / distance
+        const normY = dirY / distance
+        const normZ = dirZ / distance
+        velocity.dx = normX * currentSpeed
+        velocity.dy = normY * currentSpeed
+        velocity.dz = normZ * currentSpeed
 
-        // Calculate the angle between current direction and target direction
-        const dot = currentDirX * targetDirX + currentDirZ * targetDirZ
-        const cross = currentDirX * targetDirZ - currentDirZ * targetDirX
-        const targetAngle = Math.atan2(cross, dot)
-
-        // Apply turn rate limit
-        const maxTurnThisFrame =
-            (projectile.homingTurnRate || Math.PI * 1.5) * deltaTime
-        const actualTurn =
-            Math.sign(targetAngle) *
-            Math.min(Math.abs(targetAngle), maxTurnThisFrame)
-
-        // Apply homing strength
-        const effectiveTurn = actualTurn * (projectile.homingStrength || 0.7)
-
-        // Calculate new direction
-        const currentAngle = Math.atan2(currentDirZ, currentDirX)
-        const newAngle = currentAngle + effectiveTurn
-
-        // Update velocity while maintaining speed
-        velocity.dx = Math.cos(newAngle) * currentSpeed
-        velocity.dz = Math.sin(newAngle) * currentSpeed
-
-        // Update projectile rotation to face movement direction
+        // Update projectile rotation to face movement direction (XZ plane)
         projectilePos.rotationY = Math.atan2(velocity.dx, velocity.dz)
     }
 
