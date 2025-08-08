@@ -14,19 +14,25 @@ import type { World } from '../ecs/World'
 import particleFragmentShader from '../shaders/particle.frag?raw'
 import particleVertexShader from '../shaders/particle.vert?raw'
 export type Particle = {
-    position: Vector3
+    px: number
+    py: number
+    pz: number
+    vx: number
+    vy: number
+    vz: number
+    ax: number
+    ay: number
+    az: number
     life: number
     maxLife: number
     alpha: number
     color: Color
     size: number
-    velocity: Vector3
     currentSize: number
     rotation: number
     rotationSpeed: number
     systemId: string
     frameIndex: number
-    acceleration: Vector3
 }
 
 type ValueOrRange = number | { min: number; max: number }
@@ -143,6 +149,7 @@ interface ParticleSystemInstance {
     isActive: boolean
     materialGroup: string // Group systems with same texture/sprite settings
     autoRemove: boolean // Whether to automatically remove when lifetime is finished
+    tempColor?: Color
 }
 
 export class ParticleSystem extends System {
@@ -213,7 +220,12 @@ export class ParticleSystem extends System {
             timeToSpawn: 0,
             timeSinceLastBurst: 0,
             alphaSpline: new LinearSpline((t, a, b) => a + t * (b - a)),
-            colorSpline: new LinearSpline((t, a, b) => a.clone().lerp(b, t)),
+            colorSpline: new LinearSpline((t, a, b) => {
+                if (!system.tempColor) {
+                    system.tempColor = new Color()
+                }
+                return system.tempColor.copy(a).lerp(b, t)
+            }),
             sizeSpline: new LinearSpline((t, a, b) => a + t * (b - a)),
             texture: this.textureLoader.load(config.texture),
             isActive: true,
@@ -261,19 +273,9 @@ export class ParticleSystem extends System {
                 vertexColors: true,
             })
 
-            // Create geometry for this group
+            // Create geometry for this group with zero initial capacity (will grow on demand)
             const geometry = new BufferGeometry()
-            geometry.setAttribute('position', new Float32BufferAttribute([], 3))
-            geometry.setAttribute('size', new Float32BufferAttribute([], 1))
-            geometry.setAttribute(
-                'tintColor',
-                new Float32BufferAttribute([], 4),
-            )
-            geometry.setAttribute('angle', new Float32BufferAttribute([], 1))
-            geometry.setAttribute(
-                'frameIndex',
-                new Float32BufferAttribute([], 1),
-            )
+            geometry.setDrawRange(0, 0)
 
             // Create points object and add to scene
             const points = new Points(geometry, material)
@@ -433,7 +435,15 @@ export class ParticleSystem extends System {
             }
 
             const particle: Particle = {
-                position: spawnPos,
+                px: spawnPos.x,
+                py: spawnPos.y,
+                pz: spawnPos.z,
+                vx: velocity.x,
+                vy: velocity.y,
+                vz: velocity.z,
+                ax: config.gravity.x,
+                ay: config.gravity.y,
+                az: config.gravity.z,
                 size: size,
                 currentSize: size,
                 color: new Color(),
@@ -442,8 +452,6 @@ export class ParticleSystem extends System {
                 maxLife: life,
                 rotation: rotation,
                 rotationSpeed: rotationSpeed,
-                velocity: velocity,
-                acceleration: config.gravity.clone(),
                 systemId: system.id,
                 frameIndex: frameIndex,
             }
@@ -545,16 +553,23 @@ export class ParticleSystem extends System {
             p.currentSize = p.size * system.sizeSpline.Get(t)
             p.color.copy(system.colorSpline.Get(t))
 
-            // Update physics
-            p.velocity.add(p.acceleration.clone().multiplyScalar(deltaTime))
-            p.position.add(p.velocity.clone().multiplyScalar(deltaTime))
+            // Update physics (no allocations)
+            const dvx = p.ax * deltaTime
+            const dvy = p.ay * deltaTime
+            const dvz = p.az * deltaTime
+            p.vx += dvx
+            p.vy += dvy
+            p.vz += dvz
+            p.px += p.vx * deltaTime
+            p.py += p.vy * deltaTime
+            p.pz += p.vz * deltaTime
 
             // Apply drag
             if (config.drag > 0) {
-                const drag = p.velocity
-                    .clone()
-                    .multiplyScalar(deltaTime * config.drag)
-                p.velocity.sub(drag)
+                const dragFactor = Math.max(0, 1 - deltaTime * config.drag)
+                p.vx *= dragFactor
+                p.vy *= dragFactor
+                p.vz *= dragFactor
             }
 
             // Update sprite sheet animation
@@ -589,12 +604,6 @@ export class ParticleSystem extends System {
             const geometry = this.geometries.get(materialGroup)
             if (!geometry) continue
 
-            const positions = []
-            const sizes = []
-            const colors = []
-            const angles = []
-            const frameIndices = []
-
             // Collect all particles from systems in this material group
             const allParticles: Particle[] = []
             for (const system of systems) {
@@ -604,13 +613,23 @@ export class ParticleSystem extends System {
             // Sort particles by distance for proper blending
             allParticles.sort(
                 (a, b) =>
-                    this.camera.position.distanceToSquared(b.position) -
-                    this.camera.position.distanceToSquared(a.position),
+                    this.camera.position.distanceToSquared(
+                        new Vector3(b.px, b.py, b.pz),
+                    ) -
+                    this.camera.position.distanceToSquared(
+                        new Vector3(a.px, a.py, a.pz),
+                    ),
             )
+
+            const positions: number[] = []
+            const sizes: number[] = []
+            const colors: number[] = []
+            const angles: number[] = []
+            const frameIndices: number[] = []
 
             // Build attribute arrays
             for (const p of allParticles) {
-                positions.push(p.position.x, p.position.y, p.position.z)
+                positions.push(p.px, p.py, p.pz)
                 colors.push(p.color.r, p.color.g, p.color.b, p.alpha)
                 sizes.push(p.currentSize)
                 angles.push(p.rotation)
