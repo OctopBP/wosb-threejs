@@ -8,6 +8,18 @@ import { MODEL_CONFIGS } from './config/ModelConfig'
 const modelCache: Partial<Record<ModelType, Group>> = {}
 const audioCache: Partial<Record<string, AudioBuffer>> = {}
 
+/**
+ * Detect if the current device is mobile
+ */
+function isMobile(): boolean {
+    return (
+        'ontouchstart' in window ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent,
+        )
+    )
+}
+
 export function preloadModels(): Promise<void> {
     const manager = new LoadingManager()
     const loader = new GLTFLoader(manager)
@@ -38,8 +50,9 @@ export function preloadAudio(): Promise<void> {
     const manager = new LoadingManager()
     const loader = new AudioLoader(manager)
 
+    // Only load music on non-mobile devices
     const audioEntries = Object.entries({
-        ...AUDIO_ASSETS.music,
+        ...(isMobile() ? {} : AUDIO_ASSETS.music),
         ...AUDIO_ASSETS.sfx,
     })
 
