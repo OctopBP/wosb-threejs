@@ -185,7 +185,7 @@ export class AppOne {
     }
 
     private createWater() {
-        const waterGeometry = new PlaneGeometry(200, 200, 128, 128)
+        const waterGeometry = new PlaneGeometry(200, 200, 256, 256)
         const skyTexturePath = 'assets/textures/sky.png'
         const envMap = new CubeTextureLoader().load([
             skyTexturePath, // px
