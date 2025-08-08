@@ -143,6 +143,19 @@ interface ParticleSystemInstance {
     isActive: boolean
     materialGroup: string // Group systems with same texture/sprite settings
     autoRemove: boolean // Whether to automatically remove when lifetime is finished
+    particlePool: Particle[]
+}
+
+// Reusable typed buffers per material group to avoid per-frame allocations
+type MaterialGroupBuffers = {
+    capacity: number
+    count: number
+    positions: Float32Array
+    sizes: Float32Array
+    colors: Float32Array
+    angles: Float32Array
+    frameIndices: Float32Array
+    lastSortedFrame: number
 }
 
 export class ParticleSystem extends System {
@@ -153,6 +166,9 @@ export class ParticleSystem extends System {
     private camera: Camera
     private particleSystems: Map<string, ParticleSystemInstance>
     private scene: Scene
+    private groupBuffers: Map<string, MaterialGroupBuffers>
+    private frameCounter: number
+    private sortIntervalFrames: number
 
     constructor(world: World, scene: Scene, camera: Camera) {
         super(world, ['particle'])
@@ -163,8 +179,13 @@ export class ParticleSystem extends System {
         this.materials = new Map()
         this.geometries = new Map()
         this.pointsObjects = new Map()
+        this.groupBuffers = new Map()
 
         this.camera = camera
+
+        // Frame counters for occasional particle sorting
+        this.frameCounter = 0
+        this.sortIntervalFrames = 2
 
         this.updateGeometry()
     }
@@ -189,6 +210,7 @@ export class ParticleSystem extends System {
         }
 
         this.updateGeometry()
+        this.frameCounter++
     }
 
     createAndBurstParticleSystem(
@@ -219,6 +241,7 @@ export class ParticleSystem extends System {
             isActive: true,
             materialGroup: materialGroup,
             autoRemove: true, // Default to auto-remove
+            particlePool: [],
         }
 
         // Setup default curves or use custom ones
@@ -261,19 +284,45 @@ export class ParticleSystem extends System {
                 vertexColors: true,
             })
 
-            // Create geometry for this group
+            // Create geometry for this group with initial capacity
             const geometry = new BufferGeometry()
-            geometry.setAttribute('position', new Float32BufferAttribute([], 3))
-            geometry.setAttribute('size', new Float32BufferAttribute([], 1))
+            const initialCapacity = 256
+            geometry.setAttribute(
+                'position',
+                new Float32BufferAttribute(
+                    new Float32Array(initialCapacity * 3),
+                    3,
+                ),
+            )
+            geometry.setAttribute(
+                'size',
+                new Float32BufferAttribute(
+                    new Float32Array(initialCapacity),
+                    1,
+                ),
+            )
             geometry.setAttribute(
                 'tintColor',
-                new Float32BufferAttribute([], 4),
+                new Float32BufferAttribute(
+                    new Float32Array(initialCapacity * 4),
+                    4,
+                ),
             )
-            geometry.setAttribute('angle', new Float32BufferAttribute([], 1))
+            geometry.setAttribute(
+                'angle',
+                new Float32BufferAttribute(
+                    new Float32Array(initialCapacity),
+                    1,
+                ),
+            )
             geometry.setAttribute(
                 'frameIndex',
-                new Float32BufferAttribute([], 1),
+                new Float32BufferAttribute(
+                    new Float32Array(initialCapacity),
+                    1,
+                ),
             )
+            geometry.setDrawRange(0, 0)
 
             // Create points object and add to scene
             const points = new Points(geometry, material)
@@ -284,6 +333,20 @@ export class ParticleSystem extends System {
             this.materials.set(materialGroup, material)
             this.geometries.set(materialGroup, geometry)
             this.pointsObjects.set(materialGroup, points)
+
+            this.groupBuffers.set(materialGroup, {
+                capacity: initialCapacity,
+                count: 0,
+                positions: geometry.getAttribute('position')
+                    .array as Float32Array,
+                sizes: geometry.getAttribute('size').array as Float32Array,
+                colors: geometry.getAttribute('tintColor')
+                    .array as Float32Array,
+                angles: geometry.getAttribute('angle').array as Float32Array,
+                frameIndices: geometry.getAttribute('frameIndex')
+                    .array as Float32Array,
+                lastSortedFrame: -1,
+            })
         }
     }
 
@@ -343,6 +406,7 @@ export class ParticleSystem extends System {
                 this.materials.delete(system.materialGroup)
                 this.geometries.delete(system.materialGroup)
                 this.pointsObjects.delete(system.materialGroup)
+                this.groupBuffers.delete(system.materialGroup)
             }
         }
     }
@@ -525,16 +589,21 @@ export class ParticleSystem extends System {
     ): void {
         const config = system.config
 
-        // Update particle life
-        for (const p of system.particles) {
+        // Update life and compact in-place to avoid array churn
+        let writeIndex = 0
+        for (
+            let readIndex = 0;
+            readIndex < system.particles.length;
+            readIndex++
+        ) {
+            const p = system.particles[readIndex]
             p.life -= deltaTime
-        }
+            if (p.life <= 0) {
+                // Return to pool for reuse
+                system.particlePool.push(p)
+                continue
+            }
 
-        // Remove dead particles
-        system.particles = system.particles.filter((p) => p.life > 0.0)
-
-        // Update living particles
-        for (const p of system.particles) {
             const t = 1.0 - p.life / p.maxLife
 
             // Update rotation
@@ -545,16 +614,14 @@ export class ParticleSystem extends System {
             p.currentSize = p.size * system.sizeSpline.Get(t)
             p.color.copy(system.colorSpline.Get(t))
 
-            // Update physics
-            p.velocity.add(p.acceleration.clone().multiplyScalar(deltaTime))
-            p.position.add(p.velocity.clone().multiplyScalar(deltaTime))
+            // Update physics without creating temporaries
+            p.velocity.addScaledVector(p.acceleration, deltaTime)
+            p.position.addScaledVector(p.velocity, deltaTime)
 
-            // Apply drag
+            // Apply drag via scalar multiplication
             if (config.drag > 0) {
-                const drag = p.velocity
-                    .clone()
-                    .multiplyScalar(deltaTime * config.drag)
-                p.velocity.sub(drag)
+                const dragFactor = Math.max(0, 1 - deltaTime * config.drag)
+                p.velocity.multiplyScalar(dragFactor)
             }
 
             // Update sprite sheet animation
@@ -566,6 +633,14 @@ export class ParticleSystem extends System {
                         (p.maxLife - p.life) / config.spriteSheet.frameDuration,
                     ) % totalFrames
             }
+
+            if (writeIndex !== readIndex) {
+                system.particles[writeIndex] = p
+            }
+            writeIndex++
+        }
+        if (writeIndex < system.particles.length) {
+            system.particles.length = writeIndex
         }
 
         // Note: Particle sorting is now handled in updateGeometry() for better performance
@@ -584,92 +659,107 @@ export class ParticleSystem extends System {
             materialGroups.get(system.materialGroup)?.push(system)
         }
 
-        // Update geometry for each material group
+        // Update geometry for each material group using reusable typed buffers
         for (const [materialGroup, systems] of materialGroups) {
             const geometry = this.geometries.get(materialGroup)
-            if (!geometry) continue
+            const buffers = this.groupBuffers.get(materialGroup)
+            if (!geometry || !buffers) continue
 
-            const positions = []
-            const sizes = []
-            const colors = []
-            const angles = []
-            const frameIndices = []
+            // Count particles
+            let particleCount = 0
+            for (const system of systems) {
+                particleCount += system.particles.length
+            }
 
-            // Collect all particles from systems in this material group
+            // Grow buffers if needed
+            if (particleCount > buffers.capacity) {
+                let newCapacity = buffers.capacity
+                while (newCapacity < particleCount) newCapacity *= 2
+
+                buffers.capacity = newCapacity
+                buffers.positions = new Float32Array(newCapacity * 3)
+                buffers.sizes = new Float32Array(newCapacity)
+                buffers.colors = new Float32Array(newCapacity * 4)
+                buffers.angles = new Float32Array(newCapacity)
+                buffers.frameIndices = new Float32Array(newCapacity)
+
+                geometry.setAttribute(
+                    'position',
+                    new Float32BufferAttribute(buffers.positions, 3),
+                )
+                geometry.setAttribute(
+                    'size',
+                    new Float32BufferAttribute(buffers.sizes, 1),
+                )
+                geometry.setAttribute(
+                    'tintColor',
+                    new Float32BufferAttribute(buffers.colors, 4),
+                )
+                geometry.setAttribute(
+                    'angle',
+                    new Float32BufferAttribute(buffers.angles, 1),
+                )
+                geometry.setAttribute(
+                    'frameIndex',
+                    new Float32BufferAttribute(buffers.frameIndices, 1),
+                )
+            }
+
+            // Collect particles and optionally sort
             const allParticles: Particle[] = []
             for (const system of systems) {
-                allParticles.push(...system.particles)
+                const arr = system.particles
+                for (let i = 0; i < arr.length; i++) allParticles.push(arr[i])
             }
 
-            // Sort particles by distance for proper blending
-            allParticles.sort(
-                (a, b) =>
-                    this.camera.position.distanceToSquared(b.position) -
-                    this.camera.position.distanceToSquared(a.position),
-            )
+            const shouldSort =
+                this.frameCounter - buffers.lastSortedFrame >=
+                this.sortIntervalFrames
+            if (shouldSort && allParticles.length > 1) {
+                allParticles.sort(
+                    (a, b) =>
+                        this.camera.position.distanceToSquared(b.position) -
+                        this.camera.position.distanceToSquared(a.position),
+                )
+                buffers.lastSortedFrame = this.frameCounter
+            }
 
-            // Build attribute arrays
+            // Fill typed arrays
+            let i = 0
+            let i3 = 0
+            let i4 = 0
             for (const p of allParticles) {
-                positions.push(p.position.x, p.position.y, p.position.z)
-                colors.push(p.color.r, p.color.g, p.color.b, p.alpha)
-                sizes.push(p.currentSize)
-                angles.push(p.rotation)
-                frameIndices.push(Math.floor(p.frameIndex))
+                buffers.positions[i3 + 0] = p.position.x
+                buffers.positions[i3 + 1] = p.position.y
+                buffers.positions[i3 + 2] = p.position.z
+                buffers.colors[i4 + 0] = p.color.r
+                buffers.colors[i4 + 1] = p.color.g
+                buffers.colors[i4 + 2] = p.color.b
+                buffers.colors[i4 + 3] = p.alpha
+                buffers.sizes[i] = p.currentSize
+                buffers.angles[i] = p.rotation
+                buffers.frameIndices[i] = Math.floor(p.frameIndex)
+                i++
+                i3 += 3
+                i4 += 4
             }
+            buffers.count = allParticles.length
 
-            // Update geometry attributes
-            geometry.setAttribute(
-                'position',
-                new Float32BufferAttribute(positions, 3),
-            )
-            geometry.setAttribute('size', new Float32BufferAttribute(sizes, 1))
-            geometry.setAttribute(
-                'tintColor',
-                new Float32BufferAttribute(colors, 4),
-            )
-            geometry.setAttribute(
-                'angle',
-                new Float32BufferAttribute(angles, 1),
-            )
-            geometry.setAttribute(
-                'frameIndex',
-                new Float32BufferAttribute(frameIndices, 1),
-            )
-
+            // Mark updates and set draw range
             geometry.attributes.position.needsUpdate = true
             geometry.attributes.size.needsUpdate = true
             geometry.attributes.tintColor.needsUpdate = true
             geometry.attributes.angle.needsUpdate = true
             geometry.attributes.frameIndex.needsUpdate = true
+            geometry.setDrawRange(0, buffers.count)
         }
 
-        // Hide geometries that have no particles
+        // Hide geometries that have no particles by using draw range
         for (const [materialGroup, geometry] of this.geometries) {
             if (!materialGroups.has(materialGroup)) {
-                // No active systems for this group, clear the geometry
-                geometry.setAttribute(
-                    'position',
-                    new Float32BufferAttribute([], 3),
-                )
-                geometry.setAttribute('size', new Float32BufferAttribute([], 1))
-                geometry.setAttribute(
-                    'tintColor',
-                    new Float32BufferAttribute([], 4),
-                )
-                geometry.setAttribute(
-                    'angle',
-                    new Float32BufferAttribute([], 1),
-                )
-                geometry.setAttribute(
-                    'frameIndex',
-                    new Float32BufferAttribute([], 1),
-                )
-
-                geometry.attributes.position.needsUpdate = true
-                geometry.attributes.size.needsUpdate = true
-                geometry.attributes.tintColor.needsUpdate = true
-                geometry.attributes.angle.needsUpdate = true
-                geometry.attributes.frameIndex.needsUpdate = true
+                geometry.setDrawRange(0, 0)
+                const buffers = this.groupBuffers.get(materialGroup)
+                if (buffers) buffers.count = 0
             }
         }
     }
