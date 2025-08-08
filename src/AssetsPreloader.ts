@@ -84,6 +84,40 @@ export function getAudioBuffer(key: string): AudioBuffer | undefined {
     return audioCache[key]
 }
 
+/**
+ * Lazily load an audio buffer by name (from AUDIO_ASSETS music/sfx)
+ * Returns the buffer if loaded successfully, or undefined on failure.
+ */
+export async function ensureAudioBuffer(
+    key: string,
+): Promise<AudioBuffer | undefined> {
+    if (audioCache[key]) {
+        return audioCache[key]
+    }
+
+    // Determine URL from AUDIO_ASSETS
+    const asset = (AUDIO_ASSETS.music as Record<string, { url: string }>)[key]
+        ? (AUDIO_ASSETS.music as Record<string, { url: string }>)[key]
+        : (AUDIO_ASSETS.sfx as Record<string, { url: string }>)[key]
+
+    if (!asset) {
+        console.warn(`ensureAudioBuffer: Unknown audio key: ${key}`)
+        return undefined
+    }
+
+    try {
+        const buffer = await new Promise<AudioBuffer>((resolve, reject) => {
+            const loader = new AudioLoader()
+            loader.load(asset.url, resolve, undefined, reject)
+        })
+        audioCache[key] = buffer
+        return buffer
+    } catch (error) {
+        console.warn(`Failed to load audio buffer for ${key}:`, error)
+        return undefined
+    }
+}
+
 export function preloadLocalization(): Promise<void> {
     const languages = ['en', 'ru', 'de', 'es', 'fr', 'pt', 'pl', 'hi']
 

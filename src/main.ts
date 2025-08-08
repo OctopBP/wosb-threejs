@@ -1,9 +1,5 @@
 import { AppOne as App } from './AppOne'
-import {
-    preloadAudio,
-    preloadLocalization,
-    preloadModels,
-} from './AssetsPreloader'
+import { preloadLocalization, preloadModels } from './AssetsPreloader'
 import { LocalizationManager } from './localization/LocalizationManager'
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -29,11 +25,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
         console.warn('preloadModels failed:', e)
     }
-    try {
-        await preloadAudio()
-    } catch (e) {
-        console.warn('preloadAudio failed:', e)
-    }
+    // Skip audio preloading for faster startup; audio loads lazily on first use
     try {
         await preloadLocalization()
     } catch (e) {

@@ -1,6 +1,6 @@
 import type { Camera } from 'three'
 import { Audio, AudioListener, PositionalAudio } from 'three'
-import { getAudioBuffer } from '../AssetsPreloader'
+import { ensureAudioBuffer, getAudioBuffer } from '../AssetsPreloader'
 import { AUDIO_ASSETS } from '../config/AudioConfig'
 import { System } from '../ecs/System'
 
@@ -144,6 +144,8 @@ export class AudioSystem extends System {
         config?: Partial<AudioConfig>,
         maxRetries = 3,
     ): Promise<Audio | null> {
+        // Ensure buffer is available before trying to play on mobile
+        await ensureAudioBuffer(name)
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             const music = this.playMusic(attempt === 1 ? name : name, config)
 
@@ -231,8 +233,9 @@ export class AudioSystem extends System {
         const buffer = getAudioBuffer(name)
 
         if (!buffer) {
-            console.warn(`Audio buffer not found: ${name}`)
-            console.warn('Available buffers:', this.getLoadedAudioBuffers())
+            // Trigger lazy load in background; playback will work on next attempt
+            void ensureAudioBuffer(name)
+            console.warn(`Audio buffer not loaded yet: ${name} (loading now)')`)
             return null
         }
 
