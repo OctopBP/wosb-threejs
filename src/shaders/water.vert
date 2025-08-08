@@ -64,7 +64,12 @@ float getElevation(float x, float z) {
   float frequency = uWavesFrequency;
   vec2 p = pos.xy;
 
-  for(float i = 0.0; i < uWavesIterations; i++) {
+  // Some mobile GPUs require compile-time loop bounds. Use a max with early break.
+  const int MAX_ITERATIONS = 8;
+  for (int i = 0; i < MAX_ITERATIONS; i++) {
+    if (float(i) >= uWavesIterations) {
+      break;
+    }
     float noiseValue = snoise(p * frequency + uTime * uWavesSpeed);
     elevation += amplitude * noiseValue;
     amplitude *= uWavesPersistence;
@@ -92,7 +97,7 @@ void main() {
   vWorldPosition = modelPosition.xyz;
   vUv = uv;
 
-  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+  vec4 mvPosition = modelViewMatrix * modelPosition;
   gl_Position = projectionMatrix * mvPosition;
 
   #include <fog_vertex>

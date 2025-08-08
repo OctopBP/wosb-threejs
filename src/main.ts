@@ -24,17 +24,38 @@ window.addEventListener('DOMContentLoaded', async () => {
     await localizationManager.initialize()
 
     showLoading()
-    await preloadModels()
-    await preloadAudio()
-    await preloadLocalization()
+    try {
+        await preloadModels()
+    } catch (e) {
+        console.warn('preloadModels failed:', e)
+    }
+    try {
+        await preloadAudio()
+    } catch (e) {
+        console.warn('preloadAudio failed:', e)
+    }
+    try {
+        await preloadLocalization()
+    } catch (e) {
+        console.warn('preloadLocalization failed:', e)
+    }
     hideLoading()
 
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
-    const app = new App(canvas)
-
-    app.run()
+    try {
+        const app = new App(canvas)
+        app.run()
+    } catch (e) {
+        console.error('App initialization failed:', e)
+        // Show minimal fallback UI
+        const overlay = document.getElementById('loadingOverlay')
+        if (overlay) {
+            overlay.textContent = 'Device not supported (WebGL).'
+            overlay.setAttribute('style', overlay.getAttribute('style') || '')
+        }
+    }
 })
 
 function initializePlaygamaBridge(): Promise<void> {

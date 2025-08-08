@@ -18,7 +18,7 @@ export function preloadModels(): Promise<void> {
 
     const promises = modelEntries.map(
         ([key, config]) =>
-            new Promise<void>((resolve, reject) => {
+            new Promise<void>((resolve) => {
                 loader.load(
                     `assets/models/${config.fileName}`,
                     (gltf) => {
@@ -26,7 +26,14 @@ export function preloadModels(): Promise<void> {
                         resolve()
                     },
                     undefined,
-                    reject,
+                    (error) => {
+                        console.warn(
+                            `Model preload failed for ${config.fileName}:`,
+                            error,
+                        )
+                        // Resolve to avoid blocking game startup
+                        resolve()
+                    },
                 )
             }),
     )
@@ -45,7 +52,7 @@ export function preloadAudio(): Promise<void> {
 
     const promises = audioEntries.map(
         ([key, config]) =>
-            new Promise<void>((resolve, reject) => {
+            new Promise<void>((resolve) => {
                 loader.load(
                     config.url,
                     (buffer) => {
@@ -53,7 +60,14 @@ export function preloadAudio(): Promise<void> {
                         resolve()
                     },
                     undefined,
-                    reject,
+                    (error) => {
+                        console.warn(
+                            `Audio preload failed for ${key} (${config.url}):`,
+                            error,
+                        )
+                        // Resolve to avoid blocking game startup
+                        resolve()
+                    },
                 )
             }),
     )

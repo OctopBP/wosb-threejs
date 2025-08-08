@@ -34,14 +34,23 @@ export class AppOne {
     waterMaterial?: ShaderMaterial
 
     constructor(readonly canvas: HTMLCanvasElement) {
-        // Create renderer
-        this.renderer = new WebGLRenderer({
-            canvas,
-            antialias: true,
-            alpha: false,
-        })
+        // Create renderer with guards for broader device compatibility
+        try {
+            this.renderer = new WebGLRenderer({
+                canvas,
+                antialias: true,
+                alpha: false,
+                powerPreference: 'high-performance',
+                preserveDrawingBuffer: false,
+                failIfMajorPerformanceCaveat: false,
+            })
+        } catch (e) {
+            console.error('Failed to create WebGLRenderer:', e)
+            throw e
+        }
         this.renderer.setSize(canvas.clientWidth, canvas.clientHeight)
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        // Cap DPR for older/mobile devices to prevent huge framebuffers
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.type = PCFSoftShadowMap
         this.renderer.setClearColor(0x87ceeb, 1) // Sky blue background
@@ -157,8 +166,9 @@ export class AppOne {
         directionalLight.position.set(3, 10, -5)
         directionalLight.target.position.set(0, 0, 0)
         directionalLight.castShadow = true
-        directionalLight.shadow.mapSize.width = 2048
-        directionalLight.shadow.mapSize.height = 2048
+        // Lower shadow map resolution for broader device support
+        directionalLight.shadow.mapSize.width = 1024
+        directionalLight.shadow.mapSize.height = 1024
         directionalLight.shadow.camera.near = 0.5
         directionalLight.shadow.camera.far = 50
         directionalLight.shadow.camera.left = -25
@@ -175,7 +185,7 @@ export class AppOne {
     }
 
     private createWater() {
-        const waterGeometry = new PlaneGeometry(200, 200, 512, 512)
+        const waterGeometry = new PlaneGeometry(200, 200, 128, 128)
         const skyTexturePath = 'assets/textures/sky.png'
         const envMap = new CubeTextureLoader().load([
             skyTexturePath, // px
