@@ -87,7 +87,12 @@ export class AppOne {
 
         this.gameWorld.init()
 
-        // Add manual audio initialization shortcut
+        // Try to initialize audio immediately (will be ignored if policy blocks)
+        this.gameWorld.initializeAudioAndStartMusic().catch(() => {
+            /* fallback to user interaction listeners */
+        })
+
+        // Also keep interaction-based initialization as a fallback
         this.setupAudioShortcut()
 
         this.startRenderLoop()
@@ -113,45 +118,10 @@ export class AppOne {
             }
         })
 
-        // Also add a visual indicator for mobile users
-        if ('ontouchstart' in window) {
-            this.createAudioInitButton()
-        }
+        // Do not show any explicit audio start button; rely on auto init + interaction
     }
 
-    private createAudioInitButton(): void {
-        const button = document.createElement('button')
-        button.textContent = '🎵 Start Audio'
-        button.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            padding: 10px 15px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            opacity: 0.8;
-        `
-
-        button.addEventListener('click', () => {
-            console.log('Manual audio initialization triggered by button')
-            this.gameWorld.initializeAudioAndStartMusic()
-            button.remove()
-        })
-
-        // Remove button after 10 seconds or when audio is initialized
-        setTimeout(() => {
-            if (button.parentNode) {
-                button.remove()
-            }
-        }, 10000)
-
-        document.body.appendChild(button)
-    }
+    // Removed explicit audio start button
 
     private createScene(): Scene {
         const scene = new Scene()

@@ -1,7 +1,7 @@
 import type { Group } from 'three'
 import { AudioLoader, LoadingManager } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { AUDIO_ASSETS } from './config/AudioConfig'
+import { AUDIO_ASSETS, audioFormats } from './config/AudioConfig'
 import type { ModelType } from './config/ModelConfig'
 import { MODEL_CONFIGS } from './config/ModelConfig'
 
@@ -105,6 +105,38 @@ export async function ensureAudioBuffer(
         return undefined
     }
 
+    // Determine supported formats
+    const audioEl = document.createElement('audio')
+    const supportPriority = audioFormats.filter((fmt) => {
+        switch (fmt) {
+            case 'mp3':
+                return !!audioEl.canPlayType('audio/mpeg')
+            case 'ogg':
+                return !!audioEl.canPlayType('audio/ogg; codecs="vorbis"')
+            case 'wav':
+                return !!audioEl.canPlayType('audio/wav; codecs="1"')
+            default:
+                return false
+        }
+    })
+
+    // Build base URL without extension
+    const baseUrl = asset.url.replace(/\.(mp3|ogg|wav)$/i, '')
+
+    // Try to load in order of supported formats
+    for (const ext of supportPriority) {
+        const url = `${baseUrl}.${ext}`
+        try {
+            const buffer = await new Promise<AudioBuffer>((resolve, reject) => {
+                const loader = new AudioLoader()
+                loader.load(url, resolve, undefined, reject)
+            })
+            audioCache[key] = buffer
+            return buffer
+        } catch (err) {}
+    }
+
+    // As a last resort, try the original URL (even if format seems unsupported)
     try {
         const buffer = await new Promise<AudioBuffer>((resolve, reject) => {
             const loader = new AudioLoader()
@@ -112,10 +144,12 @@ export async function ensureAudioBuffer(
         })
         audioCache[key] = buffer
         return buffer
-    } catch (error) {
-        console.warn(`Failed to load audio buffer for ${key}:`, error)
-        return undefined
-    }
+    } catch {}
+
+    console.warn(
+        `Failed to load audio for ${key}. Consider providing mp3/wav alternatives for iOS.`,
+    )
+    return undefined
 }
 
 export function preloadLocalization(): Promise<void> {

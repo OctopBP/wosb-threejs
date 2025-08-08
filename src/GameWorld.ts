@@ -604,22 +604,14 @@ export class GameWorld {
             }
         }
 
-        // Listen for user interactions to initialize audio
-        // Use multiple event types for better mobile compatibility
-        document.addEventListener('click', initializeAudio, { once: true })
-        document.addEventListener('keydown', initializeAudio, { once: true })
-        document.addEventListener('touchstart', initializeAudio, { once: true })
-        document.addEventListener('pointerdown', initializeAudio, {
-            once: true,
-        })
-
-        // Also try to initialize on canvas interaction
-        this.canvas.addEventListener('touchstart', initializeAudio, {
-            once: true,
-        })
-        this.canvas.addEventListener('pointerdown', initializeAudio, {
-            once: true,
-        })
+        // Listen for earliest safe interaction to initialize audio silently
+        const onceOpts: AddEventListenerOptions = { once: true, passive: true }
+        document.addEventListener('pointerdown', initializeAudio, onceOpts)
+        document.addEventListener('touchstart', initializeAudio, onceOpts)
+        document.addEventListener('click', initializeAudio, onceOpts)
+        document.addEventListener('keydown', initializeAudio, onceOpts)
+        this.canvas.addEventListener('pointerdown', initializeAudio, onceOpts)
+        this.canvas.addEventListener('touchstart', initializeAudio, onceOpts)
     }
 
     /**
