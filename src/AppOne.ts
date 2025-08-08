@@ -104,11 +104,18 @@ export class AppOne {
             }
         })
 
-        // Also add a visual indicator for mobile users
-        if ('ontouchstart' in window) {
-            // this.createAudioInitButton()
+        document.addEventListener('click', () => {
             this.gameWorld.initializeAudioAndStartMusic()
-        }
+        })
+
+        document.addEventListener('touchstart', () => {
+            this.gameWorld.initializeAudioAndStartMusic()
+        })
+
+        // // Also add a visual indicator for mobile users
+        // if ('ontouchstart' in window) {
+        //     this.createAudioInitButton()
+        // }
     }
 
     private createAudioInitButton(): void {
