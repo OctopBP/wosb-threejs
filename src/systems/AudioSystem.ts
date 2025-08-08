@@ -256,7 +256,9 @@ export class AudioSystem extends System {
 
         // Apply volume based on category
         const categoryVolume = this.getCategoryVolume(category)
-        audio.setVolume(finalConfig.volume * categoryVolume * this.masterVolume)
+        const baseVolume =
+            finalConfig.volume * categoryVolume * this.masterVolume
+        audio.setVolume(this.audioMuted ? 0 : baseVolume)
 
         // Play audio
         if (finalConfig.autoplay) {
@@ -269,12 +271,13 @@ export class AudioSystem extends System {
         }
 
         // Track playing audio
-        this.playingAudio.set(name, audio)
+        // Use namespaced key to distinguish categories for volume updates
+        this.playingAudio.set(`${category}:${name}`, audio)
 
         // Remove from tracking when audio ends (if not looping)
         if (!finalConfig.loop) {
             setTimeout(() => {
-                this.playingAudio.delete(name)
+                this.playingAudio.delete(`${category}:${name}`)
             }, buffer.duration * 1000)
         }
 
@@ -313,8 +316,13 @@ export class AudioSystem extends System {
 
     setMusicVolume(volume: number): void {
         this.musicVolume = Math.max(0, Math.min(1, volume))
-        if (this.currentMusic) {
-            this.currentMusic.setVolume(this.musicVolume * this.masterVolume)
+        // Update all music tracks currently playing
+        for (const [key, audio] of this.playingAudio) {
+            if (key.startsWith('music:')) {
+                audio.setVolume(
+                    this.audioMuted ? 0 : this.musicVolume * this.masterVolume,
+                )
+            }
         }
     }
 
@@ -324,13 +332,13 @@ export class AudioSystem extends System {
     }
 
     private updateAllVolumes(): void {
-        // Update all playing audio
+        // Update all playing audio to reflect current master/category and mute
         for (const [key, audio] of this.playingAudio) {
-            const [category] = key.split(':')
-            const categoryVolume = this.getCategoryVolume(
-                category as 'music' | 'sfx',
+            const [category] = key.split(':') as ['music' | 'sfx']
+            const categoryVolume = this.getCategoryVolume(category)
+            audio.setVolume(
+                this.audioMuted ? 0 : categoryVolume * this.masterVolume,
             )
-            audio.setVolume(categoryVolume * this.masterVolume)
         }
     }
 
@@ -339,7 +347,9 @@ export class AudioSystem extends System {
 
         for (const [key, audio] of this.playingAudio) {
             if (key.startsWith(`${category}:`)) {
-                audio.setVolume(categoryVolume * this.masterVolume)
+                audio.setVolume(
+                    this.audioMuted ? 0 : categoryVolume * this.masterVolume,
+                )
             }
         }
     }
@@ -347,14 +357,13 @@ export class AudioSystem extends System {
     setMuted(muted: boolean): void {
         this.audioMuted = muted
 
-        if (muted) {
-            for (const audio of this.playingAudio.values()) {
-                audio.setVolume(0)
-            }
-        } else {
-            for (const audio of this.playingAudio.values()) {
-                audio.setVolume(1)
-            }
+        // Adjust volumes according to current category/master settings
+        for (const [key, audio] of this.playingAudio) {
+            const [category] = key.split(':') as ['music' | 'sfx']
+            const categoryVolume = this.getCategoryVolume(category)
+            audio.setVolume(
+                this.audioMuted ? 0 : categoryVolume * this.masterVolume,
+            )
         }
     }
 

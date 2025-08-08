@@ -1,4 +1,5 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from 'three'
+import { ensureAudioBuffer } from './AssetsPreloader'
 import { ARROW_INDICATOR_CONFIG } from './config/ArrowIndicatorConfig'
 import { defaultAudioSettings } from './config/AudioConfig'
 import type { GameStateConfig } from './config/GameStateConfig'
@@ -567,6 +568,9 @@ export class GameWorld {
 
         // Setup user interaction listener to initialize audio
         this.setupAudioInitialization()
+
+        // Pre-warm music buffer in background to avoid first-play miss
+        void ensureAudioBuffer('background')
     }
 
     /**
