@@ -70,7 +70,6 @@ export class NewShipOfferUISystem extends System {
         this.offerUI.style.display = 'flex'
         this.offerUI.style.justifyContent = 'center'
         this.offerUI.style.alignItems = 'center'
-        this.offerUI.style.flexDirection = 'column'
         this.offerUI.style.zIndex = '10000'
         this.offerUI.style.fontFamily = 'Arial, sans-serif'
         this.offerUI.style.opacity = '0'
@@ -78,58 +77,69 @@ export class NewShipOfferUISystem extends System {
         this.offerUI.style.transition =
             'opacity 0.3s ease-out, visibility 0.3s ease-out'
 
-        // Create main content container
+        // Create main content container with responsive flexbox
         this.contentContainer = document.createElement('div')
         this.contentContainer.style.display = 'flex'
         this.contentContainer.style.flexDirection = 'column'
         this.contentContainer.style.alignItems = 'center'
+        this.contentContainer.style.justifyContent = 'space-between'
         this.contentContainer.style.textAlign = 'center'
-        this.contentContainer.style.maxWidth = '500px'
+        this.contentContainer.style.maxWidth = 'min(500px, 90vw)'
         this.contentContainer.style.width = '90%'
+        this.contentContainer.style.height = 'min(80vh, 600px)'
+        this.contentContainer.style.minHeight = '400px'
         this.contentContainer.style.transform = 'scale(0.8) translateY(30px)'
         this.contentContainer.style.transition =
             'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
 
-        // Create text above image
+        // Create text above image with responsive sizing
         this.topText = document.createElement('h1')
         this.topText.textContent = this.localizationManager.getText(
             'newShipOffer.topText',
         )
         this.topText.style.color = '#FFFFFF'
-        this.topText.style.fontSize = '34px'
+        this.topText.style.fontSize = 'clamp(24px, 4vw, 34px)'
         this.topText.style.fontWeight = 'bold'
-        this.topText.style.margin = '0 0 30px 0'
+        this.topText.style.margin = '0'
+        this.topText.style.padding = 'clamp(15px, 2vh, 20px) 0'
         this.topText.style.textShadow = '3px 3px 6px rgba(0, 0, 0, 0.8)'
         this.topText.style.letterSpacing = '2px'
         this.topText.style.opacity = '0'
         this.topText.style.transform = 'translateY(-20px)'
         this.topText.style.transition =
             'opacity 0.5s ease-out, transform 0.5s ease-out'
+        this.topText.style.flexShrink = '0'
+        this.topText.style.maxWidth = '100%'
+        this.topText.style.wordWrap = 'break-word'
 
         // --- Logo + Button Container ---
         this.logoButtonContainer = document.createElement('div')
         this.logoButtonContainer.style.position = 'relative'
         this.logoButtonContainer.style.display = 'inline-block'
-        this.logoButtonContainer.style.width = '300px'
-        this.logoButtonContainer.style.margin = '20px 0'
+        this.logoButtonContainer.style.width = 'min(300px, 80vw)'
+        this.logoButtonContainer.style.height = 'auto'
+        this.logoButtonContainer.style.margin = 'clamp(15px, 2vh, 20px) 0'
         this.logoButtonContainer.style.opacity = '0'
         this.logoButtonContainer.style.transform = 'scale(0.9)'
         this.logoButtonContainer.style.transition =
             'opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        this.logoButtonContainer.style.flexShrink = '0'
 
-        // Create prince logo image
+        // Create prince logo image with responsive scaling
         const logoImage = document.createElement('img')
         logoImage.src = 'assets/ui/prince_nologo_glow.png'
         logoImage.style.width = '100%'
         logoImage.style.height = 'auto'
         logoImage.style.display = 'block'
         logoImage.style.filter = 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.5))'
+        logoImage.style.maxHeight = 'clamp(200px, 40vh, 300px)'
+        logoImage.style.objectFit = 'contain'
 
-        // Create button using btn.png
+        // Create button using btn.png - positioned on the image as before
         const buttonContainer = document.createElement('div')
         buttonContainer.style.position = 'absolute'
         buttonContainer.style.left = '50%'
-        buttonContainer.style.bottom = '75px'
+        buttonContainer.style.bottom = 'clamp(40px, 12%, 75px)'
         buttonContainer.style.transform = 'translateX(-50%) translateY(50%)'
         buttonContainer.style.cursor = 'pointer'
         buttonContainer.style.transition = 'transform 0.2s ease'
@@ -137,7 +147,7 @@ export class NewShipOfferUISystem extends System {
 
         const buttonImage = document.createElement('img')
         buttonImage.src = 'assets/ui/btn.png'
-        buttonImage.style.width = '200px'
+        buttonImage.style.width = 'clamp(120px, 45%, 200px)'
         buttonImage.style.height = 'auto'
         buttonImage.style.filter = 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'
 
@@ -150,11 +160,12 @@ export class NewShipOfferUISystem extends System {
         buttonText.style.left = '50%'
         buttonText.style.transform = 'translate(-50%, -50%)'
         buttonText.style.color = '#FFFFFF'
-        buttonText.style.fontSize = '18px'
+        buttonText.style.fontSize = 'clamp(14px, 2.5vw, 18px)'
         buttonText.style.fontWeight = 'bold'
         buttonText.style.paddingBottom = '6px'
         buttonText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
         buttonText.style.pointerEvents = 'none'
+        buttonText.style.whiteSpace = 'nowrap'
 
         // Add hover effects to button
         buttonContainer.addEventListener('mouseenter', () => {
@@ -184,14 +195,15 @@ export class NewShipOfferUISystem extends System {
         this.logoButtonContainer.appendChild(logoImage)
         this.logoButtonContainer.appendChild(buttonContainer)
 
-        // Create text below image
+        // Create text below image with responsive sizing
         this.bottomText = document.createElement('p')
         this.bottomText.textContent = this.localizationManager.getText(
             'newShipOffer.bottomText',
         )
         this.bottomText.style.color = '#FFFFFF'
-        this.bottomText.style.fontSize = '24px'
-        this.bottomText.style.margin = '30px 0 40px 0'
+        this.bottomText.style.fontSize = 'clamp(18px, 3vw, 24px)'
+        this.bottomText.style.margin = '0'
+        this.bottomText.style.padding = 'clamp(15px, 2vh, 20px) 0'
         this.bottomText.style.opacity = '0'
         this.bottomText.style.lineHeight = '1.5'
         this.bottomText.style.whiteSpace = 'pre-line'
@@ -199,6 +211,9 @@ export class NewShipOfferUISystem extends System {
         this.bottomText.style.transform = 'translateY(20px)'
         this.bottomText.style.transition =
             'opacity 0.7s ease-out, transform 0.7s ease-out'
+        this.bottomText.style.flexShrink = '0'
+        this.bottomText.style.maxWidth = '100%'
+        this.bottomText.style.wordWrap = 'break-word'
 
         // Assemble the UI
         this.contentContainer.appendChild(this.topText)
@@ -233,21 +248,21 @@ export class NewShipOfferUISystem extends System {
                     this.topText.style.opacity = '1'
                     this.topText.style.transform = 'translateY(0)'
                 }
-            }, 200)
+            }, 300)
 
             setTimeout(() => {
                 if (this.logoButtonContainer) {
                     this.logoButtonContainer.style.opacity = '1'
                     this.logoButtonContainer.style.transform = 'scale(1)'
                 }
-            }, 400)
+            }, 500)
 
             setTimeout(() => {
                 if (this.bottomText) {
                     this.bottomText.style.opacity = '1'
                     this.bottomText.style.transform = 'translateY(0)'
                 }
-            }, 600)
+            }, 700)
         }
     }
 

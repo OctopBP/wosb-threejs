@@ -1,7 +1,6 @@
 import { System } from '../ecs/System'
 import type { World } from '../ecs/World'
 import { LocalizationManager } from '../localization/LocalizationManager'
-
 export class MovementTutorialSystem extends System {
     private tutorialContainer: HTMLElement | null = null
     private cursorHand: HTMLImageElement | null = null
@@ -51,6 +50,8 @@ export class MovementTutorialSystem extends System {
             z-index: 10000;
             pointer-events: none;
             user-select: none;
+            padding: 20px;
+            box-sizing: border-box;
         `
 
         const imagesContainer = document.createElement('div')
@@ -138,6 +139,11 @@ export class MovementTutorialSystem extends System {
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             margin-bottom: 100px;
+            width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         `
 
         // Assemble the tutorial

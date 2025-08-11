@@ -8,6 +8,7 @@ import {
 import { getShipModelForLevel } from '../config/ModelConfig'
 import { getParticleConfig } from '../config/ParticlesConfig'
 import type {
+    AliveComponent,
     HealthComponent,
     LevelComponent,
     LevelingStatsComponent,
@@ -34,7 +35,7 @@ export class LevelingSystem extends System {
         xpConfig: XPProgressionConfig = defaultXPProgression,
         particleSystem: ParticleSystem,
     ) {
-        super(world, ['xp', 'level', 'levelingStats'])
+        super(world, ['xp', 'level', 'levelingStats', 'alive'])
         this.xpProgressionConfig = xpConfig
         this.particleSystem = particleSystem
     }
@@ -54,8 +55,11 @@ export class LevelingSystem extends System {
             const level = entity.getComponent<LevelComponent>('level')
             const levelingStats =
                 entity.getComponent<LevelingStatsComponent>('levelingStats')
+            const alive = entity.getComponent<AliveComponent>('alive')
 
-            if (!xp || !level || !levelingStats) continue
+            if (!xp || !level || !levelingStats || !alive) {
+                continue
+            }
 
             // Check for level-ups
             this.processLevelUp(entity, xp, level, levelingStats)
