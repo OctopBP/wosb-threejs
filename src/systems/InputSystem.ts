@@ -29,6 +29,10 @@ export class InputSystem extends System {
         window.addEventListener('keydown', this.onKeyDown.bind(this))
         window.addEventListener('keyup', this.onKeyUp.bind(this))
 
+        // Window focus events to handle input state when switching tabs/apps
+        window.addEventListener('blur', this.onWindowBlur.bind(this))
+        window.addEventListener('focus', this.onWindowFocus.bind(this))
+
         // Mouse events
         this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this))
         this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this))
@@ -46,6 +50,19 @@ export class InputSystem extends System {
 
     private onKeyUp(event: KeyboardEvent): void {
         this.keysPressed.delete(event.code.toLowerCase())
+    }
+
+    // Window focus event handlers
+    private onWindowBlur(): void {
+        // Clear all pressed keys when window loses focus
+        this.keysPressed.clear()
+        this.isPointerDown = false
+    }
+
+    private onWindowFocus(): void {
+        // Reset input state when window regains focus
+        this.keysPressed.clear()
+        this.isPointerDown = false
     }
 
     // Mouse event handlers
@@ -219,6 +236,8 @@ export class InputSystem extends System {
         // Remove event listeners
         window.removeEventListener('keydown', this.onKeyDown.bind(this))
         window.removeEventListener('keyup', this.onKeyUp.bind(this))
+        window.removeEventListener('blur', this.onWindowBlur.bind(this))
+        window.removeEventListener('focus', this.onWindowFocus.bind(this))
 
         this.canvas.removeEventListener(
             'mousedown',
