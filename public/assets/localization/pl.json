@@ -1,4 +1,5 @@
 {
+  "loading": "Ładowanie...",
   "goals": {
     "tutorial": "",
     "initialWave": "Zniszcz {enemyCount} wroga",
@@ -11,7 +12,7 @@
   },
   "newShipOffer": {
     "topText": "Potrzebujesz czegoś potężniejszego?",
-    "bottomText": "Zdobądź swojego \"Black Prince\"\nza darmo teraz",
+    "bottomText": "Zdobądź swojego \"Czarnego Księcia\"\nza darmo teraz",
     "buttonText": "ZDOBĄDŹ"
   }
 }

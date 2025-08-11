@@ -1,4 +1,5 @@
 {
+  "loading": "Carregando...",
   "goals": {
     "tutorial": "",
     "initialWave": "Destrua {enemyCount} inimigo",
@@ -7,11 +8,11 @@
     "bossFight": "Destrua o chefe"
   },
   "tutorial": {
-    "moveInstruction": "Mova-se usando WASD ou as teclas de seta"
+    "moveInstruction": "Mova-se usando WASD ou teclas de seta"
   },
   "newShipOffer": {
     "topText": "Precisa de algo mais poderoso?",
-    "bottomText": "Obtenha seu \"Black Prince\"\ngratuitamente agora",
+    "bottomText": "Obtenha seu \"Príncipe Negro\"\ngratuitamente agora",
     "buttonText": "OBTER"
   }
 }

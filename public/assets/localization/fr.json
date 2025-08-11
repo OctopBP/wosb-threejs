@@ -1,4 +1,5 @@
 {
+  "loading": "Chargement...",
   "goals": {
     "tutorial": "",
     "initialWave": "Détruisez {enemyCount} ennemi",
@@ -11,7 +12,7 @@
   },
   "newShipOffer": {
     "topText": "Besoin de quelque chose de plus puissant ?",
-    "bottomText": "Obtenez votre \"Black Prince\"\ngratuitement maintenant",
-    "buttonText": "OBTENIR"
+    "bottomText": "Obtenez votre \"Prince Noir\"\ngratuitement maintenant",
+    "buttonText": "L'OBTENIR"
   }
 }

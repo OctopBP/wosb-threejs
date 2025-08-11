@@ -1,4 +1,5 @@
 {
+  "loading": "Loading...",
   "goals": {
     "tutorial": "",
     "initialWave": "Destroy {enemyCount} enemy",

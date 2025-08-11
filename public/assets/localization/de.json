@@ -1,4 +1,5 @@
 {
+  "loading": "Lädt...",
   "goals": {
     "tutorial": "",
     "initialWave": "Zerstöre {enemyCount} Feind",

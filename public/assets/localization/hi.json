@@ -1,4 +1,5 @@
 {
+  "loading": "लोड हो रहा है...",
   "goals": {
     "tutorial": "",
     "initialWave": "{enemyCount} दुश्मन को नष्ट करें",
@@ -7,11 +8,11 @@
     "bossFight": "बॉस को नष्ट करें"
   },
   "tutorial": {
-    "moveInstruction": "WASD या एरो कीज़ का उपयोग करके चलें"
+    "moveInstruction": "WASD या एरो कीज़ का उपयोग करके आगे बढ़ें"
   },
   "newShipOffer": {
     "topText": "कुछ और शक्तिशाली चाहिए?",
-    "bottomText": "अपना \"Black Prince\"\nअभी मुफ्त में प्राप्त करें",
+    "bottomText": "अपना \"काला राजकुमार\" अभी\nमुफ्त में प्राप्त करें",
     "buttonText": "प्राप्त करें"
   }
 }

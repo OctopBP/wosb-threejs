@@ -7,6 +7,32 @@ import {
 import { LocalizationManager } from './localization/LocalizationManager'
 
 window.addEventListener('DOMContentLoaded', async () => {
+    const createLoadingOverlay = () => {
+        const overlay = document.createElement('div')
+        overlay.id = 'loadingOverlay'
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #222;
+            color: #fff;
+            font-size: 2rem;
+            z-index: 10;
+        `
+
+        const localizationManager = LocalizationManager.getInstance()
+        const loadingText = localizationManager.getText('loading')
+        overlay.textContent = loadingText
+
+        document.body.appendChild(overlay)
+        return overlay
+    }
+
     const showLoading = () => {
         const overlay = document.getElementById('loadingOverlay')
         if (overlay) overlay.style.display = 'flex'
@@ -22,6 +48,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Initialize localization
     const localizationManager = LocalizationManager.getInstance()
     await localizationManager.initialize()
+
+    // Create loading overlay after localization is initialized
+    const loadingOverlay = createLoadingOverlay()
 
     showLoading()
     await preloadModels()
