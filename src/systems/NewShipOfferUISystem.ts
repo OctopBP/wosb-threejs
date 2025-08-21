@@ -88,8 +88,8 @@ export class NewShipOfferUISystem extends System {
         this.contentContainer.style.textAlign = 'center'
         this.contentContainer.style.maxWidth = 'min(500px, 90vw)'
         this.contentContainer.style.width = '90%'
-        this.contentContainer.style.height = 'min(80vh, 600px)'
-        this.contentContainer.style.minHeight = '400px'
+        this.contentContainer.style.height = 'min-content'
+        this.contentContainer.style.gap = '16px'
         this.contentContainer.style.transform = 'scale(0.8) translateY(30px)'
         this.contentContainer.style.transition =
             'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
@@ -107,11 +107,12 @@ export class NewShipOfferUISystem extends System {
         this.logoButtonContainer.style.display = 'inline-block'
         this.logoButtonContainer.style.width = 'min(340px, 76vw)'
         this.logoButtonContainer.style.height = 'auto'
-        this.logoButtonContainer.style.margin = 'clamp(15px, 2vh, 20px) 0'
+        this.logoButtonContainer.style.margin = '0'
         this.logoButtonContainer.style.opacity = '0'
         this.logoButtonContainer.style.transform = 'scale(0.9)'
         this.logoButtonContainer.style.transition =
             'opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        this.logoButtonContainer.style.cursor = 'pointer'
         this.logoButtonContainer.style.flexShrink = '0'
 
         // Create prince logo image with responsive scaling
@@ -161,14 +162,14 @@ export class NewShipOfferUISystem extends System {
         buttonText.style.whiteSpace = 'nowrap'
 
         // Add hover effects to button
-        buttonContainer.addEventListener('mouseenter', () => {
+        this.logoButtonContainer.addEventListener('mouseenter', () => {
             buttonContainer.style.transform =
                 'translateX(-50%) translateY(50%) scale(1.05)'
             buttonImage.style.filter =
                 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5)) brightness(1.1)'
         })
 
-        buttonContainer.addEventListener('mouseleave', () => {
+        this.logoButtonContainer.addEventListener('mouseleave', () => {
             buttonContainer.style.transform =
                 'translateX(-50%) translateY(50%) scale(1)'
             buttonImage.style.filter =
@@ -176,7 +177,7 @@ export class NewShipOfferUISystem extends System {
         })
 
         // Add click handler
-        buttonContainer.addEventListener('click', () => {
+        this.logoButtonContainer.addEventListener('click', () => {
             this.handleGetItClick()
         })
 
