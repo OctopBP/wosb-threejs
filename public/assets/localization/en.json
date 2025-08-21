@@ -11,8 +11,9 @@
     "moveInstruction": "Move using WASD or arrow keys"
   },
   "newShipOffer": {
-    "topText": "Need something more powerful?",
-    "bottomText": "Get your \"Black Prince\"\nfor free right now",
-    "buttonText": "GET IT"
+    "text1": "Get your",
+    "text2": "Black Prince",
+    "text3": "for free right now\nto win next battle",
+    "buttonText": "GET IT!"
   }
 }

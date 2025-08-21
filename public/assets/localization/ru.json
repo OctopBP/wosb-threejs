@@ -11,8 +11,9 @@
     "moveInstruction": "Двигайтесь используя WASD или стрелки"
   },
   "newShipOffer": {
-    "topText": "Нужно что-то помощнее?",
-    "bottomText": "Забери свой \"Black Prince\"\nбесплатно прямо сейчас",
-    "buttonText": "ЗАБРАТЬ"
+    "text1": "Забери свой",
+    "text2": "Black Prince",
+    "text3": "бесплатно прямо сейчас\nчтобы выиграть следующую битву",
+    "buttonText": "ЗАБРАТЬ!"
   }
 }

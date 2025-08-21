@@ -9,9 +9,11 @@ const OFFER_LINK = 'https://www.worldofseabattle.com'
 export class NewShipOfferUISystem extends System {
     private offerUI: HTMLElement | null = null
     private contentContainer: HTMLElement | null = null
-    private topText: HTMLElement | null = null
+    private textContainer: HTMLElement | null = null
+    private text1: HTMLElement | null = null
+    private text2: HTMLElement | null = null
+    private text3: HTMLElement | null = null
     private logoButtonContainer: HTMLElement | null = null
-    private bottomText: HTMLElement | null = null
     private isUICreated = false
     private gameStateSystem: GameStateSystem | null = null
     private isVisible = false
@@ -66,7 +68,7 @@ export class NewShipOfferUISystem extends System {
         this.offerUI.style.left = '0'
         this.offerUI.style.width = '100%'
         this.offerUI.style.height = '100%'
-        this.offerUI.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
+        this.offerUI.style.backgroundColor = 'rgba(0, 22, 64, 0.6)'
         this.offerUI.style.display = 'flex'
         this.offerUI.style.justifyContent = 'center'
         this.offerUI.style.alignItems = 'center'
@@ -92,31 +94,18 @@ export class NewShipOfferUISystem extends System {
         this.contentContainer.style.transition =
             'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
 
-        // Create text above image with responsive sizing
-        this.topText = document.createElement('h1')
-        this.topText.textContent = this.localizationManager.getText(
-            'newShipOffer.topText',
-        )
-        this.topText.style.color = '#FFFFFF'
-        this.topText.style.fontSize = 'clamp(24px, 4vw, 34px)'
-        this.topText.style.fontWeight = 'bold'
-        this.topText.style.margin = '0'
-        this.topText.style.padding = 'clamp(15px, 2vh, 20px) 0'
-        this.topText.style.textShadow = '3px 3px 6px rgba(0, 0, 0, 0.8)'
-        this.topText.style.letterSpacing = '2px'
-        this.topText.style.opacity = '0'
-        this.topText.style.transform = 'translateY(-20px)'
-        this.topText.style.transition =
-            'opacity 0.5s ease-out, transform 0.5s ease-out'
-        this.topText.style.flexShrink = '0'
-        this.topText.style.maxWidth = '100%'
-        this.topText.style.wordWrap = 'break-word'
-
+        // Create text container
+        this.textContainer = document.createElement('div')
+        this.textContainer.style.display = 'flex'
+        this.textContainer.style.flexDirection = 'column'
+        this.textContainer.style.alignItems = 'center'
+        this.textContainer.style.gap = '4px'
+        this.textContainer.style.opacity = '1'
         // --- Logo + Button Container ---
         this.logoButtonContainer = document.createElement('div')
         this.logoButtonContainer.style.position = 'relative'
         this.logoButtonContainer.style.display = 'inline-block'
-        this.logoButtonContainer.style.width = 'min(300px, 80vw)'
+        this.logoButtonContainer.style.width = 'min(340px, 76vw)'
         this.logoButtonContainer.style.height = 'auto'
         this.logoButtonContainer.style.margin = 'clamp(15px, 2vh, 20px) 0'
         this.logoButtonContainer.style.opacity = '0'
@@ -132,8 +121,9 @@ export class NewShipOfferUISystem extends System {
         logoImage.style.height = 'auto'
         logoImage.style.display = 'block'
         logoImage.style.filter = 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.5))'
-        logoImage.style.maxHeight = 'clamp(200px, 40vh, 300px)'
+        logoImage.style.maxHeight = 'clamp(300px, 52vh, 420px)'
         logoImage.style.objectFit = 'contain'
+        logoImage.style.padding = '0 1% 20px 1%'
 
         // Create button using btn.png - positioned on the image as before
         const buttonContainer = document.createElement('div')
@@ -141,14 +131,18 @@ export class NewShipOfferUISystem extends System {
         buttonContainer.style.left = '50%'
         buttonContainer.style.bottom = 'clamp(40px, 12%, 75px)'
         buttonContainer.style.transform = 'translateX(-50%) translateY(50%)'
+        buttonContainer.style.width = '100%'
         buttonContainer.style.cursor = 'pointer'
         buttonContainer.style.transition = 'transform 0.2s ease'
         buttonContainer.style.zIndex = '2'
 
         const buttonImage = document.createElement('img')
         buttonImage.src = 'assets/ui/btn.png'
-        buttonImage.style.width = 'clamp(120px, 45%, 200px)'
+        buttonImage.style.width = '100%'
         buttonImage.style.height = 'auto'
+        buttonImage.style.position = 'relative'
+        buttonImage.style.left = '50%'
+        buttonImage.style.transform = 'translateX(-50%)'
         buttonImage.style.filter = 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'
 
         const buttonText = document.createElement('div')
@@ -160,10 +154,9 @@ export class NewShipOfferUISystem extends System {
         buttonText.style.left = '50%'
         buttonText.style.transform = 'translate(-50%, -50%)'
         buttonText.style.color = '#FFFFFF'
-        buttonText.style.fontSize = 'clamp(14px, 2.5vw, 18px)'
+        buttonText.style.fontSize = 'clamp(24px, 4.2vw, 36px)'
         buttonText.style.fontWeight = 'bold'
-        buttonText.style.paddingBottom = '6px'
-        buttonText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
+        buttonText.style.paddingTop = '8px'
         buttonText.style.pointerEvents = 'none'
         buttonText.style.whiteSpace = 'nowrap'
 
@@ -195,30 +188,69 @@ export class NewShipOfferUISystem extends System {
         this.logoButtonContainer.appendChild(logoImage)
         this.logoButtonContainer.appendChild(buttonContainer)
 
-        // Create text below image with responsive sizing
-        this.bottomText = document.createElement('p')
-        this.bottomText.textContent = this.localizationManager.getText(
-            'newShipOffer.bottomText',
-        )
-        this.bottomText.style.color = '#FFFFFF'
-        this.bottomText.style.fontSize = 'clamp(18px, 3vw, 24px)'
-        this.bottomText.style.margin = '0'
-        this.bottomText.style.padding = 'clamp(15px, 2vh, 20px) 0'
-        this.bottomText.style.opacity = '0'
-        this.bottomText.style.lineHeight = '1.5'
-        this.bottomText.style.whiteSpace = 'pre-line'
-        this.bottomText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.8)'
-        this.bottomText.style.transform = 'translateY(20px)'
-        this.bottomText.style.transition =
-            'opacity 0.7s ease-out, transform 0.7s ease-out'
-        this.bottomText.style.flexShrink = '0'
-        this.bottomText.style.maxWidth = '100%'
-        this.bottomText.style.wordWrap = 'break-word'
+        // Create first text element - "Get your"
+        this.text1 = document.createElement('h2')
+        this.text1.textContent =
+            this.localizationManager.getText('newShipOffer.text1')
+        this.text1.style.color = '#FFFFFF'
+        this.text1.style.fontSize = 'clamp(20px, 3.5vw, 28px)'
+        this.text1.style.fontWeight = 'normal'
+        this.text1.style.margin = '0'
+        this.text1.style.padding = '0'
+        this.text1.style.textShadow = '2px 2px 10px rgba(0, 0, 0, 0.5)'
+        this.text1.style.letterSpacing = '1px'
+        this.text1.style.opacity = '0'
+        this.text1.style.transform = 'translateY(-20px)'
+        this.text1.style.transition =
+            'opacity 0.5s ease-out, transform 0.5s ease-out'
+        this.text1.style.flexShrink = '0'
+        this.text1.style.maxWidth = '100%'
+        this.text1.style.wordWrap = 'break-word'
 
-        // Assemble the UI
-        this.contentContainer.appendChild(this.topText)
+        // Create second text element - "Black Prince" (big text)
+        this.text2 = document.createElement('h1')
+        this.text2.textContent = `"${this.localizationManager.getText('newShipOffer.text2')}"`
+        this.text2.style.color = '#FFFFFF'
+        this.text2.style.fontSize = 'clamp(28px, 5vw, 42px)'
+        this.text2.style.fontWeight = 'bold'
+        this.text2.style.margin = '0'
+        this.text2.style.padding = '0'
+        this.text2.style.textShadow = '2px 2px 10px rgba(0, 0, 0, 0.5)'
+        this.text2.style.letterSpacing = '2px'
+        this.text2.style.opacity = '0'
+        this.text2.style.transform = 'translateY(-20px)'
+        this.text2.style.transition =
+            'opacity 0.6s ease-out, transform 0.6s ease-out'
+        this.text2.style.flexShrink = '0'
+        this.text2.style.maxWidth = '100%'
+        this.text2.style.wordWrap = 'break-word'
+
+        // Create third text element - "for free right now\nto win next battle"
+        this.text3 = document.createElement('p')
+        this.text3.textContent =
+            this.localizationManager.getText('newShipOffer.text3')
+        this.text3.style.color = '#FFFFFF'
+        this.text3.style.fontSize = 'clamp(18px, 3vw, 24px)'
+        this.text3.style.margin = '0'
+        this.text3.style.padding = '0'
+        this.text3.style.opacity = '0'
+        this.text3.style.lineHeight = '1.2'
+        this.text3.style.whiteSpace = 'pre-line'
+        this.text3.style.textShadow = '2px 2px 10px rgba(0, 0, 0, 0.5)'
+        this.text3.style.transform = 'translateY(20px)'
+        this.text3.style.transition =
+            'opacity 0.7s ease-out, transform 0.7s ease-out'
+        this.text3.style.flexShrink = '0'
+        this.text3.style.maxWidth = '100%'
+        this.text3.style.wordWrap = 'break-word'
+
+        // Assemble the UI (image first, then grouped texts)
+        this.textContainer.appendChild(this.text1)
+        this.textContainer.appendChild(this.text2)
+        this.textContainer.appendChild(this.text3)
+
         this.contentContainer.appendChild(this.logoButtonContainer)
-        this.contentContainer.appendChild(this.bottomText)
+        this.contentContainer.appendChild(this.textContainer)
         this.offerUI.appendChild(this.contentContainer)
 
         // Add to page
@@ -242,27 +274,35 @@ export class NewShipOfferUISystem extends System {
                 }
             }, 100)
 
-            // Stagger the text animations
-            setTimeout(() => {
-                if (this.topText) {
-                    this.topText.style.opacity = '1'
-                    this.topText.style.transform = 'translateY(0)'
-                }
-            }, 300)
-
+            // Stagger animations: image first, then texts
             setTimeout(() => {
                 if (this.logoButtonContainer) {
                     this.logoButtonContainer.style.opacity = '1'
                     this.logoButtonContainer.style.transform = 'scale(1)'
                 }
-            }, 500)
+            }, 300)
 
             setTimeout(() => {
-                if (this.bottomText) {
-                    this.bottomText.style.opacity = '1'
-                    this.bottomText.style.transform = 'translateY(0)'
+                if (this.textContainer) {
+                    // cascade texts quickly
+                    if (this.text1) {
+                        this.text1.style.opacity = '1'
+                        this.text1.style.transform = 'translateY(0)'
+                    }
+                    setTimeout(() => {
+                        if (this.text2) {
+                            this.text2.style.opacity = '1'
+                            this.text2.style.transform = 'translateY(0)'
+                        }
+                    }, 120)
+                    setTimeout(() => {
+                        if (this.text3) {
+                            this.text3.style.opacity = '1'
+                            this.text3.style.transform = 'translateY(0)'
+                        }
+                    }, 240)
                 }
-            }, 700)
+            }, 500)
         }
     }
 
@@ -271,9 +311,14 @@ export class NewShipOfferUISystem extends System {
             this.isVisible = false
 
             // Reset all animations to initial state
-            if (this.topText) {
-                this.topText.style.opacity = '0'
-                this.topText.style.transform = 'translateY(-20px)'
+            if (this.text1) {
+                this.text1.style.opacity = '0'
+                this.text1.style.transform = 'translateY(-20px)'
+            }
+
+            if (this.text2) {
+                this.text2.style.opacity = '0'
+                this.text2.style.transform = 'translateY(-20px)'
             }
 
             if (this.logoButtonContainer) {
@@ -281,9 +326,9 @@ export class NewShipOfferUISystem extends System {
                 this.logoButtonContainer.style.transform = 'scale(0.9)'
             }
 
-            if (this.bottomText) {
-                this.bottomText.style.opacity = '0'
-                this.bottomText.style.transform = 'translateY(20px)'
+            if (this.text3) {
+                this.text3.style.opacity = '0'
+                this.text3.style.transform = 'translateY(20px)'
             }
 
             if (this.contentContainer) {

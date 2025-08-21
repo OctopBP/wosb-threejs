@@ -8,11 +8,12 @@
     "bossFight": "Zniszcz bossa"
   },
   "tutorial": {
-    "moveInstruction": "Poruszaj się używając WASD lub klawiszy strzałek"
+    "moveInstruction": "Poruszaj się używając WASD lub strzałek"
   },
   "newShipOffer": {
-    "topText": "Potrzebujesz czegoś potężniejszego?",
-    "bottomText": "Zdobądź swojego \"Czarnego Księcia\"\nza darmo teraz",
-    "buttonText": "ZDOBĄDŹ"
+    "text1": "Weź swojego",
+    "text2": "Black Prince",
+    "text3": "za darmo teraz\nżeby wygrać następną bitwę",
+    "buttonText": "WEŹ!"
   }
 }

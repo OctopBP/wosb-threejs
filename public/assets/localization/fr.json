@@ -8,11 +8,12 @@
     "bossFight": "Détruisez le boss"
   },
   "tutorial": {
-    "moveInstruction": "Déplacez-vous avec WASD ou les touches fléchées"
+    "moveInstruction": "Déplacez-vous avec WASD ou les flèches"
   },
   "newShipOffer": {
-    "topText": "Besoin de quelque chose de plus puissant ?",
-    "bottomText": "Obtenez votre \"Prince Noir\"\ngratuitement maintenant",
-    "buttonText": "L'OBTENIR"
+    "text1": "Obtenez votre",
+    "text2": "Black Prince",
+    "text3": "gratuitement maintenant\npour gagner la prochaine bataille",
+    "buttonText": "OBTENIR!"
   }
 }

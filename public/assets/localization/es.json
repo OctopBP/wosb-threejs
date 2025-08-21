@@ -8,11 +8,12 @@
     "bossFight": "Destruye al jefe"
   },
   "tutorial": {
-    "moveInstruction": "Muévete usando WASD o las teclas de dirección"
+    "moveInstruction": "Muévete usando WASD o las flechas"
   },
   "newShipOffer": {
-    "topText": "¿Necesitas algo más poderoso?",
-    "bottomText": "Obtén tu \"Príncipe Negro\"\ngratis ahora mismo",
-    "buttonText": "OBTENER"
+    "text1": "Obtén tu",
+    "text2": "Black Prince",
+    "text3": "gratis ahora\npara ganar la próxima batalla",
+    "buttonText": "¡OBTENER!"
   }
 }

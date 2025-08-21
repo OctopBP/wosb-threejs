@@ -1,5 +1,5 @@
 {
-  "loading": "Lädt...",
+  "loading": "Laden...",
   "goals": {
     "tutorial": "",
     "initialWave": "Zerstöre {enemyCount} Feind",
@@ -11,8 +11,9 @@
     "moveInstruction": "Bewege dich mit WASD oder Pfeiltasten"
   },
   "newShipOffer": {
-    "topText": "Brauchst du etwas Stärkeres?",
-    "bottomText": "Hole dir deinen \"Black Prince\"\nkostenlos jetzt",
-    "buttonText": "HOLEN"
+    "text1": "Hole dir deinen",
+    "text2": "Black Prince",
+    "text3": "kostenlos jetzt\num die nächste Schlacht zu gewinnen",
+    "buttonText": "HOLEN!"
   }
 }

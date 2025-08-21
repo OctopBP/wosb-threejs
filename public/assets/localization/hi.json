@@ -8,11 +8,12 @@
     "bossFight": "बॉस को नष्ट करें"
   },
   "tutorial": {
-    "moveInstruction": "WASD या एरो कीज़ का उपयोग करके आगे बढ़ें"
+    "moveInstruction": "WASD या तीर कुंजियों का उपयोग करके चलें"
   },
   "newShipOffer": {
-    "topText": "कुछ और शक्तिशाली चाहिए?",
-    "bottomText": "अपना \"काला राजकुमार\" अभी\nमुफ्त में प्राप्त करें",
-    "buttonText": "प्राप्त करें"
+    "text1": "अपना लें",
+    "text2": "Black Prince",
+    "text3": "मुफ्त में अभी\nअगली लड़ाई जीतने के लिए",
+    "buttonText": "लें!"
   }
 }
