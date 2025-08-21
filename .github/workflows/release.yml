@@ -2,8 +2,7 @@ name: Build and Release
 
 on:
   push:
-    tags:
-      - 'v*'  # Trigger on version tags like v1.0.0, v1.2.3, etc.
+    branches: [ build ]
 
 permissions:
   contents: write  # Needed for creating releases
@@ -14,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for version calculation
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -29,17 +30,34 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Calculate version
+        id: version
+        run: |
+          # Get the current date and time
+          DATE=$(date +'%Y%m%d')
+          TIME=$(date +'%H%M%S')
+          
+          # Get the short commit hash
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          
+          # Create version string: YYYYMMDD-HHMMSS-commit
+          VERSION="${DATE}-${TIME}-${COMMIT_HASH}"
+          
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Calculated version: $VERSION"
+
       - name: Create zip file
         run: |
-          # Get the version from the git tag
-          VERSION=${GITHUB_REF#refs/tags/}
-          # Create zip file with version in name
-          zip -r "wosb-game-${VERSION}.zip" dist/ -x "*.map" "*.d.ts"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          # Create zip file with calculated version
+          zip -r "wosb-game-${{ env.VERSION }}.zip" dist/ -x "*.map" "*.d.ts"
+          echo "Created zip file: wosb-game-${{ env.VERSION }}.zip"
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: "v${{ env.VERSION }}"
+          name: "Release ${{ env.VERSION }}"
           files: |
             wosb-game-${{ env.VERSION }}.zip
           generate_release_notes: true
