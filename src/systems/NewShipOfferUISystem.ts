@@ -113,6 +113,7 @@ export class NewShipOfferUISystem extends System {
         this.logoButtonContainer.style.transition =
             'opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
         this.logoButtonContainer.style.flexShrink = '0'
+        this.logoButtonContainer.style.cursor = 'pointer'
 
         // Create prince logo image with responsive scaling
         const logoImage = document.createElement('img')
@@ -132,7 +133,6 @@ export class NewShipOfferUISystem extends System {
         buttonContainer.style.bottom = 'clamp(40px, 12%, 75px)'
         buttonContainer.style.transform = 'translateX(-50%) translateY(50%)'
         buttonContainer.style.width = '100%'
-        buttonContainer.style.cursor = 'pointer'
         buttonContainer.style.transition = 'transform 0.2s ease'
         buttonContainer.style.zIndex = '2'
 
@@ -160,23 +160,21 @@ export class NewShipOfferUISystem extends System {
         buttonText.style.pointerEvents = 'none'
         buttonText.style.whiteSpace = 'nowrap'
 
-        // Add hover effects to button
-        buttonContainer.addEventListener('mouseenter', () => {
-            buttonContainer.style.transform =
-                'translateX(-50%) translateY(50%) scale(1.05)'
+        // Add hover effects to logo container
+        this.logoButtonContainer.addEventListener('mouseenter', () => {
+            this.logoButtonContainer!.style.transform = 'scale(1.05)'
             buttonImage.style.filter =
                 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5)) brightness(1.1)'
         })
 
-        buttonContainer.addEventListener('mouseleave', () => {
-            buttonContainer.style.transform =
-                'translateX(-50%) translateY(50%) scale(1)'
+        this.logoButtonContainer.addEventListener('mouseleave', () => {
+            this.logoButtonContainer!.style.transform = 'scale(1)'
             buttonImage.style.filter =
                 'drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5))'
         })
 
-        // Add click handler
-        buttonContainer.addEventListener('click', () => {
+        // Add click handler to logo container
+        this.logoButtonContainer.addEventListener('click', () => {
             this.handleGetItClick()
         })
 
